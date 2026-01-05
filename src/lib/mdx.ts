@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import readingTime from 'reading-time';
+import { prisma } from './db';
 
 const postsDirectory = path.join(process.cwd(), 'content/blog');
 
@@ -25,7 +26,30 @@ function ensurePostsDirectory() {
     }
 }
 
-export function getAllPosts(): PostMeta[] {
+// Get posts from database
+async function getPostsFromDB(): Promise<PostMeta[]> {
+    try {
+        const posts = await prisma.post.findMany({
+            where: { published: true },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return posts.map((post) => ({
+            slug: post.slug,
+            title: post.title,
+            date: formatDate(post.createdAt),
+            excerpt: post.excerpt,
+            tags: JSON.parse(post.tags || '[]'),
+            readingTime: readingTime(post.content).text,
+        }));
+    } catch (error) {
+        console.error('Error fetching posts from database:', error);
+        return [];
+    }
+}
+
+// Get posts from MDX files (fallback)
+function getPostsFromFiles(): PostMeta[] {
     ensurePostsDirectory();
 
     const fileNames = fs.readdirSync(postsDirectory);
@@ -46,14 +70,44 @@ export function getAllPosts(): PostMeta[] {
                 readingTime: readingTime(content).text,
             };
         })
-        .sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime()));
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return posts;
 }
 
-export function getPostBySlug(slug: string): Post | null {
-    ensurePostsDirectory();
+export async function getAllPosts(): Promise<PostMeta[]> {
+    // Try database first, fallback to files
+    const dbPosts = await getPostsFromDB();
+    if (dbPosts.length > 0) {
+        return dbPosts;
+    }
+    return getPostsFromFiles();
+}
 
+export async function getPostBySlug(slug: string): Promise<Post | null> {
+    // Try database first
+    try {
+        const post = await prisma.post.findUnique({
+            where: { slug, published: true },
+        });
+
+        if (post) {
+            return {
+                slug: post.slug,
+                title: post.title,
+                date: formatDate(post.createdAt),
+                excerpt: post.excerpt,
+                tags: JSON.parse(post.tags || '[]'),
+                readingTime: readingTime(post.content).text,
+                content: post.content,
+            };
+        }
+    } catch (error) {
+        console.error('Error fetching post from database:', error);
+    }
+
+    // Fallback to file system
+    ensurePostsDirectory();
     const fullPath = path.join(postsDirectory, `${slug}.mdx`);
 
     if (!fs.existsSync(fullPath)) {
@@ -74,9 +128,23 @@ export function getPostBySlug(slug: string): Post | null {
     };
 }
 
-export function getAllPostSlugs(): string[] {
-    ensurePostsDirectory();
+export async function getAllPostSlugs(): Promise<string[]> {
+    // Get from database
+    try {
+        const posts = await prisma.post.findMany({
+            where: { published: true },
+            select: { slug: true },
+        });
 
+        if (posts.length > 0) {
+            return posts.map((p) => p.slug);
+        }
+    } catch (error) {
+        console.error('Error fetching slugs from database:', error);
+    }
+
+    // Fallback to files
+    ensurePostsDirectory();
     const fileNames = fs.readdirSync(postsDirectory);
     return fileNames
         .filter((fileName) => fileName.endsWith('.mdx'))

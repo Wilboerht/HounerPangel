@@ -81,7 +81,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </article>
 
             {/* Comments */}
-            <Comments />
+            <Comments postSlug={slug} />
         </div>
     );
 }
