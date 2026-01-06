@@ -60,7 +60,7 @@ export default function Home() {
 
           {/* Footer */}
           <footer className="pt-12 text-sm text-muted">
-            <p>&copy; 2025 Hank Wong</p>
+            <p>&copy; {new Date().getFullYear()} Hank Wong</p>
           </footer>
         </section>
 
