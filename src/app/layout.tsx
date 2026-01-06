@@ -13,10 +13,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hank Wong",
-  description: "Hank Wong's personal website",
+  title: "Hank Wong | wilboerht | 王泓坤",
+  description: "Hank Wong (wilboerht / 王泓坤) 的个人网站。Building things on the internet. Developer, creator, and lifelong learner.",
+  keywords: [
+    "Hank Wong",
+    "wilboerht", 
+    "王泓坤",
+    "developer",
+    "personal website",
+    "blog",
+    "portfolio"
+  ],
+  authors: [{ name: "Hank Wong", url: "https://wilboerht.com" }],
+  creator: "wilboerht",
   icons: {
     icon: "/favicon.ico",
+  },
+  openGraph: {
+    type: "website",
+    locale: "zh_CN",
+    alternateLocale: "en_US",
+    title: "Hank Wong | wilboerht | 王泓坤",
+    description: "Hank Wong (wilboerht / 王泓坤) 的个人网站。Building things on the internet.",
+    siteName: "Hank Wong",
+  },
+  twitter: {
+    card: "summary",
+    title: "Hank Wong | wilboerht | 王泓坤",
+    description: "Hank Wong (wilboerht / 王泓坤) 的个人网站。Building things on the internet.",
+    creator: "@wilboerht",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
