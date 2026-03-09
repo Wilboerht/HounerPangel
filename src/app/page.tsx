@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { Mail, Github, Instagram, FileText, FolderKanban, Palette, User, ChevronDown, MessageCircle, Send, Microscope, Linkedin } from "lucide-react";
+import { Mail, Github, Instagram, FileText, FolderKanban, Palette, User, MessageCircle, Send, Microscope, Linkedin } from "lucide-react";
+import { ContactMenu } from "@/components/ContactMenu";
 
 const XIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -7,44 +8,6 @@ const XIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const socialLinks = [
-  {
-    name: "Email",
-    href: "mailto:me@wilboerht.cn",
-    icon: Mail,
-  },
-  {
-    name: "GitHub",
-    href: "https://github.com/wilboerht",
-    icon: Github,
-  },
-  {
-    name: "LinkedIn",
-    href: "https://www.linkedin.com/in/wilboerht/",
-    icon: Linkedin,
-  },
-  {
-    name: "X",
-    href: "https://x.com/wilboerht",
-    icon: XIcon,
-  },
-  {
-    name: "Instagram",
-    href: "https://www.instagram.com/wilboerht?igsh=NWVyNjM4M2V6bjJw&utm_source=qr",
-    icon: Instagram,
-  },
-  {
-    name: "Telegram",
-    href: "https://t.me/wilboerht",
-    icon: Send,
-  },
-  {
-    name: "WeChat",
-    href: "#",
-    qrCode: "/qrcode_wechat.jpg",
-    icon: MessageCircle,
-  },
-];
 
 const navLinks = [
   { name: "About", href: "/me", icon: User },
@@ -72,42 +35,7 @@ export default function Home() {
           </div>
 
           {/* Social Links Menu */}
-          <div className="relative group pt-2 w-fit">
-            <button className="flex items-center gap-2 px-4 py-2 border border-border rounded-full text-sm font-medium text-muted hover:text-foreground hover:border-muted focus:text-foreground focus:border-muted transition-colors duration-200 cursor-pointer outline-none">
-              <span>Contact</span>
-              <ChevronDown className="w-4 h-4 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <div className="absolute top-full left-0 mt-3 p-2 bg-background border border-border rounded-xl shadow-lg opacity-0 invisible translate-y-2 group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible focus-within:translate-y-0 focus-within:opacity-100 focus-within:visible transition-all duration-200 flex flex-col gap-1 min-w-[160px] z-10">
-              {socialLinks.map((link) => (
-                <div key={link.name} className="relative group/item">
-                  <a
-                    href={link.name === "WeChat" ? undefined : link.href}
-                    target={link.name !== "Email" && link.name !== "WeChat" ? "_blank" : undefined}
-                    rel={link.name !== "Email" && link.name !== "WeChat" ? "noopener noreferrer" : undefined}
-                    tabIndex={link.name === "WeChat" ? 0 : undefined}
-                    className={`flex items-center gap-3 px-3 py-2.5 text-muted hover:text-foreground hover:bg-foreground/5 focus:text-foreground focus:bg-foreground/5 rounded-lg transition-colors duration-200 outline-none w-full ${link.name === "WeChat" ? "cursor-default" : ""}`}
-                  >
-                    <link.icon className="w-4 h-4" />
-                    <span className="text-sm">{link.name}</span>
-                  </a>
-
-                  {/* QR Code Tooltip */}
-                  {link.qrCode && (
-                    <div className="absolute left-[105%] top-0 md:top-1/2 md:-translate-y-1/2 ml-2 p-2 bg-background border border-border rounded-xl shadow-xl opacity-0 invisible translate-x-[-10px] group-hover/item:translate-x-0 group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 z-20 pointer-events-none">
-                      <div className="relative w-32 h-32 md:w-36 md:h-36">
-                        <Image
-                          src={link.qrCode}
-                          alt={`${link.name} QR Code`}
-                          fill
-                          className="object-contain rounded-md"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          <ContactMenu />
 
           {/* Footer */}
           <footer className="pt-12 text-sm text-muted">
