@@ -61,13 +61,13 @@ export default async function Research({
                     {/* Research items list */}
                     <div className="flex flex-col gap-6">
                         {currentItems.map((item) => (
-                            <div key={item.id} className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-3 group hover:border-foreground/50 transition-colors duration-200">
+                            <Link href={`/research/${item.id}`} key={item.id} className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-3 group cursor-pointer hover:border-foreground/50 transition-colors duration-200">
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
                                         <BookOpen className="w-5 h-5 text-muted" />
                                         {item.title}
                                     </h3>
-                                    <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200" />
+                                    <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 opacity-0 group-hover:opacity-100" />
                                 </div>
                                 <p className="text-sm text-muted leading-relaxed">
                                     {item.abstract}
@@ -82,7 +82,7 @@ export default async function Research({
                                         ))}
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
 
@@ -92,8 +92,8 @@ export default async function Research({
                             <Link
                                 href={validPage > 1 ? `?page=${validPage - 1}` : "#"}
                                 className={`p-2 rounded-lg transition-colors duration-200 ${validPage > 1
-                                        ? "text-muted hover:text-foreground hover:bg-foreground/5"
-                                        : "text-muted/30 pointer-events-none"
+                                    ? "text-muted hover:text-foreground hover:bg-foreground/5"
+                                    : "text-muted/30 pointer-events-none"
                                     }`}
                                 aria-label="Previous page"
                             >
@@ -106,8 +106,8 @@ export default async function Research({
                                         key={page}
                                         href={`?page=${page}`}
                                         className={`w-8 h-8 flex items-center justify-center text-sm font-medium rounded-lg transition-colors duration-200 ${page === validPage
-                                                ? "bg-foreground text-background"
-                                                : "text-muted hover:text-foreground hover:bg-foreground/5"
+                                            ? "bg-foreground text-background"
+                                            : "text-muted hover:text-foreground hover:bg-foreground/5"
                                             }`}
                                     >
                                         {page}
@@ -118,8 +118,8 @@ export default async function Research({
                             <Link
                                 href={validPage < totalPages ? `?page=${validPage + 1}` : "#"}
                                 className={`p-2 rounded-lg transition-colors duration-200 ${validPage < totalPages
-                                        ? "text-muted hover:text-foreground hover:bg-foreground/5"
-                                        : "text-muted/30 pointer-events-none"
+                                    ? "text-muted hover:text-foreground hover:bg-foreground/5"
+                                    : "text-muted/30 pointer-events-none"
                                     }`}
                                 aria-label="Next page"
                             >

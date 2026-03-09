@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, CalendarDays, Clock } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 
@@ -114,9 +115,14 @@ export default async function BlogPost({
                 {/* Article Footer & Share */}
                 <div className="mt-12 pt-8 border-t border-border/50 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-foreground/10 flex items-center justify-center">
-                            {/* Author avatar placeholder */}
-                            <span className="text-sm font-medium">HW</span>
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-foreground/10">
+                            {/* Author avatar */}
+                            <Image
+                                src="/avatar.jpg"
+                                alt="Hank Wong"
+                                fill
+                                className="object-cover"
+                            />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-sm font-medium text-foreground">Hank Wong</span>
