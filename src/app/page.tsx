@@ -38,7 +38,7 @@ const socialLinks = [
 const navLinks = [
   { name: "About", href: "/me", icon: User },
   { name: "Blog", href: "https://blog.wilboerht.com", icon: FileText },
-  { name: "Projects", href: "https://project.wilboerht.com", icon: FolderKanban },
+  { name: "Projects", href: "/projects", icon: FolderKanban },
   { name: "Design", href: "https://design.wilboerht.com", icon: Palette },
   { name: "Library", href: "https://library.wilboerht.com", icon: Library },
 ];
