@@ -8,7 +8,7 @@ const MOCK_DESIGNS = [
         id: "1",
         title: "WeChat Stickers",
         description: "My personal WeChat sticker pack design. Fun, expressive, and widely used characters.",
-        url: "https://weixin.qq.com/qremoticonstore?productid=aL2PCfwK/89qO7sF6/+I+UDhfwEjhec2ZNvdnLLJRd/NQ8y6uTqmMKp4kEOtVxLHQjd1wD/oukTEAZSt+BWpZfgTX21d3mGccVpqAg3nC1mw=",
+        url: "https://sticker.weixin.qq.com/cgi-bin/mmemoticon-bin/emoticonview?oper=single&t=shop/detail&productid=aL2PCfwK/89qO7sF6/+I+UDhfwEjhec2ZNvdnLLJRd/NQ8y6uTqmMKp4kEOtVxLHQjd1wD/oukTEAZSt+BWpZfgTX21d3mGccVpqAg3nC1mw=",
         image: "/wechat-stickers.png",
         icon: "smile", // using to determine placeholder rendering vs real image
         linkText: "Open in WeChat"
