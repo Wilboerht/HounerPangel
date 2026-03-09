@@ -147,16 +147,16 @@ export function ContactMenu() {
                   ${!activeQrCode && 'md:opacity-0 md:invisible md:translate-x-[-10px]'}
                   
                   /* Mobile: Inline accordion style below the button */
-                  relative w-full overflow-hidden transition-all duration-300 ease-in-out z-20 
-                  ${activeQrCode === link.name ? 'max-h-[300px] opacity-100 mt-2 pb-2' : 'max-h-0 opacity-0 md:max-h-[300px] md:opacity-100'}
+                  relative w-full overflow-hidden transition-all duration-300 ease-in-out z-20 flex justify-center
+                  ${activeQrCode === link.name ? 'max-h-[400px] opacity-100 mt-2 pb-2' : 'max-h-0 opacity-0 md:max-h-[400px] md:opacity-100'}
                 `}
                             >
-                                <div className="relative w-full aspect-square md:w-36 md:h-36 bg-foreground/5 rounded-xl md:rounded-md p-4 md:p-0 flex items-center justify-center">
+                                <div className="relative w-full max-w-[260px] aspect-square md:w-36 md:h-36 md:max-w-none bg-foreground/5 rounded-xl md:rounded-md p-4 md:p-0 flex items-center justify-center mx-auto">
                                     <Image
                                         src={link.qrCode}
                                         alt={`${link.name} QR Code`}
                                         fill
-                                        className="object-contain rounded-md"
+                                        className="object-contain p-2 md:p-0 rounded-xl md:rounded-md"
                                     />
                                 </div>
                             </div>
