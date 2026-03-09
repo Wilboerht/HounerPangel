@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Mail, Github, Twitter, Instagram, FileText, FolderKanban, Palette, User, ChevronDown, MessageCircle, Send, Microscope } from "lucide-react";
+import { Mail, Github, Twitter, Instagram, FileText, FolderKanban, Palette, User, ChevronDown, MessageCircle, Send, Microscope, Linkedin } from "lucide-react";
 
 const socialLinks = [
   {
@@ -11,6 +11,11 @@ const socialLinks = [
     name: "GitHub",
     href: "https://github.com/wilboerht",
     icon: Github,
+  },
+  {
+    name: "LinkedIn",
+    href: "https://www.linkedin.com/in/wilboerht/",
+    icon: Linkedin,
   },
   {
     name: "Twitter",
