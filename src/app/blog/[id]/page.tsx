@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, CalendarDays, Clock } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
+import ReactMarkdown from "react-markdown";
 
 // For demonstration, we'll mock the data fetching based on the ID.
 // In a real app, you would fetch this from a database or markdown files.
@@ -80,36 +81,19 @@ export default async function BlogPost({
 
                 {/* Article Content */}
                 <article className="prose prose-invert prose-p:text-muted prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold prose-a:text-foreground hover:prose-a:text-muted prose-blockquote:border-l-foreground/30 prose-blockquote:text-muted/80 w-full max-w-none">
-                    {/* We are manually rendering the mock content for demo. 
-                        In reality, use next-mdx-remote or react-markdown */}
-                    {post.content.split('\n\n').map((paragraph, idx) => {
-                        if (paragraph.trim().startsWith('## ')) {
-                            return <h2 key={idx} className="text-2xl mt-8 mb-4">{paragraph.replace('## ', '')}</h2>
-                        }
-                        if (paragraph.trim().startsWith('### ')) {
-                            return <h3 key={idx} className="text-xl mt-6 mb-3">{paragraph.replace('### ', '')}</h3>
-                        }
-                        if (paragraph.trim().startsWith('> ')) {
-                            return (
-                                <blockquote key={idx} className="border-l-4 border-foreground/30 pl-4 py-1 my-6 text-foreground/80 italic font-medium">
-                                    {paragraph.replace('> ', '')}
-                                </blockquote>
-                            );
-                        }
-                        if (paragraph.includes('1. **')) {
-                            const items = paragraph.split('\n').filter(Boolean);
-                            return (
-                                <ol key={idx} className="list-decimal pl-5 space-y-2 my-4 text-muted">
-                                    {items.map((item, i) => {
-                                        const text = item.replace(/^\d+\.\s+\*\*(.*?)\*\*(.*)/, '<strong>$1</strong>$2');
-                                        return <li key={i} dangerouslySetInnerHTML={{ __html: text }} />
-                                    })}
-                                </ol>
-                            )
-                        }
-                        if (paragraph.trim() === '') return null;
-                        return <p key={idx} className="my-4">{paragraph}</p>
-                    })}
+                    <ReactMarkdown
+                        components={{
+                            h2: ({ node, ...props }) => <h2 className="text-2xl mt-8 mb-4 text-foreground font-semibold" {...props} />,
+                            h3: ({ node, ...props }) => <h3 className="text-xl mt-6 mb-3 text-foreground font-semibold" {...props} />,
+                            p: ({ node, ...props }) => <p className="my-4 text-muted leading-relaxed" {...props} />,
+                            ol: ({ node, ...props }) => <ol className="list-decimal pl-5 space-y-2 my-4 text-muted" {...props} />,
+                            li: ({ node, ...props }) => <li className="text-muted" {...props} />,
+                            blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-foreground/30 pl-4 py-1 my-6 text-foreground/80 italic font-medium" {...props} />,
+                            strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />
+                        }}
+                    >
+                        {post.content}
+                    </ReactMarkdown>
                 </article>
 
                 {/* Article Footer & Share */}

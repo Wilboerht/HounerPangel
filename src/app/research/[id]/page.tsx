@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, BookOpen, ExternalLink, CalendarDays } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
+import ReactMarkdown from "react-markdown";
 
 // For demonstration, mock the data fetching based on ID.
 function getMockResearch(id: string) {
@@ -109,34 +110,19 @@ export default async function ResearchDetail({
 
                 {/* Content Body */}
                 <article className="prose prose-invert prose-p:text-muted prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold prose-a:text-foreground hover:prose-a:text-muted prose-blockquote:border-l-foreground/30 prose-blockquote:text-muted/80 w-full max-w-none">
-                    {research.content.split('\n\n').map((paragraph, idx) => {
-                        if (paragraph.trim().startsWith('## ')) {
-                            return <h2 key={idx} className="text-2xl mt-12 mb-6 pb-2 border-b border-white/10">{paragraph.replace('## ', '')}</h2>
-                        }
-                        if (paragraph.trim().startsWith('### ')) {
-                            return <h3 key={idx} className="text-xl mt-8 mb-4">{paragraph.replace('### ', '')}</h3>
-                        }
-                        if (paragraph.trim().startsWith('> ')) {
-                            return (
-                                <blockquote key={idx} className="border-l-4 border-foreground/30 pl-6 py-2 my-8 text-foreground/80 italic font-medium bg-foreground/5 rounded-r-lg">
-                                    {paragraph.replace('> ', '')}
-                                </blockquote>
-                            );
-                        }
-                        if (paragraph.includes('1. **')) {
-                            const items = paragraph.split('\n').filter(Boolean);
-                            return (
-                                <ol key={idx} className="list-decimal pl-6 space-y-4 my-6 text-muted">
-                                    {items.map((item, i) => {
-                                        const text = item.replace(/^\d+\.\s+\*\*(.*?)\*\*(.*)/, '<strong class="text-foreground">$1</strong>$2');
-                                        return <li key={i} dangerouslySetInnerHTML={{ __html: text }} className="leading-relaxed" />
-                                    })}
-                                </ol>
-                            )
-                        }
-                        if (paragraph.trim() === '') return null;
-                        return <p key={idx} className="my-5">{paragraph}</p>
-                    })}
+                    <ReactMarkdown
+                        components={{
+                            h2: ({ node, ...props }) => <h2 className="text-2xl mt-12 mb-6 pb-2 border-b border-white/10 text-foreground font-semibold" {...props} />,
+                            h3: ({ node, ...props }) => <h3 className="text-xl mt-8 mb-4 text-foreground font-semibold" {...props} />,
+                            p: ({ node, ...props }) => <p className="my-5 text-muted leading-relaxed" {...props} />,
+                            ol: ({ node, ...props }) => <ol className="list-decimal pl-6 space-y-4 my-6 text-muted" {...props} />,
+                            li: ({ node, ...props }) => <li className="leading-relaxed text-muted" {...props} />,
+                            blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-foreground/30 pl-6 py-2 my-8 text-foreground/80 italic font-medium bg-foreground/5 rounded-r-lg" {...props} />,
+                            strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />
+                        }}
+                    >
+                        {research.content}
+                    </ReactMarkdown>
                 </article>
 
                 {/* Footer Actions */}
