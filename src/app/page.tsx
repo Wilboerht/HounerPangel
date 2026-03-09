@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Mail, Github, Twitter, Instagram, FileText, FolderKanban, Palette, Library, User, ChevronDown, MessageCircle, Send } from "lucide-react";
+import { Mail, Github, Twitter, Instagram, FileText, FolderKanban, Palette, Library, User, ChevronDown, MessageCircle, Send, Microscope } from "lucide-react";
 
 const socialLinks = [
   {
@@ -41,6 +41,7 @@ const navLinks = [
   { name: "Projects", href: "/projects", icon: FolderKanban },
   { name: "Design", href: "https://design.wilboerht.com", icon: Palette },
   { name: "Library", href: "https://library.wilboerht.com", icon: Library },
+  { name: "Research", href: "/research", icon: Microscope },
 ];
 
 export default function Home() {
