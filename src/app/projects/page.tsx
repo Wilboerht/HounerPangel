@@ -5,20 +5,27 @@ import { ArrowLeft, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react
 const MOCK_PROJECTS = [
     {
         id: "1",
+        title: "AI Face Scan",
+        description: "An intelligent facial skincare advisor. Leveraging AI technology to perform facial analysis and provide personalized skincare recommendations for users.",
+        url: "https://advisor.nihplod.cn",
+        tags: ["AI", "Next.js"]
+    },
+    {
+        id: "2",
         title: "NIHPLOD China",
         description: "The official website for NIHPLOD in the Greater China region, serving as the digital face to showcase brand identity and the latest updates.",
         url: "https://nihplod.cn",
         tags: ["Next.js", "React"]
     },
     {
-        id: "2",
-        title: "AI Face Scan",
-        description: "An intelligent facial skincare advisor. Leveraging AI technology to perform facial analysis and provide personalized skincare recommendations for users.",
-        url: "https://advisor.nihplod.cn",
-        tags: ["AI", "Next.js"]
+        id: "3",
+        title: "LGJH Co., Ltd.",
+        description: "Official website system for LGJH Co., Ltd.. A comprehensive digital platform designed to showcase enterprise information and services.",
+        url: "https://www.lingangjh.com/",
+        tags: ["Enterprise", "Web System"]
     },
-    ...Array.from({ length: 8 }).map((_, i) => ({
-        id: `${i + 3}`,
+    ...Array.from({ length: 7 }).map((_, i) => ({
+        id: `${i + 4}`,
         title: `Archived Project ${i + 1}`,
         description: "A past project or experiment. This serves as placeholder data to demonstrate the pagination functionality working across multiple pages.",
         url: "#",
