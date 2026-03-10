@@ -2,13 +2,25 @@ import Link from "next/link";
 import { ArrowLeft, ExternalLink, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Generate some mock research items for demonstration
-const MOCK_RESEARCH = Array.from({ length: 12 }).map((_, i) => ({
-    id: i + 1,
-    title: `Research Topic ${i + 1}: ${["AI Architecture", "User Behavior Analysis", "Modern Interfaces", "Design Systems"][i % 4]}`,
-    abstract: "A brief abstract or summary of the research topic. This explains the core problem, the methodology, and the key findings or takeaways from the study. It should be concise enough to fit in a card.",
-    date: `March 2026`,
-    tags: ["UX Design", "AI", "Frontend"].sort(() => 0.5 - Math.random()).slice(0, 2)
-}));
+const MOCK_RESEARCH = Array.from({ length: 12 }).map((_, i) => {
+    const title = `Research Topic ${i + 1}: ${["AI Architecture", "User Behavior Analysis", "Modern Interfaces", "Design Systems"][i % 4]}`;
+    // Generate a URL-friendly slug from the title
+    const slug = title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "") // Remove special characters
+        .replace(/\s+/g, "-") // Replace spaces with -
+        .replace(/-+/g, "-") // Remove multiple -
+        .trim();
+
+    return {
+        id: i + 1,
+        title,
+        slug,
+        abstract: "A brief abstract or summary of the research topic. This explains the core problem, the methodology, and the key findings or takeaways from the study. It should be concise enough to fit in a card.",
+        date: `March 2026`,
+        tags: ["UX Design", "AI", "Frontend"].slice(0, (i % 2) + 1)
+    };
+});
 
 const ITEMS_PER_PAGE = 4;
 
@@ -61,7 +73,7 @@ export default async function Research({
                     {/* Research items list */}
                     <div className="flex flex-col gap-6">
                         {currentItems.map((item) => (
-                            <Link href={`/research/${item.id}`} key={item.id} className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-3 group cursor-pointer hover:border-foreground/50 transition-colors duration-200">
+                            <Link href={`/research/${item.slug}`} key={item.id} className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-3 group cursor-pointer hover:border-foreground/50 transition-colors duration-200">
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
                                         <BookOpen className="w-5 h-5 text-muted" />

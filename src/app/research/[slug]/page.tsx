@@ -3,40 +3,39 @@ import { ArrowLeft, BookOpen, ExternalLink, CalendarDays } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
 
-// For demonstration, mock the data fetching based on ID.
-function getMockResearch(id: string) {
-    const titles = ["AI Architecture", "User Behavior Analysis", "Modern Interfaces", "Design Systems"];
+// For demonstration, mock the data fetching based on slug.
+function getMockResearch(slug: string) {
+    // Convert-slug-back-to-Title for demonstration
+    const displayTitle = slug
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+
     return {
-        id,
-        title: `Research Topic ${id}: ${titles[Number(id) % 4] || "Exploration"}`,
+        slug,
+        title: displayTitle,
         abstract: "A comprehensive investigation into the paradigms that define our interaction with digital products. We look at foundational theories, empirical studies, and practical applications that bridge the gap between design intent and user perception.",
         date: `March 2026`,
         tags: ["UX Design", "AI", "Frontend"].sort(() => 0.5 - Math.random()).slice(0, 2),
         content: `
-This page serves as a detailed breakdown of a specific research topic or whitepaper. While blog posts act as casual thoughts, research pages are structured for deeper analysis.
+This page serves as a detailed breakdown of a specific research topic or whitepaper, now using a **semantic slug** (\`${slug}\`) in the URL for better SEO and clarity.
 
 ## 1. Introduction
 The digital landscape demands more than just functional code; it requires interfaces that anticipate user needs. Our research focuses on identifying the friction points in traditional UI patterns and exploring how predictive intelligence can smooth the user journey. 
 
-### Methodology
+### Why we moved to Slugs
+Previously, this path would have ended with a number like \`/research/1\`. By switching to slugs:
+- **Search Engines** index this page with relevant keywords.
+- **Users** can easily see the content topic from the link alone.
+- **Developers** have a more maintainable and readable routing system.
+
+## 2. Methodology
 We conducted a series of A/B tests across diverse user demographics. By tracking micro-interactions (hover states, click latency, scrolling depth), we gathered quantitative data to complement our qualitative user interviews.
 
-## 2. Key Findings
-Our analysis revealed three significant insights:
-1. **Anticipatory Design:** Users respond positively to systems that reduce cognitive load by predicting their next action, provided the predictions are accurate over 85% of the time.
-2. **Visual Hierarchy vs. Action Hierarchy:** Often, what looks visually pleasing does not align with the logical flow of actions a user expects. Reconciling these two hierarchies is the hallmark of effective design.
-3. **The Tolerance for Loading:** Animated skeleton loaders reduce the perceived wait time by approximately 30% compared to static spinners.
+## 3. Key Findings
+Our analysis revealed significant insights into how anticipatory design affects cognitive load and user satisfaction.
 
 > "Good design is actually a lot harder to notice than poor design, in part because good design fits our needs so well that the design is invisible." - Don Norman
-
-## 3. Implications for Future Development
-Based on these findings, we propose a shift towards **Adaptive Interfaces**—systems that learn from individual user habits rather than relying solely on generalized personas. 
-
-### Technical Feasibility
-Implementing such systems requires a robust event-tracking architecture coupled with lightweight client-side machine learning models to ensure privacy-preserving personalization.
-
-## 4. Conclusion
-The integration of predictive modeling into everyday UI design represents the next frontier in human-computer interaction. The challenge lies not in the technology itself, but in implementing it with empathy and respect for user agency.
         `
     };
 }
@@ -44,14 +43,14 @@ The integration of predictive modeling into everyday UI design represents the ne
 export default async function ResearchDetail({
     params,
 }: {
-    params: Promise<{ id: string }>;
+    params: Promise<{ slug: string }>;
 }) {
-    const resolvedParams = await params;
-    const research = getMockResearch(resolvedParams.id);
+    const { slug } = await params;
+    const research = getMockResearch(slug);
 
     return (
         <main className="min-h-screen flex flex-col items-center px-6 py-12 lg:py-20">
-            <div className="max-w-3xl w-full flex flex-col gap-10">
+            <div className="max-w-2xl w-full flex flex-col gap-10">
                 {/* Navigation */}
                 <nav>
                     <Link
@@ -109,16 +108,43 @@ export default async function ResearchDetail({
                 </header>
 
                 {/* Content Body */}
-                <article className="prose prose-invert prose-p:text-muted prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold prose-a:text-foreground hover:prose-a:text-muted prose-blockquote:border-l-foreground/30 prose-blockquote:text-muted/80 w-full max-w-none">
+                <article className="-mt-4 prose prose-invert prose-p:text-muted prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold prose-a:text-foreground hover:prose-a:text-muted prose-blockquote:border-l-foreground/30 prose-blockquote:text-muted/80 w-full max-w-none">
                     <ReactMarkdown
                         components={{
                             h2: ({ node, ...props }) => <h2 className="text-2xl mt-12 mb-6 pb-2 border-b border-white/10 text-foreground font-semibold" {...props} />,
                             h3: ({ node, ...props }) => <h3 className="text-xl mt-8 mb-4 text-foreground font-semibold" {...props} />,
-                            p: ({ node, ...props }) => <p className="my-5 text-muted leading-relaxed" {...props} />,
+                            // Avoid hydration issues by using div for paragraphs
+                            p: ({ node, ...props }) => <div className="my-5 text-muted leading-relaxed" {...props} />,
                             ol: ({ node, ...props }) => <ol className="list-decimal pl-6 space-y-4 my-6 text-muted" {...props} />,
                             li: ({ node, ...props }) => <li className="leading-relaxed text-muted" {...props} />,
+                            // Avoid pre > div nesting
+                            pre: ({ node, ...props }) => {
+                                const { ref, ...rest } = props as any;
+                                return <div {...rest} />;
+                            },
                             blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-foreground/30 pl-6 py-2 my-8 text-foreground/80 italic font-medium bg-foreground/5 rounded-r-lg" {...props} />,
-                            strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />
+                            strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
+                            code: ({ node, inline, className, children, ...props }: any) => {
+                                return inline ? (
+                                    <code className="bg-foreground/10 text-foreground px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                                        {children}
+                                    </code>
+                                ) : (
+                                    <div className="my-6 rounded-xl overflow-hidden border border-border bg-[#0d1117]">
+                                        <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/5">
+                                            <span className="text-xs text-muted font-mono">Research Data</span>
+                                            <div className="flex gap-1.5">
+                                                <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
+                                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20" />
+                                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20" />
+                                            </div>
+                                        </div>
+                                        <pre className="p-4 overflow-x-auto text-sm leading-relaxed font-mono text-zinc-300">
+                                            <code {...props}>{children}</code>
+                                        </pre>
+                                    </div>
+                                );
+                            },
                         }}
                     >
                         {research.content}

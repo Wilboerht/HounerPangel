@@ -2,12 +2,24 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Generate some mock blog posts for demonstration
-const MOCK_POSTS = Array.from({ length: 25 }).map((_, i) => ({
-    id: i + 1,
-    title: `Blog Post Title ${i + 1}: ${["A Deep Dive", "Design Exploration", "Engineering Thoughts", "Life Updates"][i % 4]}`,
-    excerpt: "This is a brief excerpt from the blog post. It provides a little preview of what the article is about before the reader clicks through and explores the full content.",
-    date: `March ${30 - (i % 30)}, 2026`,
-}));
+const MOCK_POSTS = Array.from({ length: 25 }).map((_, i) => {
+    const title = `Blog Post Title ${i + 1}: ${["A Deep Dive", "Design Exploration", "Engineering Thoughts", "Life Updates"][i % 4]}`;
+    // Generate a URL-friendly slug from the title
+    const slug = title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "") // Remove special characters
+        .replace(/\s+/g, "-") // Replace spaces with -
+        .replace(/-+/g, "-") // Remove multiple -
+        .trim();
+
+    return {
+        id: i + 1,
+        title,
+        slug,
+        excerpt: "This is a brief excerpt from the blog post. It provides a little preview of what the article is about before the reader clicks through and explores the full content.",
+        date: `March ${30 - (i % 30)}, 2026`,
+    };
+});
 
 const ITEMS_PER_PAGE = 5;
 
@@ -61,7 +73,7 @@ export default async function Blog({
                     <div className="flex flex-col gap-8">
                         {currentPosts.map((post, idx) => (
                             <div key={post.id} className="flex flex-col gap-8">
-                                <Link href={`/blog/${post.id}`} className="group flex flex-col gap-3">
+                                <Link href={`/blog/${post.slug}`} className="group flex flex-col gap-3">
                                     <h3 className="text-xl font-semibold tracking-tight text-foreground group-hover:underline underline-offset-4 decoration-muted group-hover:decoration-foreground transition-all duration-200">
                                         {post.title}
                                     </h3>
@@ -86,6 +98,7 @@ export default async function Blog({
                             </div>
                         ))}
                     </div>
+
 
                     {/* Pagination UI */}
                     {totalPages > 1 && (
