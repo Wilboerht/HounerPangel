@@ -5,13 +5,13 @@ import Link from "next/link";
 import { ListTree, X, ChevronRight, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface SeriesItem {
+export interface SeriesItem {
     title: string;
     slug: string;
     index: number;
 }
 
-interface Series {
+export interface Series {
     name: string;
     current: number;
     total: number;

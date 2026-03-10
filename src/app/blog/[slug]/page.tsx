@@ -3,14 +3,14 @@ import Image from "next/image";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock, Library, ChevronRight, ChevronLeft, BookOpen } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
-import { SeriesOutlineDrawer } from "@/components/SeriesOutlineDrawer";
+import { SeriesOutlineDrawer, Series, SeriesItem } from "@/components/SeriesOutlineDrawer";
 import { notFound } from "next/navigation";
 
 // For demonstration, we'll mock the data fetching based on the slug.
 interface Post {
     slug: string;
     title: string;
-    series: any;
+    series: Series | null;
     date: string;
     readTime: string;
     content: string;
