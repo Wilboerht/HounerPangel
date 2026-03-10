@@ -4,42 +4,9 @@ import { CollectionsDrawer } from "@/components/CollectionsDrawer";
 import { BlogSearch } from "@/components/BlogSearch";
 
 // Generate some mock blog posts for demonstration
-const MOCK_POSTS = Array.from({ length: 25 }).map((_, i) => {
-    const categories = ["A Deep Dive", "Design Exploration", "Engineering Thoughts", "Life Updates"];
-    const title = `Blog Post Title ${i + 1}: ${categories[i % 4]}`;
-    // Generate a URL-friendly slug from the title
-    const slug = title
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, "") // Remove special characters
-        .replace(/\s+/g, "-") // Replace spaces with -
-        .replace(/-+/g, "-") // Remove multiple -
-        .trim();
+const MOCK_POSTS: any[] = [];
 
-    // Add some series data for the first few posts
-    const series = i < 5 ? {
-        name: "Next.js 15 Deep Dive",
-        current: i + 1,
-        total: 5
-    } : i >= 10 && i < 13 ? {
-        name: "Minimalist Design Theory",
-        current: i - 9,
-        total: 3
-    } : null;
-
-    return {
-        id: i + 1,
-        title,
-        slug,
-        series,
-        excerpt: "This is a brief excerpt from the blog post. It provides a little preview of what the article is about before the reader clicks through and explores the full content.",
-        date: `March ${30 - (i % 30)}, 2026`,
-    };
-});
-
-const SERIES_LIST = [
-    { name: "Next.js 15 Deep Dive", count: 5, slug: "blog-post-title-1-a-deep-dive" },
-    { name: "Minimalist Design Theory", count: 3, slug: "blog-post-title-11-design-exploration" }
-];
+const SERIES_LIST: any[] = [];
 
 const ITEMS_PER_PAGE = 5;
 
@@ -77,7 +44,7 @@ export default async function Blog({
     return (
         <main className="min-h-screen flex flex-col items-center px-6 py-12 lg:py-20">
             {/* Desktop Sidebars Wrapper - Align top to prevent jitter */}
-            <div className="max-w-6xl w-full flex flex-col lg:flex-row lg:items-start gap-16 relative">
+            <div className="max-w-[1312px] w-full flex flex-col lg:flex-row lg:items-start gap-16 relative">
 
                 {/* Left Side Navigation */}
                 <div className="hidden lg:block lg:w-48 xl:w-64 lg:sticky lg:top-20">
@@ -121,24 +88,30 @@ export default async function Blog({
                                         <CollectionsDrawer seriesList={SERIES_LIST} />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {SERIES_LIST.slice(0, 4).map((series, i) => (
-                                            <Link
-                                                key={i}
-                                                href={`/blog/${series.slug}`}
-                                                className="group p-4 rounded-xl border border-border/50 bg-foreground/[0.02] active:bg-foreground/[0.05] transition-all duration-200 flex flex-col gap-2"
-                                            >
-                                                <span className="text-[11px] font-bold text-foreground/80 line-clamp-2 leading-snug h-8">
-                                                    {series.name}
-                                                </span>
-                                                <div className="flex items-center gap-1.5 opacity-60">
-                                                    <span className="text-[9px] font-medium text-muted uppercase tracking-tighter">
-                                                        {series.count} Posts
+                                    {SERIES_LIST.length > 0 ? (
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {SERIES_LIST.slice(0, 4).map((series, i) => (
+                                                <Link
+                                                    key={i}
+                                                    href={`/blog/${series.slug}`}
+                                                    className="group p-4 rounded-xl border border-border/50 bg-foreground/[0.02] active:bg-foreground/[0.05] transition-all duration-200 flex flex-col gap-2"
+                                                >
+                                                    <span className="text-[11px] font-bold text-foreground/80 line-clamp-2 leading-snug h-8">
+                                                        {series.name}
                                                     </span>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
+                                                    <div className="flex items-center gap-1.5 opacity-60">
+                                                        <span className="text-[9px] font-medium text-muted uppercase tracking-tighter">
+                                                            {series.count} Posts
+                                                        </span>
+                                                    </div>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="py-6 px-4 rounded-xl border border-dashed border-border/30 text-center bg-foreground/[0.01]">
+                                            <p className="text-sm font-semibold text-foreground/80">No collections yet</p>
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         )}
@@ -191,15 +164,23 @@ export default async function Blog({
                                         <Search className="w-8 h-8" />
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-lg font-semibold text-foreground/80">No articles found</p>
-                                        <p className="text-sm text-muted">Try adjusting your search terms or filters</p>
+                                        <p className="text-lg font-semibold text-foreground/80">
+                                            {query ? "No articles found" : "Coming soon"}
+                                        </p>
+                                        <p className="text-sm text-muted">
+                                            {query
+                                                ? "Try adjusting your search terms or filters"
+                                                : "We are currently preparing content. Stay tuned."}
+                                        </p>
                                     </div>
-                                    <Link
-                                        href="/blog"
-                                        className="mt-2 text-xs font-bold uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors"
-                                    >
-                                        Clear Search
-                                    </Link>
+                                    {query && (
+                                        <Link
+                                            href="/blog"
+                                            className="mt-2 text-xs font-bold uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors"
+                                        >
+                                            Clear Search
+                                        </Link>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -259,20 +240,26 @@ export default async function Blog({
                                 <Library className="w-3.5 h-3.5" /> Collections
                             </div>
                             <div className="flex flex-col gap-2 max-h-[calc(100vh-320px)] overflow-y-auto no-scrollbar pr-2 pb-2">
-                                {SERIES_LIST.map((series, i) => (
-                                    <Link
-                                        key={i}
-                                        href={`/blog/${series.slug}`}
-                                        className="group p-4 rounded-xl border border-border/50 bg-card/20 hover:bg-card/40 hover:border-foreground/20 transition-all duration-300 flex flex-col gap-2"
-                                    >
-                                        <span className="text-sm font-semibold text-foreground/70 group-hover:text-foreground transition-colors duration-200 line-clamp-2 leading-snug">
-                                            {series.name}
-                                        </span>
-                                        <span className="text-[10px] text-muted font-medium bg-foreground/5 w-fit px-1.5 py-0.5 rounded border border-border/20 uppercase tracking-tighter">
-                                            {series.count} Articles
-                                        </span>
-                                    </Link>
-                                ))}
+                                {SERIES_LIST.length > 0 ? (
+                                    SERIES_LIST.map((series, i) => (
+                                        <Link
+                                            key={i}
+                                            href={`/blog/${series.slug}`}
+                                            className="group p-4 rounded-xl border border-border/50 bg-card/20 hover:bg-card/40 hover:border-foreground/20 transition-all duration-300 flex flex-col gap-2"
+                                        >
+                                            <span className="text-sm font-semibold text-foreground/70 group-hover:text-foreground transition-colors duration-200 line-clamp-2 leading-snug">
+                                                {series.name}
+                                            </span>
+                                            <span className="text-[10px] text-muted font-medium bg-foreground/5 w-fit px-1.5 py-0.5 rounded border border-border/20 uppercase tracking-tighter">
+                                                {series.count} Articles
+                                            </span>
+                                        </Link>
+                                    ))
+                                ) : (
+                                    <div className="py-10 px-4 rounded-2xl border border-dashed border-border/30 text-center bg-foreground/[0.01]">
+                                        <p className="text-sm font-semibold text-foreground/80">No collections</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

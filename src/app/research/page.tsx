@@ -3,25 +3,7 @@ import { ResearchSearch } from "@/components/ResearchSearch";
 import { ArrowLeft, ExternalLink, BookOpen, ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 // Generate some mock research items for demonstration
-const MOCK_RESEARCH = Array.from({ length: 12 }).map((_, i) => {
-    const title = `Research Topic ${i + 1}: ${["AI Architecture", "User Behavior Analysis", "Modern Interfaces", "Design Systems"][i % 4]}`;
-    // Generate a URL-friendly slug from the title
-    const slug = title
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, "") // Remove special characters
-        .replace(/\s+/g, "-") // Replace spaces with -
-        .replace(/-+/g, "-") // Remove multiple -
-        .trim();
-
-    return {
-        id: i + 1,
-        title,
-        slug,
-        abstract: "A brief abstract or summary of the research topic. This explains the core problem, the methodology, and the key findings or takeaways from the study. It should be concise enough to fit in a card.",
-        date: `March 2026`,
-        tags: ["UX Design", "AI", "Frontend"].slice(0, (i % 2) + 1)
-    };
-});
+const MOCK_RESEARCH: any[] = [];
 
 const ITEMS_PER_PAGE = 4;
 
@@ -41,7 +23,7 @@ export default async function Research({
         ? MOCK_RESEARCH.filter(item =>
             item.title.toLowerCase().includes(query) ||
             item.abstract.toLowerCase().includes(query) ||
-            item.tags.some(tag => tag.toLowerCase().includes(query))
+            item.tags.some((tag: string) => tag.toLowerCase().includes(query))
         )
         : MOCK_RESEARCH;
 
@@ -74,7 +56,7 @@ export default async function Research({
                 <section className="space-y-10">
                     {validPage === 1 && (
                         <div className="space-y-4">
-                            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                                 Research
                             </h1>
                             <p className="text-lg text-muted leading-relaxed">
@@ -111,7 +93,7 @@ export default async function Research({
                                     <div className="flex items-center gap-4 mt-2">
                                         <span className="text-xs text-muted/60">Published: {item.date}</span>
                                         <div className="flex gap-2">
-                                            {item.tags.map((tag, idx) => (
+                                            {item.tags.map((tag: string, idx: number) => (
                                                 <span key={idx} className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-foreground/5 text-muted/80">
                                                     {tag}
                                                 </span>
@@ -126,15 +108,23 @@ export default async function Research({
                                     <Search className="w-8 h-8" />
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-lg font-semibold text-foreground/80">No topics found</p>
-                                    <p className="text-sm text-muted">Try adjusting your search terms or filters</p>
+                                    <p className="text-lg font-semibold text-foreground/80">
+                                        {query ? "No topics found" : "Coming soon"}
+                                    </p>
+                                    <p className="text-sm text-muted">
+                                        {query
+                                            ? "Try adjusting your search terms or filters"
+                                            : "Selected research topics are currently in preparation."}
+                                    </p>
                                 </div>
-                                <Link
-                                    href="/research"
-                                    className="mt-2 text-xs font-bold uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors"
-                                >
-                                    Clear Search
-                                </Link>
+                                {query && (
+                                    <Link
+                                        href="/research"
+                                        className="mt-2 text-xs font-bold uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors"
+                                    >
+                                        Clear Search
+                                    </Link>
+                                )}
                             </div>
                         )}
                     </div>

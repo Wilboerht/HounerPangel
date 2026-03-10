@@ -4,61 +4,21 @@ import { ArrowLeft, ArrowRight, CalendarDays, Clock, Library, ChevronRight, Chev
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
 import { SeriesOutlineDrawer } from "@/components/SeriesOutlineDrawer";
+import { notFound } from "next/navigation";
 
 // For demonstration, we'll mock the data fetching based on the slug.
-function getMockPost(slug: string) {
-    const displayTitle = slug
-        .split("-")
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-
-    const categories = ["a-deep-dive", "design-exploration", "engineering-thoughts", "life-updates"];
-    const match = slug.match(/blog-post-title-(\d+)/);
-    const postIndex = match ? parseInt(match[1]) : 0;
-
-    let series = null;
-    if (postIndex >= 1 && postIndex <= 5) {
-        series = {
-            name: "Next.js 15 Deep Dive",
-            current: postIndex,
-            total: 5,
-            items: Array.from({ length: 5 }).map((_, i) => ({
-                title: `Step ${i + 1}: ${["A Deep Dive", "Design Exploration", "Engineering Thoughts", "Life Updates"][i % 4]}`,
-                slug: `blog-post-title-${i + 1}-${categories[i % 4]}`,
-                index: i + 1
-            }))
-        };
-    }
-
-    return {
-        slug,
-        title: displayTitle,
-        series,
-        date: `March 20, 2026`,
-        readTime: "5 min read",
-        content: `
-This is a demonstration of a blog post detail page using a **semantic slug** in the URL. 
-
-## Why Slugs Matter
-Using a slug instead of a numeric ID is a web development best practice because:
-
-1. **SEO Optimization**: Search engines crawl keywords in the URL.
-2. **User Experience**: Users can tell what the page is about before clicking.
-3. **Persistance**: Even if database IDs change, the slug remains constant.
-
-### How it's implemented
-In this Next.js application, we use a dynamic route folder. The framework automatically passes the URL segment to the page component as a parameter.
-
-\`\`\`tsx
-// File: src/app/blog/[slug]/page.tsx
-export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const post = await getPostBySlug(slug);
-  return <article>{/* ... */}</article>;
+interface Post {
+    slug: string;
+    title: string;
+    series: any;
+    date: string;
+    readTime: string;
+    content: string;
 }
-\`\`\`
-        `
-    };
+
+function getMockPost(slug: string): Post | null {
+    // Returning null as fake posts have been removed.
+    return null;
 }
 
 export default async function BlogPost({
@@ -69,14 +29,18 @@ export default async function BlogPost({
     const resolvedParams = await params;
     const post = getMockPost(resolvedParams.slug);
 
+    if (!post) {
+        notFound();
+    }
+
     return (
         <main className="min-h-screen flex flex-col items-center px-6 py-12 lg:py-20">
             {/* Layout Wrapper with Sidebars */}
-            <div className="max-w-7xl w-full flex flex-col lg:flex-row lg:items-start gap-12 xl:gap-20">
+            <div className="max-w-[1312px] w-full flex flex-col lg:flex-row lg:items-start gap-16 relative">
 
                 {/* Left Sidebar: Navigation (Only show if series exists to balance layout) */}
                 {post.series && (
-                    <aside className="hidden lg:block lg:w-48 lg:sticky lg:top-20">
+                    <aside className="hidden lg:block lg:w-48 xl:w-64 lg:sticky lg:top-20">
                         <Link
                             href="/blog"
                             className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
@@ -276,7 +240,7 @@ export default async function BlogPost({
 
                 {/* Right Sidebar: Series Topics (Hidden if no series) */}
                 {post.series && (
-                    <aside className="hidden lg:block lg:w-64 lg:sticky lg:top-20">
+                    <aside className="hidden lg:block lg:w-48 xl:w-64 lg:sticky lg:top-20">
                         <div className="space-y-6">
                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-foreground/30 px-1 mb-4">
                                 <Library className="w-3.5 h-3.5" /> Series Contents

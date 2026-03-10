@@ -23,14 +23,7 @@ const MOCK_PROJECTS = [
         description: "Official website system for LGJH Co., Ltd.. A comprehensive digital platform designed to showcase enterprise information and services.",
         url: "https://www.lingangjh.com/",
         tags: ["Enterprise", "Web System"]
-    },
-    ...Array.from({ length: 7 }).map((_, i) => ({
-        id: `${i + 4}`,
-        title: `Archived Project ${i + 1}`,
-        description: "A past project or experiment. This serves as placeholder data to demonstrate the pagination functionality working across multiple pages.",
-        url: "#",
-        tags: ["Design", "Prototype"]
-    }))
+    }
 ];
 
 const ITEMS_PER_PAGE = 4;
@@ -70,7 +63,7 @@ export default async function Projects({
                 {/* Content */}
                 <section className="space-y-10">
                     <div className="space-y-4">
-                        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                             Projects
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">

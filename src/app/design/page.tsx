@@ -12,25 +12,7 @@ const MOCK_DESIGNS = [
         image: "/wechat-stickers.png",
         icon: "smile", // using to determine placeholder rendering vs real image
         linkText: "Open in WeChat"
-    },
-    {
-        id: "2",
-        title: "Brand Identity Concept",
-        description: "Typography and color system exploration.",
-        url: "#",
-        image: null,
-        icon: "sparkles",
-        linkText: null
-    },
-    ...Array.from({ length: 10 }).map((_, i) => ({
-        id: `${i + 3}`,
-        title: `Design Exploration ${i + 1}`,
-        description: "A placeholder for future design projects, ui concepts, or case studies.",
-        url: "#",
-        image: null,
-        icon: "sparkles",
-        linkText: null
-    }))
+    }
 ];
 
 const ITEMS_PER_PAGE = 4;
@@ -79,49 +61,63 @@ export default async function Design({
                     </div>
 
                     {/* Design Portfolio grid */}
-                    <div className="grid gap-6 sm:grid-cols-2">
-                        {currentItems.map((item) => (
-                            <a
-                                key={item.id}
-                                href={item.url}
-                                target={item.url !== "#" ? "_blank" : undefined}
-                                rel={item.url !== "#" ? "noopener noreferrer" : undefined}
-                                className={`flex flex-col gap-3 group ${item.url !== "#" ? "cursor-pointer" : "cursor-default"}`}
-                            >
-                                {/* Image Container with Aspect Ratio */}
-                                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-foreground/5 group-hover:border-foreground/30 transition-colors duration-300">
-                                    {item.image ? (
-                                        <Image
-                                            src={item.image}
-                                            alt={item.title}
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center text-muted group-hover:scale-105 transition-transform duration-500">
-                                            {item.icon === "smile" ? <Smile className="w-8 h-8 opacity-50" /> : <Sparkles className="w-8 h-8 opacity-50" />}
+                    <div className="min-h-[400px]">
+                        {currentItems.length > 0 ? (
+                            <div className="grid gap-6 sm:grid-cols-2">
+                                {currentItems.map((item) => (
+                                    <a
+                                        key={item.id}
+                                        href={item.url}
+                                        target={item.url !== "#" ? "_blank" : undefined}
+                                        rel={item.url !== "#" ? "noopener noreferrer" : undefined}
+                                        className={`flex flex-col gap-3 group ${item.url !== "#" ? "cursor-pointer" : "cursor-default"}`}
+                                    >
+                                        {/* Image Container with Aspect Ratio */}
+                                        <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-foreground/5 group-hover:border-foreground/30 transition-colors duration-300">
+                                            {item.image ? (
+                                                <Image
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="absolute inset-0 flex items-center justify-center text-muted group-hover:scale-105 transition-transform duration-500">
+                                                    {item.icon === "smile" ? <Smile className="w-8 h-8 opacity-50" /> : <Sparkles className="w-8 h-8 opacity-50" />}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
 
-                                <div className="px-1">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-base font-semibold tracking-tight text-foreground">
-                                            {item.title}
-                                        </h3>
-                                        {item.url !== "#" && (
-                                            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                                {item.linkText && <span className="text-[10px] text-muted-foreground bg-foreground/5 px-1.5 py-0.5 rounded uppercase tracking-wider">{item.linkText}</span>}
-                                                <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200" />
+                                        <div className="px-1">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="text-base font-semibold tracking-tight text-foreground">
+                                                    {item.title}
+                                                </h3>
+                                                {item.url !== "#" && (
+                                                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                        {item.linkText && <span className="text-[10px] text-muted-foreground bg-foreground/5 px-1.5 py-0.5 rounded uppercase tracking-wider">{item.linkText}</span>}
+                                                        <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200" />
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                    <p className="text-sm text-muted mt-1 leading-relaxed">
-                                        {item.description}
-                                    </p>
+                                            <p className="text-sm text-muted mt-1 leading-relaxed">
+                                                {item.description}
+                                            </p>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-foreground/[0.01] rounded-3xl border border-dashed border-border/50">
+                                <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
+                                    <Sparkles className="w-8 h-8" />
                                 </div>
-                            </a>
-                        ))}
+                                <div className="space-y-1">
+                                    <p className="text-lg font-semibold text-foreground/80">Coming soon</p>
+                                    <p className="text-sm text-muted">More creative projects and visual experiments are on the way.</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Pagination UI */}

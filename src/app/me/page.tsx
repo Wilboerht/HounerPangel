@@ -19,11 +19,11 @@ export default function AboutMe() {
                 {/* Content */}
                 <section className="space-y-10">
                     <div className="space-y-4">
-                        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                             About Me
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            Hi, I'm Hank Wong. I am a developer passionate about building simple, elegant, and user-centric experiences on the internet.
+                            Hi, I'm Hank Wong. I'm a developer and super individual, building digital spaces while exploring the world's beauty and embracing every new possibility.
                         </p>
                     </div>
 
@@ -32,7 +32,7 @@ export default function AboutMe() {
                             What I Do
                         </h2>
                         <p className="text-muted leading-relaxed">
-                            I specialize in front-end development, creating responsive, performant, and accessible interfaces. My focus is always on creating products that look great and feel effortless to use.
+                            I specialize in software development, but my life is fueled by travel and outdoor adventures. I thrive on new things and interesting projects that challenge my boundaries and broaden my horizons.
                         </p>
                     </div>
 
@@ -41,7 +41,7 @@ export default function AboutMe() {
                             Philosophy
                         </h2>
                         <p className="text-muted leading-relaxed">
-                            I believe in clean code, intuitive design, and continuous learning. Simplicity is the ultimate sophistication, and my goal is to distill complex problems into elegant solutions.
+                            As a 'Super Individual', I believe true growth happens at the intersection of technical discipline and the courage to explore the unknown. My goal is to stay curious, distilling complex global experiences and technical problems into simple, elegant, and intuitive digital solutions.
                         </p>
                     </div>
                 </section>
