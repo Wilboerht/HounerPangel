@@ -166,7 +166,7 @@ export default async function Blog({
                                                 </span>
                                                 <span className="flex items-center gap-1.5">
                                                     <BookOpen className="w-4 h-4" />
-                                                    5 min read
+                                                    {post.readTime || "3 min read"}
                                                 </span>
                                             </div>
                                         </Link>

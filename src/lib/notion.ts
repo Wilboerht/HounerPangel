@@ -17,6 +17,32 @@ n2m.setCustomTransformer("paragraph", async (block: any) => {
     return false; // 返回 false 让插件使用默认解析方式渲染有文字的段落
 });
 
+/**
+ * 动态计算文章阅读时长
+ * 逻辑：中文字数 + 英文单词数，按照每分钟 300 个词/字的速率计算
+ */
+const calculateReadingTime = (content: string): string => {
+    if (!content) return "1 min read";
+    
+    // 移除 Markdown 语法干扰（简单清理）
+    const cleanContent = content.replace(/[#*`~[\]()]/g, '');
+    
+    // 计算中文字符数
+    const chineseChars = (cleanContent.match(/[\u4e00-\u9fa5]/g) || []).length;
+    
+    // 计算英文单词数
+    const englishWords = cleanContent
+        .replace(/[\u4e00-\u9fa5]/g, ' ') // 把中文换成空格，方便拆分英文
+        .trim()
+        .split(/\s+/)
+        .filter(word => word.length > 0).length;
+    
+    const totalWords = chineseChars + englishWords;
+    const minutes = Math.ceil(totalWords / 300); // 假设每分钟阅读 300 字/词
+    
+    return `${Math.max(1, minutes)} min read`;
+};
+
 export const getPublishedPosts = async () => {
     if (!process.env.NOTION_TOKEN || !process.env.NOTION_DATABASE_ID) {
         console.warn("Missing Notion environment variables");
@@ -162,6 +188,7 @@ export const getSingleResearch = async (slug: string) => {
             date: item.properties.Date?.date?.start || "",
             abstract: item.properties.Abstract?.rich_text?.[0]?.plain_text || "",
             tags: item.properties.Tags?.multi_select?.map((tag: any) => tag.name) || [],
+            readTime: calculateReadingTime(mdString.parent),
             content: mdString.parent,
         };
     } catch (error) {
@@ -228,7 +255,7 @@ export const getSinglePost = async (slug: string) => {
             title: post.properties.Name?.title?.[0]?.plain_text || "Untitled",
             slug: post.properties.Slug?.rich_text?.[0]?.plain_text || post.id,
             date: post.properties.Date?.date?.start || "",
-            readTime: "5 min read",
+            readTime: calculateReadingTime(mdString.parent),
             views: post.properties.Views?.number || 0,
             excerpt: post.properties.Excerpt?.rich_text?.[0]?.plain_text || "",
             series: series,
