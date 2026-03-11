@@ -10,8 +10,7 @@ import type { Metadata } from 'next';
 import { ViewTracker } from "@/components/ViewTracker";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { CommentsSection } from "@/components/CommentsSection";
-
-// For demonstration, we'll mock the data fetching based on the slug.
+import { MotionWrapper } from "@/components/MotionWrapper";
 interface Post {
     slug: string;
     title: string;
@@ -71,9 +70,10 @@ export default async function BlogPost({
     }
 
     return (
-        <main className="min-h-screen flex flex-col items-center px-6 py-12 lg:py-20">
+        <main className="min-h-screen flex flex-col items-center px-6 py-12 lg:py-20 relative overflow-hidden">
             <ViewTracker pageId={post.id} />
             {/* Layout Wrapper with Sidebars */}
+            <MotionWrapper>
             <div className="max-w-[1312px] w-full flex flex-col lg:flex-row lg:items-start gap-16 relative">
 
                 {/* Left Sidebar: Navigation (Only show if series exists to balance layout) */}
@@ -348,6 +348,7 @@ export default async function BlogPost({
                     </aside>
                 )}
             </div>
+            </MotionWrapper>
         </main>
     );
 }
