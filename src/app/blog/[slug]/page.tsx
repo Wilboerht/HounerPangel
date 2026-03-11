@@ -256,7 +256,7 @@ export default async function BlogPost({
                         </div>
                         
                         {/* Extensibility Area */}
-                        <div className="flex items-center justify-between mt-8 pt-6 border-t border-dashed border-border/30">
+                        <div className="flex items-center justify-between mt-6 pt-6 border-t border-dashed border-border/30">
                             <FeedbackButton articleTitle={post.title} />
                         </div>
                     </div>

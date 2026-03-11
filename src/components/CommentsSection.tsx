@@ -33,7 +33,7 @@ export function CommentsSection({ pageId }: { pageId: string }) {
     };
 
     return (
-        <div className="mt-16 w-full max-w-2xl mx-auto border-t border-border/50 pt-10">
+        <div className="mt-8 w-full max-w-2xl mx-auto border-t border-border/50 pt-6">
             <div className="flex items-center gap-3 mb-8">
                 <MessageSquare className="w-5 h-5 text-muted" />
                 <h3 className="text-xl font-bold text-foreground">Comments</h3>
