@@ -4,8 +4,6 @@ import { CollectionsDrawer } from "@/components/CollectionsDrawer";
 import { BlogSearch } from "@/components/BlogSearch";
 import { getPublishedPosts } from "@/lib/notion";
 
-const SERIES_LIST: any[] = [];
-
 const ITEMS_PER_PAGE = 5;
 
 // Next.js 15+ Async Page Props
@@ -21,6 +19,22 @@ export default async function Blog({
 
     // Fetch from Notion
     const allPosts = await getPublishedPosts();
+
+    // Dynamically generate collection lists from posts
+    const collectionsMap = new Map();
+    allPosts.forEach((post: any) => {
+        if (post.series) {
+            if (!collectionsMap.has(post.series.name)) {
+                collectionsMap.set(post.series.name, {
+                    name: post.series.name,
+                    count: 0,
+                    slug: post.series.items[0]?.slug || post.slug
+                });
+            }
+            collectionsMap.get(post.series.name).count += 1;
+        }
+    });
+    const collectionsList = Array.from(collectionsMap.values());
 
     // Filter posts based on search query
     const filteredPosts = query
@@ -86,12 +100,12 @@ export default async function Blog({
                                 {/* Mobile Series Grid - With Drawer for full search */}
                                 <div className="lg:hidden space-y-4 border-b border-border/30 pb-10">
                                     <div className="flex items-center justify-between px-1">
-                                        <CollectionsDrawer seriesList={SERIES_LIST} />
+                                        <CollectionsDrawer seriesList={collectionsList} />
                                     </div>
 
-                                    {SERIES_LIST.length > 0 ? (
+                                    {collectionsList.length > 0 ? (
                                         <div className="grid grid-cols-2 gap-3">
-                                            {SERIES_LIST.slice(0, 4).map((series, i) => (
+                                            {collectionsList.slice(0, 4).map((series, i) => (
                                                 <Link
                                                     key={i}
                                                     href={`/blog/${series.slug}`}
@@ -241,8 +255,8 @@ export default async function Blog({
                                 <Library className="w-3.5 h-3.5" /> Collections
                             </div>
                             <div className="flex flex-col gap-2 max-h-[calc(100vh-320px)] overflow-y-auto no-scrollbar pr-2 pb-2">
-                                {SERIES_LIST.length > 0 ? (
-                                    SERIES_LIST.map((series, i) => (
+                                {collectionsList.length > 0 ? (
+                                    collectionsList.map((series, i) => (
                                         <Link
                                             key={i}
                                             href={`/blog/${series.slug}`}

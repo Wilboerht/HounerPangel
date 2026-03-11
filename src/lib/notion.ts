@@ -40,23 +40,50 @@ export const getPublishedPosts = async () => {
             ],
         });
 
-        return response.results.map((post: any) => {
+        const rawPosts = response.results.map((post: any) => {
             return {
                 id: post.id,
                 title: post.properties.Name?.title[0]?.plain_text || "Untitled",
                 slug: post.properties.Slug?.rich_text[0]?.plain_text || post.id,
                 date: post.properties.Date?.date?.start || "",
                 excerpt: post.properties.Excerpt?.rich_text[0]?.plain_text || "",
-                series: post.properties.Series?.select?.name
-                    ? {
-                        name: post.properties.Series.select.name,
-                        current: 1,
-                        total: 1,
-                        items: [{ slug: post.properties.Slug?.rich_text[0]?.plain_text || post.id, title: post.properties.Name?.title[0]?.plain_text || "Untitled", index: 1 }]
-                      }
-                    : null,
+                seriesName: post.properties.Series?.select?.name || null,
             };
         });
+
+        const seriesMap = new Map();
+        rawPosts.forEach((post: any) => {
+            if (post.seriesName) {
+                if (!seriesMap.has(post.seriesName)) {
+                    seriesMap.set(post.seriesName, []);
+                }
+                seriesMap.get(post.seriesName).push(post);
+            }
+        });
+
+        rawPosts.forEach((post: any) => {
+            if (post.seriesName) {
+                const group = seriesMap.get(post.seriesName);
+                const sortedGroup = [...group].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                const index = sortedGroup.findIndex((p) => p.id === post.id);
+                
+                post.series = {
+                    name: post.seriesName,
+                    current: index + 1,
+                    total: sortedGroup.length,
+                    items: sortedGroup.map((p, i) => ({
+                        slug: p.slug,
+                        title: p.title,
+                        index: i + 1,
+                    })),
+                };
+            } else {
+                post.series = null;
+            }
+            delete post.seriesName;
+        });
+
+        return rawPosts;
     } catch (error) {
         console.error("Error fetching Notion posts:", error);
         return [];
@@ -169,6 +196,33 @@ export const getSinglePost = async (slug: string) => {
         const mdblocks = await n2m.pageToMarkdown(post.id);
         const mdString = n2m.toMarkdownString(mdblocks);
 
+        let series = null;
+        const seriesName = post.properties.Series?.select?.name;
+        if (seriesName) {
+            const seriesResponse = await notion.databases.query({
+                database_id: process.env.NOTION_DATABASE_ID,
+                filter: {
+                    and: [
+                        { property: "Published", checkbox: { equals: true } },
+                        { property: "Series", select: { equals: seriesName } }
+                    ]
+                },
+                sorts: [{ property: "Date", direction: "ascending" }]
+            });
+            const items = seriesResponse.results.map((p: any, i: number) => ({
+                slug: p.properties.Slug?.rich_text[0]?.plain_text || p.id,
+                title: p.properties.Name?.title[0]?.plain_text || "Untitled",
+                index: i + 1
+            }));
+            const currentItem = items.find((item) => item.slug === (post.properties.Slug?.rich_text[0]?.plain_text || post.id));
+            series = {
+                name: seriesName,
+                current: currentItem ? currentItem.index : 1,
+                total: items.length,
+                items
+            };
+        }
+
         return {
             id: post.id,
             title: post.properties.Name?.title[0]?.plain_text || "Untitled",
@@ -177,14 +231,7 @@ export const getSinglePost = async (slug: string) => {
             readTime: "5 min read",
             views: post.properties.Views?.number || 0,
             excerpt: post.properties.Excerpt?.rich_text[0]?.plain_text || "",
-            series: post.properties.Series?.select?.name
-                    ? {
-                        name: post.properties.Series.select.name,
-                        current: 1,
-                        total: 1,
-                        items: [{ slug: post.properties.Slug?.rich_text[0]?.plain_text || post.id, title: post.properties.Name?.title[0]?.plain_text || "Untitled", index: 1 }]
-                      }
-                    : null,
+            series: series,
             content: mdString.parent,
         };
     } catch (error) {
