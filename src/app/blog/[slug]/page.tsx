@@ -1,11 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, CalendarDays, Clock, Library, ChevronRight, ChevronLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Clock, Library, ChevronRight, ChevronLeft, BookOpen, Eye } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
 import { SeriesOutlineDrawer, Series, SeriesItem } from "@/components/SeriesOutlineDrawer";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
+import { ViewTracker } from "@/components/ViewTracker";
+import { FeedbackButton } from "@/components/FeedbackButton";
+import { CommentsSection } from "@/components/CommentsSection";
 
 // For demonstration, we'll mock the data fetching based on the slug.
 interface Post {
@@ -68,6 +71,7 @@ export default async function BlogPost({
 
     return (
         <main className="min-h-screen flex flex-col items-center px-6 py-12 lg:py-20">
+            <ViewTracker pageId={post.id} />
             {/* Layout Wrapper with Sidebars */}
             <div className="max-w-[1312px] w-full flex flex-col lg:flex-row lg:items-start gap-16 relative">
 
@@ -128,6 +132,11 @@ export default async function BlogPost({
                             <span className="flex items-center gap-1.5">
                                 <Clock className="w-4 h-4" />
                                 {post.readTime}
+                            </span>
+                            <span>&middot;</span>
+                            <span className="flex items-center gap-1.5 opacity-60">
+                                <Eye className="w-4 h-4" />
+                                {post.views} views
                             </span>
                         </div>
                     </header>
@@ -232,7 +241,15 @@ export default async function BlogPost({
                             </div>
                             <ShareButton title={post.title} text={`Check out this article: ${post.title}`} />
                         </div>
+                        
+                        {/* Extensibility Area */}
+                        <div className="flex items-center justify-between mt-8 pt-6 border-t border-dashed border-border/30">
+                            <FeedbackButton articleTitle={post.title} />
+                        </div>
                     </div>
+
+                    {/* Integrated Comments Section */}
+                    <CommentsSection pageId={post.id} />
 
                     {/* SEO Schema Data */}
                     {post.series && (
