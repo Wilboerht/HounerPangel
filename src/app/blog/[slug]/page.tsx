@@ -5,6 +5,7 @@ import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
 import { SeriesOutlineDrawer, Series, SeriesItem } from "@/components/SeriesOutlineDrawer";
 import { notFound } from "next/navigation";
+import type { Metadata } from 'next';
 
 // For demonstration, we'll mock the data fetching based on the slug.
 interface Post {
@@ -19,6 +20,39 @@ interface Post {
 function getMockPost(slug: string): Post | null {
     // Returning null as fake posts have been removed.
     return null;
+}
+
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+    const resolvedParams = await params;
+    const slug = resolvedParams.slug;
+
+    // Use actual post title if you fetch it
+    // const post = getMockPost(slug);
+    
+    // Fallback: format slug as title
+    const title = decodeURIComponent(slug)
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+    return {
+        title: title,
+        description: `Read this article on wilboerht blog.`,
+        openGraph: {
+            title: title,
+            description: `Read this article on wilboerht blog.`,
+            type: 'article',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: title,
+            description: `Read this article on wilboerht blog.`,
+        },
+    };
 }
 
 export default async function BlogPost({
