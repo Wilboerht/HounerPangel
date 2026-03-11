@@ -116,7 +116,7 @@ export default async function ResearchDetail({
                                 strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
                                 em: ({ node, ...props }) => <em className="italic text-foreground/90" {...props} />,
                                 del: ({ node, ...props }) => <del className="line-through opacity-70" {...props} />,
-                                a: ({ node, ...props }) => <a className="text-foreground underline underline-offset-4 decoration-border hover:decoration-foreground transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+                                a: ({ node, ...props }) => <a className="text-muted underline underline-offset-4 decoration-border hover:text-foreground hover:decoration-foreground transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
                                 img: ({ node, ...props }) => <img className="rounded-xl my-8 border border-border/50 max-w-full shadow-sm" loading="lazy" {...props} />,
                                 hr: ({ node, ...props }) => <hr className="my-10 border-border/50" {...props} />,
                                 table: ({ node, ...props }) => <div className="overflow-x-auto my-6"><table className="w-full text-left border-collapse" {...props} /></div>,
