@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, BookOpen, ExternalLink, CalendarDays } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { getSingleResearch } from "@/lib/notion";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -99,6 +100,7 @@ export default async function ResearchDetail({
                 {research.content && (
                     <article className="-mt-4 prose prose-invert prose-p:text-muted prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold prose-a:text-foreground hover:prose-a:text-muted prose-blockquote:border-l-foreground/30 prose-blockquote:text-muted/80 w-full max-w-none">
                         <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
                             components={{
                                 h2: ({ node, ...props }) => <h2 className="text-2xl mt-12 mb-6 pb-2 border-b border-white/10 text-foreground font-semibold" {...props} />,
                                 h3: ({ node, ...props }) => <h3 className="text-xl mt-8 mb-4 text-foreground font-semibold" {...props} />,
