@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowLeft, BookOpen, ExternalLink, CalendarDays } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { getSingleResearch } from "@/lib/notion";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -100,7 +99,6 @@ export default async function ResearchDetail({
                 {research.content && (
                     <article className="-mt-4 prose prose-invert prose-p:text-muted prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold prose-a:text-foreground hover:prose-a:text-muted prose-blockquote:border-l-foreground/30 prose-blockquote:text-muted/80 w-full max-w-none">
                         <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
                             components={{
                                 h2: ({ node, ...props }) => <h2 className="text-2xl mt-12 mb-6 pb-2 border-b border-white/10 text-foreground font-semibold" {...props} />,
                                 h3: ({ node, ...props }) => <h3 className="text-xl mt-8 mb-4 text-foreground font-semibold" {...props} />,
@@ -108,7 +106,6 @@ export default async function ResearchDetail({
                                 ol: ({ node, ...props }) => <ol className="list-decimal pl-6 space-y-4 my-6 text-muted" {...props} />,
                                 ul: ({ node, ...props }) => <ul className="list-disc pl-6 space-y-4 my-6 text-muted" {...props} />,
                                 li: ({ node, ...props }) => <li className="leading-relaxed text-muted" {...props} />,
-                                a: ({ node, ...props }) => <a className="text-foreground hover:text-muted underline underline-offset-4 decoration-border transition-colors break-words" target="_blank" rel="noopener noreferrer" {...props} />,
                                 pre: ({ node, ...props }) => {
                                     const { ref, ...rest } = props as any;
                                     return <div {...rest} />;

@@ -3,7 +3,6 @@ import Image from "next/image";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock, Library, ChevronRight, ChevronLeft, BookOpen, Eye } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { SeriesOutlineDrawer, Series, SeriesItem } from "@/components/SeriesOutlineDrawer";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
@@ -145,7 +144,6 @@ export default async function BlogPost({
                     {/* Article Content */}
                     <article className="-mt-4 prose prose-invert prose-p:text-muted prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold prose-a:text-foreground hover:prose-a:text-muted prose-blockquote:border-l-foreground/30 prose-blockquote:text-muted/80 w-full max-w-none">
                         <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
                             components={{
                                 h2: ({ node, ...props }) => <h2 className="text-2xl mt-8 mb-4 text-foreground font-semibold" {...props} />,
                                 h3: ({ node, ...props }) => <h3 className="text-xl mt-6 mb-3 text-foreground font-semibold" {...props} />,
@@ -153,7 +151,6 @@ export default async function BlogPost({
                                 ol: ({ node, ...props }) => <ol className="list-decimal pl-5 space-y-2 my-4 text-muted" {...props} />,
                                 ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-2 my-4 text-muted" {...props} />,
                                 li: ({ node, ...props }) => <li className="text-muted leading-relaxed" {...props} />,
-                                a: ({ node, ...props }) => <a className="text-foreground hover:text-muted underline underline-offset-4 decoration-border transition-colors break-words" target="_blank" rel="noopener noreferrer" {...props} />,
                                 pre: ({ node, ...props }) => {
                                     const { ref, ...rest } = props as any;
                                     return <div {...rest} />;
