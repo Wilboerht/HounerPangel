@@ -8,6 +8,15 @@ const notion = new Client({
 
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
+// 拦截 Notion 的空行（空段落），强制转换成 <br/> 标签，
+// 这样就能保留你在 Notion 里敲回车产生的连续空白行，不会被 Markdown 折叠了。
+n2m.setCustomTransformer("paragraph", async (block: any) => {
+    if (!block.paragraph?.rich_text || block.paragraph.rich_text.length === 0) {
+        return "<br/>";
+    }
+    return false; // 返回 false 让插件使用默认解析方式渲染有文字的段落
+});
+
 export const getPublishedPosts = async () => {
     if (!process.env.NOTION_TOKEN || !process.env.NOTION_DATABASE_ID) {
         console.warn("Missing Notion environment variables");
