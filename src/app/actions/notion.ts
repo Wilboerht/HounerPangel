@@ -17,8 +17,8 @@ export async function fetchCommentsAction(pageId: string) {
     return await getComments(pageId);
 }
 
-export async function addCommentAction(pageId: string, text: string) {
-    const res = await addComment(pageId, text);
+export async function addCommentAction(pageId: string, text: string, nickname?: string, email?: string) {
+    const res = await addComment(pageId, text, nickname, email);
     revalidatePath(`/blog`);
     return res ? true : false;
 }

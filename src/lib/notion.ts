@@ -288,23 +288,45 @@ export const submitFeedback = async (articleTitle: string, userMessage: string) 
 export const getComments = async (pageId: string) => {
     try {
         const response = await notion.comments.list({ block_id: pageId });
-        return response.results.map((comment: any) => ({
-            id: comment.id,
-            text: comment.rich_text?.[0]?.plain_text || "",
-            created_time: comment.created_time,
-            author: comment.created_by?.name || "Reader",
-        }));
+        return response.results.map((comment: any) => {
+            const fullText = comment.rich_text?.map((rt: any) => rt.plain_text).join("") || "";
+            
+            // Try to parse our custom format: "Author [email]: Message"
+            const match = fullText.match(/^(.+?)(?:\s\[(.*?)\])?:\s([\s\S]*)$/);
+            
+            if (match) {
+                return {
+                    id: comment.id,
+                    text: match[3],
+                    created_time: comment.created_time,
+                    author: match[1],
+                    email: match[2] || null,
+                };
+            }
+
+            return {
+                id: comment.id,
+                text: fullText,
+                created_time: comment.created_time,
+                author: comment.created_by?.name || "Reader",
+            };
+        });
     } catch (error) {
         console.error("Error fetching comments:", error);
         return [];
     }
 };
 
-export const addComment = async (pageId: string, text: string) => {
+export const addComment = async (pageId: string, text: string, nickname?: string, email?: string) => {
     try {
+        // Format: "Nickname [email]: Text" or "Nickname: Text" or just "Reader: Text"
+        const authorPart = nickname?.trim() || "Reader";
+        const emailPart = email?.trim() ? ` [${email.trim()}]` : "";
+        const formattedText = `${authorPart}${emailPart}: ${text}`;
+
         const response = await notion.comments.create({
             parent: { page_id: pageId },
-            rich_text: [{ text: { content: text } }]
+            rich_text: [{ text: { content: formattedText } }]
         });
         return response;
     } catch (error) {
