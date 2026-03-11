@@ -2,9 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Library, Search, BookOpen } from "lucide-react";
 import { CollectionsDrawer } from "@/components/CollectionsDrawer";
 import { BlogSearch } from "@/components/BlogSearch";
-
-// Generate some mock blog posts for demonstration
-const MOCK_POSTS: any[] = [];
+import { getPublishedPosts } from "@/lib/notion";
 
 const SERIES_LIST: any[] = [];
 
@@ -21,14 +19,17 @@ export default async function Blog({
     const currentPage = Number(resolvedParams.page) || 1;
     const query = typeof resolvedParams.q === "string" ? resolvedParams.q.toLowerCase() : "";
 
+    // Fetch from Notion
+    const allPosts = await getPublishedPosts();
+
     // Filter posts based on search query
     const filteredPosts = query
-        ? MOCK_POSTS.filter(post =>
-            post.title.toLowerCase().includes(query) ||
-            post.excerpt.toLowerCase().includes(query) ||
+        ? allPosts.filter((post: any) =>
+            post.title?.toLowerCase().includes(query) ||
+            post.excerpt?.toLowerCase().includes(query) ||
             (post.series?.name.toLowerCase().includes(query))
         )
-        : MOCK_POSTS;
+        : allPosts;
 
     // Pagination logic
     const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
@@ -129,7 +130,7 @@ export default async function Blog({
                         {/* Blog posts list */}
                         <div className="flex flex-col gap-8 min-h-[400px]">
                             {currentPosts.length > 0 ? (
-                                currentPosts.map((post, idx) => (
+                                currentPosts.map((post: any, idx: number) => (
                                     <div key={post.id} className="flex flex-col gap-8">
                                         <Link href={`/blog/${post.slug}`} className="group flex flex-col gap-3">
                                             {post.series && (

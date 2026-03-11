@@ -2,8 +2,7 @@ import Link from "next/link";
 import { ResearchSearch } from "@/components/ResearchSearch";
 import { ArrowLeft, ExternalLink, BookOpen, ChevronLeft, ChevronRight, Search } from "lucide-react";
 
-// Generate some mock research items for demonstration
-const MOCK_RESEARCH: any[] = [];
+import { getPublishedResearch } from "@/lib/notion";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -18,14 +17,17 @@ export default async function Research({
     const currentPage = Number(resolvedParams.page) || 1;
     const query = typeof resolvedParams.rq === "string" ? resolvedParams.rq.toLowerCase() : "";
 
+    // Fetch from Notion
+    const allItems = await getPublishedResearch();
+
     // Filter research items based on search query
     const filteredItems = query
-        ? MOCK_RESEARCH.filter(item =>
-            item.title.toLowerCase().includes(query) ||
-            item.abstract.toLowerCase().includes(query) ||
-            item.tags.some((tag: string) => tag.toLowerCase().includes(query))
+        ? allItems.filter((item: any) =>
+            item.title?.toLowerCase().includes(query) ||
+            item.abstract?.toLowerCase().includes(query) ||
+            item.tags?.some((tag: string) => tag.toLowerCase().includes(query))
         )
-        : MOCK_RESEARCH;
+        : allItems;
 
     // Pagination logic
     const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
@@ -78,7 +80,7 @@ export default async function Research({
                     {/* Research items list */}
                     <div className="flex flex-col gap-6 min-h-[400px]">
                         {currentItems.length > 0 ? (
-                            currentItems.map((item) => (
+                            currentItems.map((item: any) => (
                                 <Link href={`/research/${item.slug}`} key={item.id} className="p-6 rounded-2xl border border-border/50 bg-foreground/[0.02] flex flex-col gap-3 group cursor-pointer hover:border-foreground/40 hover:bg-foreground/[0.04] transition-all duration-300">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
@@ -93,7 +95,7 @@ export default async function Research({
                                     <div className="flex items-center gap-4 mt-2">
                                         <span className="text-xs text-muted/60">Published: {item.date}</span>
                                         <div className="flex gap-2">
-                                            {item.tags.map((tag: string, idx: number) => (
+                                            {item.tags?.map((tag: string, idx: number) => (
                                                 <span key={idx} className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-foreground/5 text-muted/80">
                                                     {tag}
                                                 </span>

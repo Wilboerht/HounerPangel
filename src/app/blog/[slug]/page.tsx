@@ -17,10 +17,9 @@ interface Post {
     content: string;
 }
 
-function getMockPost(slug: string): Post | null {
-    // Returning null as fake posts have been removed.
-    return null;
-}
+import { getSinglePost } from "@/lib/notion";
+
+// Remove the getMockPost definition since we use getSinglePost now.
 
 export async function generateMetadata({
     params,
@@ -31,10 +30,10 @@ export async function generateMetadata({
     const slug = resolvedParams.slug;
 
     // Use actual post title if you fetch it
-    // const post = getMockPost(slug);
+    const post = await getSinglePost(slug);
     
     // Fallback: format slug as title
-    const title = decodeURIComponent(slug)
+    const title = post?.title || decodeURIComponent(slug)
         .split('-')
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
@@ -61,7 +60,7 @@ export default async function BlogPost({
     params: Promise<{ slug: string }>;
 }) {
     const resolvedParams = await params;
-    const post = getMockPost(resolvedParams.slug);
+    const post = await getSinglePost(resolvedParams.slug);
 
     if (!post) {
         notFound();
