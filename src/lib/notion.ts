@@ -43,10 +43,10 @@ export const getPublishedPosts = async () => {
         const rawPosts = response.results.map((post: any) => {
             return {
                 id: post.id,
-                title: post.properties.Name?.title[0]?.plain_text || "Untitled",
-                slug: post.properties.Slug?.rich_text[0]?.plain_text || post.id,
+                title: post.properties.Name?.title?.[0]?.plain_text || "Untitled",
+                slug: post.properties.Slug?.rich_text?.[0]?.plain_text || post.id,
                 date: post.properties.Date?.date?.start || "",
-                excerpt: post.properties.Excerpt?.rich_text[0]?.plain_text || "",
+                excerpt: post.properties.Excerpt?.rich_text?.[0]?.plain_text || "",
                 seriesName: post.properties.Series?.select?.name || null,
             };
         });
@@ -116,10 +116,10 @@ export const getPublishedResearch = async () => {
         return response.results.map((item: any) => {
             return {
                 id: item.id,
-                title: item.properties.Name?.title[0]?.plain_text || "Untitled Research",
-                slug: item.properties.Slug?.rich_text[0]?.plain_text || item.id,
+                title: item.properties.Name?.title?.[0]?.plain_text || "Untitled Research",
+                slug: item.properties.Slug?.rich_text?.[0]?.plain_text || item.id,
                 date: item.properties.Date?.date?.start || "",
-                abstract: item.properties.Abstract?.rich_text[0]?.plain_text || "No abstract provided.",
+                abstract: item.properties.Abstract?.rich_text?.[0]?.plain_text || "No abstract provided.",
                 tags: item.properties.Tags?.multi_select?.map((tag: any) => tag.name) || [],
             };
         });
@@ -157,10 +157,10 @@ export const getSingleResearch = async (slug: string) => {
 
         return {
             id: item.id,
-            title: item.properties.Name?.title[0]?.plain_text || "Untitled",
-            slug: item.properties.Slug?.rich_text[0]?.plain_text || item.id,
+            title: item.properties.Name?.title?.[0]?.plain_text || "Untitled",
+            slug: item.properties.Slug?.rich_text?.[0]?.plain_text || item.id,
             date: item.properties.Date?.date?.start || "",
-            abstract: item.properties.Abstract?.rich_text[0]?.plain_text || "",
+            abstract: item.properties.Abstract?.rich_text?.[0]?.plain_text || "",
             tags: item.properties.Tags?.multi_select?.map((tag: any) => tag.name) || [],
             content: mdString.parent,
         };
@@ -210,11 +210,11 @@ export const getSinglePost = async (slug: string) => {
                 sorts: [{ property: "Date", direction: "ascending" }]
             });
             const items = seriesResponse.results.map((p: any, i: number) => ({
-                slug: p.properties.Slug?.rich_text[0]?.plain_text || p.id,
-                title: p.properties.Name?.title[0]?.plain_text || "Untitled",
+                slug: p.properties.Slug?.rich_text?.[0]?.plain_text || p.id,
+                title: p.properties.Name?.title?.[0]?.plain_text || "Untitled",
                 index: i + 1
             }));
-            const currentItem = items.find((item) => item.slug === (post.properties.Slug?.rich_text[0]?.plain_text || post.id));
+            const currentItem = items.find((item) => item.slug === (post.properties.Slug?.rich_text?.[0]?.plain_text || post.id));
             series = {
                 name: seriesName,
                 current: currentItem ? currentItem.index : 1,
@@ -225,12 +225,12 @@ export const getSinglePost = async (slug: string) => {
 
         return {
             id: post.id,
-            title: post.properties.Name?.title[0]?.plain_text || "Untitled",
-            slug: post.properties.Slug?.rich_text[0]?.plain_text || post.id,
+            title: post.properties.Name?.title?.[0]?.plain_text || "Untitled",
+            slug: post.properties.Slug?.rich_text?.[0]?.plain_text || post.id,
             date: post.properties.Date?.date?.start || "",
             readTime: "5 min read",
             views: post.properties.Views?.number || 0,
-            excerpt: post.properties.Excerpt?.rich_text[0]?.plain_text || "",
+            excerpt: post.properties.Excerpt?.rich_text?.[0]?.plain_text || "",
             series: series,
             content: mdString.parent,
         };
@@ -290,7 +290,7 @@ export const getComments = async (pageId: string) => {
         const response = await notion.comments.list({ block_id: pageId });
         return response.results.map((comment: any) => ({
             id: comment.id,
-            text: comment.rich_text[0]?.plain_text || "",
+            text: comment.rich_text?.[0]?.plain_text || "",
             created_time: comment.created_time,
             author: comment.created_by?.name || "Reader",
         }));
