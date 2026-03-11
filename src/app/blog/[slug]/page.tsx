@@ -157,6 +157,14 @@ export default async function BlogPost({
                                 },
                                 blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-foreground/30 pl-4 py-1 my-6 text-foreground/80 italic font-medium" {...props} />,
                                 strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
+                                em: ({ node, ...props }) => <em className="italic text-foreground/90" {...props} />,
+                                del: ({ node, ...props }) => <del className="line-through opacity-70" {...props} />,
+                                a: ({ node, ...props }) => <a className="text-foreground underline underline-offset-4 decoration-border hover:decoration-foreground transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+                                img: ({ node, ...props }) => <img className="rounded-xl my-8 border border-border/50 max-w-full shadow-sm" loading="lazy" {...props} />,
+                                hr: ({ node, ...props }) => <hr className="my-10 border-border/50" {...props} />,
+                                table: ({ node, ...props }) => <div className="overflow-x-auto my-6"><table className="w-full text-left border-collapse" {...props} /></div>,
+                                th: ({ node, ...props }) => <th className="border-b border-border/50 py-3 px-4 font-semibold text-foreground bg-foreground/5 first:rounded-tl-lg last:rounded-tr-lg" {...props} />,
+                                td: ({ node, ...props }) => <td className="border-b border-border/10 py-3 px-4 text-muted" {...props} />,
                                 code: ({ node, inline, className, children, ...props }: any) => {
                                     return inline ? (
                                         <code className="bg-foreground/10 text-foreground px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
