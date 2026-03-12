@@ -528,33 +528,49 @@ export default function NanjingPage() {
       </section>
 
       {/* Total Budget Summary */}
-      <section className="mt-12 p-6 bg-muted/20 rounded-lg">
-        <h2 className="text-xl font-semibold mb-4">💰 费用总结</h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-          <div>
-            <div className="text-2xl font-bold">290元</div>
-            <div className="text-sm text-muted">往返交通</div>
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold mb-6">💰 费用总结</h2>
+        
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
+            <Train className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+            <div className="text-xl font-bold">290元</div>
+            <div className="text-xs text-muted mt-1">往返交通</div>
           </div>
-          <div>
-            <div className="text-2xl font-bold">236元</div>
-            <div className="text-sm text-muted">市内交通</div>
+          
+          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
+            <MapPin className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+            <div className="text-xl font-bold">236元</div>
+            <div className="text-xs text-muted mt-1">市内交通</div>
           </div>
-          <div>
-            <div className="text-2xl font-bold">1250元</div>
-            <div className="text-sm text-muted">住宿</div>
+          
+          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
+            <Calendar className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+            <div className="text-xl font-bold">1250元</div>
+            <div className="text-xs text-muted mt-1">住宿</div>
           </div>
-          <div>
-            <div className="text-2xl font-bold">255元</div>
-            <div className="text-sm text-muted">门票</div>
+          
+          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
+            <Camera className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+            <div className="text-xl font-bold">255元</div>
+            <div className="text-xs text-muted mt-1">门票</div>
           </div>
-          <div>
-            <div className="text-2xl font-bold">540元</div>
-            <div className="text-sm text-muted">餐饮</div>
+          
+          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
+            <Utensils className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+            <div className="text-xl font-bold">540元</div>
+            <div className="text-xs text-muted mt-1">餐饮</div>
+          </div>
+          
+          <div className="bg-accent/10 border border-accent/30 rounded-xl p-4 text-center lg:col-span-1 md:col-span-3">
+            <div className="text-xl font-bold text-accent">2571元</div>
+            <div className="text-xs text-muted mt-1">合计（不含机动）</div>
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-border text-center">
-          <span className="text-lg font-semibold">总计：约2571元（不含机动800-1000元）</span>
-        </div>
+        
+        <p className="text-sm text-muted mt-4 text-center">
+          建议预备机动费用 800-1000 元
+        </p>
       </section>
     </main>
   );
