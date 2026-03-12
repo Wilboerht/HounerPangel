@@ -39,10 +39,10 @@ export function CollectionsDrawer({ seriesList }: { seriesList: Series[] }) {
                 className="flex items-center gap-2 group"
             >
                 <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/30 group-hover:text-foreground/60 transition-colors">
-                    <Library className="w-3.5 h-3.5" /> Collections
+                    <Library className="w-3.5 h-3.5" /> 系列合集
                 </div>
                 <div className="px-1.5 py-0.5 rounded bg-foreground/5 border border-border/50 text-[9px] font-bold text-muted uppercase group-hover:border-foreground/20 transition-all">
-                    Browse All
+                    浏览全部
                 </div>
             </button>
 
@@ -76,9 +76,9 @@ export function CollectionsDrawer({ seriesList }: { seriesList: Series[] }) {
                                 <div className="flex items-center justify-between">
                                     <div className="flex flex-col gap-1">
                                         <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                                            Collections
+                                            系列合集
                                         </h2>
-                                        <p className="text-xs text-muted uppercase tracking-widest font-medium">Explore series & topics</p>
+                                        <p className="text-xs text-muted uppercase tracking-widest font-medium">探索系列与主题</p>
                                     </div>
                                     <button
                                         onClick={() => setIsOpen(false)}
@@ -93,7 +93,7 @@ export function CollectionsDrawer({ seriesList }: { seriesList: Series[] }) {
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-foreground transition-colors" />
                                     <input
                                         type="text"
-                                        placeholder="Search by series name..."
+                                        placeholder="搜索系列名称..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="w-full bg-foreground/[0.03] border border-border/50 rounded-2xl py-4 pl-12 pr-4 text-sm outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-all"
@@ -120,7 +120,7 @@ export function CollectionsDrawer({ seriesList }: { seriesList: Series[] }) {
                                                         {series.name}
                                                     </span>
                                                     <span className="text-[10px] text-muted uppercase font-bold tracking-[0.1em]">
-                                                        {series.count} Articles in this series
+                                                        {series.count} 篇文章
                                                     </span>
                                                 </div>
                                                 <div className="w-10 h-10 rounded-full bg-foreground/5 flex items-center justify-center group-hover:bg-foreground group-hover:text-background transition-all duration-300">
@@ -133,7 +133,7 @@ export function CollectionsDrawer({ seriesList }: { seriesList: Series[] }) {
                                             <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
                                                 <Search className="w-8 h-8" />
                                             </div>
-                                            <p className="text-sm text-muted">No collections found matching "{searchQuery}"</p>
+                                            <p className="text-sm text-muted">没有找到匹配 "{searchQuery}" 的系列</p>
                                         </div>
                                     )}
                                 </div>

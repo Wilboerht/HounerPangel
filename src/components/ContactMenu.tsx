@@ -92,10 +92,10 @@ export function ContactMenu() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 aria-expanded={isOpen}
-                aria-label="Contact options"
+                aria-label="联系选项"
                 className="group flex items-center gap-2 px-4 py-2 border border-border rounded-full text-sm font-medium text-muted hover:text-foreground hover:border-muted focus:text-foreground focus:border-muted transition-colors duration-200 cursor-pointer outline-none"
             >
-                <span>Contact</span>
+                <span>联系</span>
                 <ChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${isOpen ? 'rotate-180 opacity-100' : 'opacity-50 group-hover:opacity-100'}`} />
             </button>
 
@@ -109,7 +109,7 @@ export function ContactMenu() {
 
                 {socialLinks.map((link) => (
                     <div key={link.name} className="relative group/item w-full">
-                        {link.name === "WeChat" ? (
+                        {link.name === "微信" ? (
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -121,7 +121,7 @@ export function ContactMenu() {
                                 <span className="text-base md:text-sm font-medium md:font-normal">{link.name}</span>
                                 {link.qrCode && (
                                     <span className="ml-auto text-xs opacity-50 md:hidden">
-                                        {activeQrCode === link.name ? "Close QR" : "Show QR"}
+                                        {activeQrCode === link.name ? "关闭二维码" : "显示二维码"}
                                     </span>
                                 )}
                             </button>

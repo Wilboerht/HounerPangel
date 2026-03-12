@@ -29,7 +29,7 @@ export function ResearchSearch() {
             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${isPending ? "text-primary animate-pulse" : "text-muted group-focus-within:text-foreground"}`} />
             <input
                 type="text"
-                placeholder="Search topics, tags..."
+                placeholder="搜索主题、标签..."
                 value={query}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full bg-foreground/[0.03] border border-border/50 rounded-2xl py-3 pl-12 pr-10 text-sm outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-all placeholder:text-muted/50"

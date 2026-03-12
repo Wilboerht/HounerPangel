@@ -48,7 +48,7 @@ export function CommentsSection({ pageId }: { pageId: string }) {
         <div className="mt-8 w-full max-w-2xl mx-auto border-t border-border/50 pt-6">
             <div className="flex items-center gap-3 mb-8">
                 <MessageSquare className="w-5 h-5 text-muted" />
-                <h3 className="text-xl font-bold text-foreground">Comments</h3>
+                <h3 className="text-xl font-bold text-foreground">评论</h3>
                 <span className="text-xs font-bold text-muted bg-foreground/10 px-2 py-0.5 rounded-full">{comments.length}</span>
             </div>
             
@@ -62,7 +62,7 @@ export function CommentsSection({ pageId }: { pageId: string }) {
                             type="text"
                             value={nickname}
                             onChange={(e) => setNickname(e.target.value)}
-                            placeholder="Nickname (Optional)"
+                            placeholder="昵称（选填）"
                             className="bg-transparent border-none focus:outline-none text-sm text-foreground w-full placeholder:text-muted/40"
                         />
                     </div>
@@ -72,7 +72,7 @@ export function CommentsSection({ pageId }: { pageId: string }) {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Email (Optional)"
+                            placeholder="邮箱（选填）"
                             className="bg-transparent border-none focus:outline-none text-sm text-foreground w-full placeholder:text-muted/40"
                         />
                     </div>
@@ -96,7 +96,7 @@ export function CommentsSection({ pageId }: { pageId: string }) {
                         ) : (
                             <Send className="w-3.5 h-3.5" />
                         )}
-                        <span>{isSubmitting ? 'Posting...' : 'Post Comment'}</span>
+                        <span>{isSubmitting ? '正在发布...' : '发布评论'}</span>
                     </button>
                 </div>
             </div>
@@ -120,7 +120,7 @@ export function CommentsSection({ pageId }: { pageId: string }) {
                                     <div className="flex items-center gap-2">
                                         <span className="font-bold text-sm text-foreground">{comment.author}</span>
                                         {comment.email && (
-                                            <span className="text-[10px] text-muted/40 font-mono">Verified</span>
+                                            <span className="text-[10px] text-muted/40 font-mono">已验证</span>
                                         )}
                                     </div>
                                     <span className="text-[10px] font-medium text-muted/60 uppercase tracking-tight">
@@ -139,8 +139,8 @@ export function CommentsSection({ pageId }: { pageId: string }) {
                     <div className="w-12 h-12 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-4">
                         <MessageSquare className="w-6 h-6 opacity-20" />
                     </div>
-                    <p className="font-bold text-foreground/80 mb-1">Silence is golden.</p>
-                    <p className="text-xs opacity-60">Be the first to break the ice!</p>
+                    <p className="font-bold text-foreground/80 mb-1">沉默是金。</p>
+                    <p className="text-xs opacity-60">第一个打破沉寂吧！</p>
                 </div>
             )}
         </div>

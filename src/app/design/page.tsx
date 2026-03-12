@@ -11,7 +11,7 @@ const MOCK_DESIGNS = [
         url: "https://sticker.weixin.qq.com/cgi-bin/mmemoticon-bin/emoticonview?oper=single&t=shop/detail&productid=aL2PCfwK/89qO7sF6/+I+UDhfwEjhec2ZNvdnLLJRd/NQ8y6uTqmMKp4kEOtVxLHQjd1wD/oukTEAZSt+BWpZfgTX21d3mGccVpqAg3nC1mw=",
         image: "/wechat-stickers.png",
         icon: "smile", // using to determine placeholder rendering vs real image
-        linkText: "Open in WeChat"
+        linkText: "在微信中打开"
     }
 ];
 
@@ -45,7 +45,7 @@ export default async function Design({
                         className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-                        <span>Back to Home</span>
+                        <span>返回主页</span>
                     </Link>
                 </nav>
 
@@ -53,10 +53,10 @@ export default async function Design({
                 <section className="space-y-10">
                     <div className="space-y-4">
                         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                            Design
+                            设计
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            A collection of my design explorations, UI concepts, and visual experiments.
+                            我的设计探索、UI 概念和视觉实验合集。
                         </p>
                     </div>
 
@@ -113,8 +113,8 @@ export default async function Design({
                                     <Sparkles className="w-8 h-8" />
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-lg font-semibold text-foreground/80">Coming soon</p>
-                                    <p className="text-sm text-muted">More creative projects and visual experiments are on the way.</p>
+                                    <p className="text-lg font-semibold text-foreground/80">即将推出</p>
+                                    <p className="text-sm text-muted">更多创意项目和视觉实验正在路上。</p>
                                 </div>
                             </div>
                         )}

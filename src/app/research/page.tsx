@@ -50,7 +50,7 @@ export default async function Research({
                         className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-                        <span>Back to Home</span>
+                        <span>返回主页</span>
                     </Link>
                 </nav>
 
@@ -59,10 +59,10 @@ export default async function Research({
                     {validPage === 1 && (
                         <div className="space-y-4">
                             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                                Research
+                                研究
                             </h1>
                             <p className="text-lg text-muted leading-relaxed">
-                                Exploring ideas, writing papers, and diving deep into selected technical and design topics.
+                                探索想法、撰写论文，并深入研究选定的技术和设计主题。
                             </p>
                         </div>
                     )}
@@ -72,7 +72,7 @@ export default async function Research({
                         <ResearchSearch />
                         {query && (
                             <div className="text-xs text-muted font-medium bg-foreground/5 px-3 py-1.5 rounded-full border border-border/50 backdrop-blur-sm">
-                                Found <span className="text-foreground font-bold">{filteredItems.length}</span> {filteredItems.length === 1 ? 'topic' : 'topics'} for "{query}"
+                                找到 <span className="text-foreground font-bold">{filteredItems.length}</span> {filteredItems.length === 1 ? '个主题' : '个主题'} 关于 "{query}"
                             </div>
                         )}
                     </div>
@@ -93,7 +93,7 @@ export default async function Research({
                                         {item.abstract}
                                     </p>
                                     <div className="flex items-center gap-4 mt-2">
-                                        <span className="text-xs text-muted/60">Published: {item.date}</span>
+                                        <span className="text-xs text-muted/60">发布于：{item.date}</span>
                                         <div className="flex gap-2">
                                             {item.tags?.map((tag: string, idx: number) => (
                                                 <span key={idx} className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-foreground/5 text-muted/80">
@@ -111,12 +111,12 @@ export default async function Research({
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-lg font-semibold text-foreground/80">
-                                        {query ? "No topics found" : "Coming soon"}
+                                        {query ? "没有找到相关主题" : "内容正在准备中"}
                                     </p>
                                     <p className="text-sm text-muted">
                                         {query
-                                            ? "Try adjusting your search terms or filters"
-                                            : "Selected research topics are currently in preparation."}
+                                            ? "请调整搜索词或筛选条件"
+                                            : "精选研究主题正在准备中。"}
                                     </p>
                                 </div>
                                 {query && (

@@ -41,11 +41,11 @@ export function ShareButton({ title, text }: ShareButtonProps) {
         <button
             onClick={handleShare}
             className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg text-muted hover:text-foreground hover:bg-foreground/5 transition-colors duration-200"
-            title="Share this article"
-            aria-label="Share this article"
+            title="分享这篇文章"
+            aria-label="分享这篇文章"
         >
             {copied ? <Check className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4" />}
-            <span>{copied ? "Copied!" : "Share"}</span>
+            <span>{copied ? "已复制！" : "分享"}</span>
         </button>
     );
 }

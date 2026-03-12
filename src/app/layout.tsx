@@ -14,12 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hank Wong’s Web",
-  description: "Hank Wong (wilboerht / 王泓坤) 的个人网站。Building things on the internet. Developer, creator, and lifelong learner.",
+  title: "Hank Wong's Web",
+  description: "Hank Wong (wilboerht)'s personal website. Building things on the internet. Developer, creator, and lifelong learner.",
   keywords: [
     "Hank Wong",
     "wilboerht",
-    "王泓坤",
     "developer",
     "personal website",
     "blog",
@@ -35,14 +34,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "zh_CN",
     alternateLocale: "en_US",
-    title: "Hank Wong’s Web",
-    description: "Hank Wong (wilboerht / 王泓坤) 的个人网站。Building things on the internet.",
+    title: "Hank Wong's Web",
+    description: "Hank Wong (wilboerht)'s personal website. Building things on the internet.",
     siteName: "Hank Wong",
   },
   twitter: {
     card: "summary",
-    title: "Hank Wong’s Web",
-    description: "Hank Wong (wilboerht / 王泓坤) 的个人网站。Building things on the internet.",
+    title: "Hank Wong's Web",
+    description: "Hank Wong (wilboerht)'s personal website. Building things on the internet.",
     creator: "@wilboerht",
   },
   robots: {

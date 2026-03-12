@@ -23,7 +23,7 @@ export async function generateMetadata({
 
     return {
         title,
-        description: research?.abstract || "Read this research on wilboerht.",
+        description: research?.abstract || "在此阅读这项研究。",
         openGraph: { title, description: research?.abstract || "", type: "article" },
         twitter: { card: "summary_large_image", title, description: research?.abstract || "" },
     };
@@ -51,7 +51,7 @@ export default async function ResearchDetail({
                         className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-                        <span>Back to Research</span>
+                        <span>返回研究</span>
                     </Link>
                 </nav>
 
@@ -60,7 +60,7 @@ export default async function ResearchDetail({
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-2 text-muted">
                             <BookOpen className="w-5 h-5" />
-                            <span className="font-medium tracking-wide uppercase text-xs">Research Paper</span>
+                            <span className="font-medium tracking-wide uppercase text-xs">研究论文</span>
                         </div>
                         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
                             {research.title}
@@ -70,7 +70,7 @@ export default async function ResearchDetail({
                     {/* Abstract Card */}
                     {research.abstract && (
                         <div className="p-6 md:p-8 rounded-2xl bg-foreground/5 border border-border/50">
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-3">Abstract</h3>
+                            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-3">摘要</h3>
                             <p className="text-muted leading-relaxed">
                                 {research.abstract}
                             </p>
@@ -93,7 +93,7 @@ export default async function ResearchDetail({
                                 ))}
                             </div>
                         </div>
-                        <ShareButton title={research.title} text={`Read this research on ${research.title}`} />
+                        <ShareButton title={research.title} text={`阅读这篇研究：e}`} />
                     </div>
                 </header>
 
@@ -132,7 +132,7 @@ export default async function ResearchDetail({
                                     ) : (
                                         <div className="my-6 rounded-xl overflow-hidden border border-border bg-[#0d1117]">
                                             <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/5">
-                                                <span className="text-xs text-muted font-mono">Research Data</span>
+                                                <span className="text-xs text-muted font-mono">研究数据</span>
                                                 <div className="flex gap-1.5">
                                                     <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
                                                     <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20" />

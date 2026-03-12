@@ -12,7 +12,7 @@ export default function AboutMe() {
                         className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-                        <span>Back to Home</span>
+                        <span>返回主页</span>
                     </Link>
                 </nav>
 
@@ -23,7 +23,7 @@ export default function AboutMe() {
                             About Me
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            Hi, I'm Hank Wong. I'm a developer and super individual, building digital spaces while exploring the world's beauty and embracing every new possibility.
+                            Hello, I'm Hank Wong (wilboerht). I'm a developer and super individual, building digital spaces while exploring the world's beauty and embracing every new possibility.
                         </p>
                     </div>
 

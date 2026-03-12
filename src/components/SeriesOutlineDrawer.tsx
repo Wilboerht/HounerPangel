@@ -41,7 +41,7 @@ export function SeriesOutlineDrawer({ series, currentSlug }: { series: Series; c
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-foreground/5 hover:bg-foreground/10 transition-all border border-border/50 active:scale-95"
             >
                 <ListTree className="w-3.5 h-3.5 text-muted" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Outline</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted">大纲</span>
             </button>
 
             {/* Drawer Overlay */}
@@ -82,7 +82,7 @@ export function SeriesOutlineDrawer({ series, currentSlug }: { series: Series; c
                                         <X className="w-4 h-4 text-muted" />
                                     </button>
                                 </div>
-                                <p className="text-[10px] text-muted uppercase tracking-widest font-bold opacity-60">Full Series Outline</p>
+                                <p className="text-[10px] text-muted uppercase tracking-widest font-bold opacity-60">完整系列大纲</p>
                             </div>
 
                             {/* Series List */}

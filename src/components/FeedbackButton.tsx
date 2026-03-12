@@ -47,7 +47,7 @@ export function FeedbackButton({ articleTitle }: { articleTitle: string }) {
                 <div className="p-2 rounded-full bg-foreground/[0.03] group-hover:bg-foreground/10 group-hover:scale-110 transition-all duration-300">
                     <MessageSquarePlus className="w-4 h-4" />
                 </div>
-                <span className="font-medium">Send Feedback / Suggest Edit</span>
+                <span className="font-medium">发送反馈 / 建议修改</span>
             </button>
 
             <AnimatePresence>
@@ -79,9 +79,9 @@ export function FeedbackButton({ articleTitle }: { articleTitle: string }) {
                                 </button>
                                 
                                 <div className="space-y-2 mb-8">
-                                    <h3 className="text-2xl font-bold text-foreground tracking-tight">Send Feedback</h3>
+                                    <h3 className="text-2xl font-bold text-foreground tracking-tight">发送反馈</h3>
                                     <p className="text-sm text-muted leading-relaxed">
-                                        Found a typo in <span className="text-foreground/80 font-medium italic">"{articleTitle}"</span>? Or have a suggestion? Let me know directly.
+                                        在 <span className="text-foreground/80 font-medium italic">"{articleTitle}"</span> 中发现了错别字？或者有建议？请直接告诉我。
                                     </p>
                                 </div>
                                 
@@ -89,10 +89,7 @@ export function FeedbackButton({ articleTitle }: { articleTitle: string }) {
                                     <textarea
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
-                                        placeholder="E.g. Typo in the 3rd paragraph..."
-                                        disabled={status === 'success' || status === 'submitting'}
-                                        className="w-full bg-foreground/[0.02] border border-white/5 rounded-2xl p-4 text-sm text-foreground placeholder:text-muted/40 focus:outline-none focus:border-white/20 focus:bg-foreground/[0.04] transition-all duration-300 min-h-[160px] resize-none"
-                                    />
+                                            placeholder="例如：第三段有错别字..."
                                     
                                     <AnimatePresence>
                                         {status === 'success' && (
@@ -102,7 +99,7 @@ export function FeedbackButton({ articleTitle }: { articleTitle: string }) {
                                                 className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-2xl"
                                             >
                                                 <CheckCircle2 className="w-12 h-12 text-emerald-500 mb-2" />
-                                                <span className="font-bold text-foreground">Feedback Received!</span>
+                                                <span className="font-bold text-foreground">反馈已收到！</span>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
@@ -113,7 +110,7 @@ export function FeedbackButton({ articleTitle }: { articleTitle: string }) {
                                         {status === 'error' && (
                                             <div className="flex items-center gap-1.5 text-red-400 text-xs">
                                                 <AlertCircle className="w-3.5 h-3.5" />
-                                                <span>Mission failed. Please try again.</span>
+                                                <span>发送失败，请重试。</span>
                                             </div>
                                         )}
                                     </div>
@@ -124,7 +121,7 @@ export function FeedbackButton({ articleTitle }: { articleTitle: string }) {
                                         className="relative group overflow-hidden bg-foreground text-background px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 transition-all active:scale-95"
                                     >
                                         <span className="relative z-10">
-                                            {status === 'submitting' ? 'Sending...' : 'Transmit Feedback'}
+                                            {status === 'submitting' ? '正在发送...' : '发送反馈'}
                                         </span>
                                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                                     </button>

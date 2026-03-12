@@ -56,7 +56,7 @@ export default async function Projects({
                         className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-                        <span>Back to Home</span>
+                        <span>返回主页</span>
                     </Link>
                 </nav>
 
@@ -64,10 +64,10 @@ export default async function Projects({
                 <section className="space-y-10">
                     <div className="space-y-4">
                         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                            Projects
+                            项目
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            A showcase of my recent work and side projects.
+                            我最近的工作和副项目展示。
                         </p>
                     </div>
 

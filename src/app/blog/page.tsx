@@ -68,20 +68,20 @@ export default async function Blog({
                         className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-                        <span>Back to Home</span>
+                        <span>返回主页</span>
                     </Link>
                 </div>
 
                 {/* Main Content (Center) - Ensure fixed width and stable height */}
                 <div className="flex-1 max-w-2xl flex flex-col gap-12 min-h-[80vh]">
-                    {/* Mobile Navigation */}
+                    {/* 移动端导航 */}
                     <nav className="lg:hidden">
                         <Link
                             href="/"
                             className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
                         >
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-                            <span>Back to Home</span>
+                            <span>返回主页</span>
                         </Link>
                     </nav>
 
@@ -90,10 +90,10 @@ export default async function Blog({
                             <>
                                 <div className="space-y-4">
                                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                                        Blog
+                                        博客
                                     </h1>
                                     <p className="text-lg text-muted leading-relaxed">
-                                        Resonating with the inner self.
+                                        感染内在自我。
                                     </p>
                                 </div>
 
@@ -116,7 +116,7 @@ export default async function Blog({
                                                     </span>
                                                     <div className="flex items-center gap-1.5 opacity-60">
                                                         <span className="text-[9px] font-medium text-muted uppercase tracking-tighter">
-                                                            {series.count} Posts
+                                                            {series.count} 篇文章
                                                         </span>
                                                     </div>
                                                 </Link>
@@ -124,7 +124,7 @@ export default async function Blog({
                                         </div>
                                     ) : (
                                         <div className="py-6 px-4 rounded-xl border border-dashed border-border/30 text-center bg-foreground/[0.01]">
-                                            <p className="text-sm font-semibold text-foreground/80">No collections yet</p>
+                                            <p className="text-sm font-semibold text-foreground/80">暂无系列</p>
                                         </div>
                                     )}
                                 </div>
@@ -136,7 +136,7 @@ export default async function Blog({
                             <BlogSearch />
                             {query && (
                                 <div className="text-xs text-muted font-medium bg-foreground/5 px-3 py-1.5 rounded-full border border-border/50">
-                                    Found <span className="text-foreground font-bold">{filteredPosts.length}</span> {filteredPosts.length === 1 ? 'result' : 'results'} for "{query}"
+                                    找到 <span className="text-foreground font-bold">{filteredPosts.length}</span> {filteredPosts.length === 1 ? '篇文章' : '篇文章'} 关于 "{query}"
                                 </div>
                             )}
                         </div>
@@ -150,7 +150,7 @@ export default async function Blog({
                                             {post.series && (
                                                 <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/40 bg-foreground/5 w-fit px-2 py-0.5 rounded-full border border-foreground/10 group-hover:border-foreground/20 group-hover:text-foreground/60 transition-all duration-300">
                                                     <span className="w-1 h-1 rounded-full bg-foreground/40 animate-pulse"></span>
-                                                    Series: {post.series.name} ({post.series.current}/{post.series.total})
+                                                    系列: {post.series.name} ({post.series.current}/{post.series.total})
                                                 </div>
                                             )}
                                             <h3 className="text-xl font-semibold tracking-tight text-foreground group-hover:underline underline-offset-4 decoration-muted group-hover:decoration-foreground transition-all duration-200">
@@ -176,12 +176,12 @@ export default async function Blog({
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-lg font-semibold text-foreground/80">
-                                            {query ? "No articles found" : "Coming soon"}
+                                            {query ? "没有找到相关文章" : "内容正在准备中"}
                                         </p>
                                         <p className="text-sm text-muted">
                                             {query
-                                                ? "Try adjusting your search terms or filters"
-                                                : "We are currently preparing content. Stay tuned."}
+                                                ? "请调整搜索词或筛选条件"
+                                                : "我们正在准备内容，请耐心等待。"}
                                         </p>
                                     </div>
                                     {query && (
@@ -189,7 +189,7 @@ export default async function Blog({
                                             href="/blog"
                                             className="mt-2 text-xs font-bold uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors"
                                         >
-                                            Clear Search
+                                            清除搜索
                                         </Link>
                                     )}
                                 </div>
