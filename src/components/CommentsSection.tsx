@@ -108,7 +108,7 @@ export function CommentsSection({ pageId }: { pageId: string }) {
                         <div key={i} className="h-32 bg-foreground/[0.03] rounded-2xl animate-pulse" />
                     ))}
                 </div>
-            ) : comments.length > 0 ? (
+            ) : comments.length > 0 && (
                 <div className="space-y-6">
                     {comments.map((comment, i) => (
                         <div key={i} className="flex gap-4 group">
@@ -133,14 +133,6 @@ export function CommentsSection({ pageId }: { pageId: string }) {
                             </div>
                         </div>
                     ))}
-                </div>
-            ) : (
-                <div className="text-center text-muted py-16 border border-dashed border-border/30 rounded-3xl bg-foreground/[0.01]">
-                    <div className="w-12 h-12 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <MessageSquare className="w-6 h-6 opacity-20" />
-                    </div>
-                    <p className="font-bold text-foreground/80 mb-1">沉默是金。</p>
-                    <p className="text-xs opacity-60">第一个打破沉寂吧！</p>
                 </div>
             )}
         </div>

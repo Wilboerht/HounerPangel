@@ -7,7 +7,7 @@ const MOCK_DESIGNS = [
     {
         id: "1",
         title: "WeChat Stickers",
-        description: "My personal WeChat sticker pack design. Fun, expressive, and widely used characters.",
+        description: "个人微信表情包设计，趣味可爱的原创角色。",
         url: "https://sticker.weixin.qq.com/cgi-bin/mmemoticon-bin/emoticonview?oper=single&t=shop/detail&productid=aL2PCfwK/89qO7sF6/+I+UDhfwEjhec2ZNvdnLLJRd/NQ8y6uTqmMKp4kEOtVxLHQjd1wD/oukTEAZSt+BWpZfgTX21d3mGccVpqAg3nC1mw=",
         image: "/wechat-stickers.png",
         icon: "smile", // using to determine placeholder rendering vs real image
@@ -56,7 +56,7 @@ export default async function Design({
                             设计
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            我的设计探索、UI 概念和视觉实验合集。
+                            A collection of my design explorations, UI concepts and visual experiments.
                         </p>
                     </div>
 

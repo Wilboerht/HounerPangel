@@ -6,21 +6,21 @@ const MOCK_PROJECTS = [
     {
         id: "1",
         title: "AI Face Scan",
-        description: "An intelligent facial skincare advisor. Leveraging AI technology to perform facial analysis and provide personalized skincare recommendations for users.",
+        description: "智能面部护肤顾问。利用 AI 技术进行面部分析，为用户提供个性化护肤建议。",
         url: "https://advisor.nihplod.cn",
         tags: ["AI", "Next.js"]
     },
     {
         id: "2",
         title: "NIHPLOD China",
-        description: "The official website for NIHPLOD in the Greater China region, serving as the digital face to showcase brand identity and the latest updates.",
+        description: "NIHPLOD 大中华区官方网站，展示品牌形象和最新动态的数字门面。",
         url: "https://nihplod.cn",
         tags: ["Next.js", "React"]
     },
     {
         id: "3",
         title: "LGJH Co., Ltd.",
-        description: "Official website system for LGJH Co., Ltd.. A comprehensive digital platform designed to showcase enterprise information and services.",
+        description: "LGJH 有限公司官方网站系统，展示企业信息与服务的综合数字平台。",
         url: "https://www.lingangjh.com/",
         tags: ["Enterprise", "Web System"]
     }
@@ -67,7 +67,7 @@ export default async function Projects({
                             项目
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            我最近的工作和副项目展示。
+                            Creating something interesting.
                         </p>
                     </div>
 

@@ -62,7 +62,7 @@ export default async function Research({
                                 研究
                             </h1>
                             <p className="text-lg text-muted leading-relaxed">
-                                探索想法、撰写论文，并深入研究选定的技术和设计主题。
+                                Exploring ideas, writing papers, and diving deep into selected tech and design topics.
                             </p>
                         </div>
                     )}

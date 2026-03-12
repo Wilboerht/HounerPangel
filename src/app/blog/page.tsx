@@ -93,7 +93,7 @@ export default async function Blog({
                                         博客
                                     </h1>
                                     <p className="text-lg text-muted leading-relaxed">
-                                        感染内在自我。
+                                        Sharing life with you.
                                     </p>
                                 </div>
 
@@ -124,7 +124,7 @@ export default async function Blog({
                                         </div>
                                     ) : (
                                         <div className="py-6 px-4 rounded-xl border border-dashed border-border/30 text-center bg-foreground/[0.01]">
-                                            <p className="text-sm font-semibold text-foreground/80">暂无系列</p>
+                                            <p className="text-sm font-semibold text-foreground/80">暂无合辑</p>
                                         </div>
                                     )}
                                 </div>
@@ -150,7 +150,7 @@ export default async function Blog({
                                             {post.series && (
                                                 <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/40 bg-foreground/5 w-fit px-2 py-0.5 rounded-full border border-foreground/10 group-hover:border-foreground/20 group-hover:text-foreground/60 transition-all duration-300">
                                                     <span className="w-1 h-1 rounded-full bg-foreground/40 animate-pulse"></span>
-                                                    系列: {post.series.name} ({post.series.current}/{post.series.total})
+                                                    合辑: {post.series.name} ({post.series.current}/{post.series.total})
                                                 </div>
                                             )}
                                             <h3 className="text-xl font-semibold tracking-tight text-foreground group-hover:underline underline-offset-4 decoration-muted group-hover:decoration-foreground transition-all duration-200">
@@ -248,7 +248,7 @@ export default async function Blog({
                         {/* Series Sidebar Component */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-foreground/30 px-1">
-                                <Library className="w-3.5 h-3.5" /> Collections
+                                <Library className="w-3.5 h-3.5" /> 合辑
                             </div>
                             <div className="flex flex-col gap-2 max-h-[calc(100vh-320px)] overflow-y-auto no-scrollbar pr-2 pb-2">
                                 {collectionsList.length > 0 ? (
@@ -262,13 +262,13 @@ export default async function Blog({
                                                 {series.name}
                                             </span>
                                             <span className="text-[10px] text-muted font-medium bg-foreground/5 w-fit px-1.5 py-0.5 rounded border border-border/20 uppercase tracking-tighter">
-                                                {series.count} Articles
+                                                {series.count} 篇文章
                                             </span>
                                         </Link>
                                     ))
                                 ) : (
                                     <div className="py-10 px-4 rounded-2xl border border-dashed border-border/30 text-center bg-foreground/[0.01]">
-                                        <p className="text-sm font-semibold text-foreground/80">No collections</p>
+                                        <p className="text-sm font-semibold text-foreground/80">暂无合辑</p>
                                     </div>
                                 )}
                             </div>
