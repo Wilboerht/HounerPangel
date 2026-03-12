@@ -70,6 +70,39 @@ export default function NanjingPage() {
         </div>
       </section>
 
+      {/* Route Map */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-6">🗺️ 行程路线图</h2>
+        <div className="bg-muted/10 border border-border rounded-lg p-6">
+          <div className="flex flex-col items-center gap-2 text-sm">
+            <div className="text-center">
+              <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">Day 1</span>
+            </div>
+            <div className="text-center text-muted">南京南站 → 珍珠泉 → 老山 → 入住江北</div>
+            <span className="text-muted">↓</span>
+            <div className="text-center">
+              <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">Day 2</span>
+            </div>
+            <div className="text-center text-muted">江北 → 梧桐大道 → 中山陵 → 明孝陵 → 夫子庙秦淮河（必去！夜景）</div>
+            <span className="text-muted">↓</span>
+            <div className="text-center">
+              <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">Day 3</span>
+            </div>
+            <div className="text-center text-muted">城中（博物院/总统府/朝天宫/中华门/老门东） → 燕子矶 → 返回市区</div>
+            <span className="text-muted">↓</span>
+            <div className="text-center">
+              <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">Day 4</span>
+            </div>
+            <div className="text-center text-muted">长江（阅江楼/长江大桥） → 河西（南京眼） → 返回市区</div>
+            <span className="text-muted">↓</span>
+            <div className="text-center">
+              <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">Day 5</span>
+            </div>
+            <div className="text-center text-muted">玄武湖/鸡鸣寺/莫愁湖/江南贡院 → 返程</div>
+          </div>
+        </div>
+      </section>
+
       {/* Daily Itinerary */}
       <section className="space-y-12">
         <h2 className="text-2xl font-semibold">📅 每日详细行程</h2>
