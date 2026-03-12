@@ -20,7 +20,7 @@ const MOCK_PROJECTS = [
     {
         id: "3",
         title: "LGJH Co., Ltd.",
-        description: "LGJH 有限公司官方网站系统，展示企业信息与服务的综合数字平台。",
+        description: "上海临港景鸿安全防范科技发展有限公司官方网站，展示企业信息与服务的综合数字平台。",
         url: "https://www.lingangjh.com/",
         tags: ["Enterprise", "Web System"]
     }
