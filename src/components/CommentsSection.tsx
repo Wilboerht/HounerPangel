@@ -81,7 +81,7 @@ export function CommentsSection({ pageId }: { pageId: string }) {
                 <textarea
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Write your thoughts... Your email stays private."
+                    placeholder="写下你的想法... 邮箱仅用于通知，不会公开。"
                     className="w-full bg-transparent border-none focus:outline-none text-sm text-foreground resize-none min-h-[100px] p-4 placeholder:text-muted/40"
                 />
                 
