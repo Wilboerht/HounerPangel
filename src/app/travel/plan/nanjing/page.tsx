@@ -531,46 +531,45 @@ export default function NanjingPage() {
       <section className="mt-12">
         <h2 className="text-2xl font-semibold mb-6">💰 费用总结</h2>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
-            <Train className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-            <div className="text-xl font-bold">290元</div>
-            <div className="text-xs text-muted mt-1">往返交通</div>
-          </div>
-          
-          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
-            <MapPin className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-            <div className="text-xl font-bold">236元</div>
-            <div className="text-xs text-muted mt-1">市内交通</div>
-          </div>
-          
-          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
-            <Calendar className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-            <div className="text-xl font-bold">1250元</div>
-            <div className="text-xs text-muted mt-1">住宿</div>
-          </div>
-          
-          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
-            <Camera className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-            <div className="text-xl font-bold">255元</div>
-            <div className="text-xs text-muted mt-1">门票</div>
-          </div>
-          
-          <div className="bg-muted/10 border border-border rounded-xl p-4 text-center hover:bg-muted/20 transition-colors">
-            <Utensils className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-            <div className="text-xl font-bold">540元</div>
-            <div className="text-xs text-muted mt-1">餐饮</div>
-          </div>
-          
-          <div className="bg-accent/10 border border-accent/30 rounded-xl p-4 text-center lg:col-span-1 md:col-span-3">
-            <div className="text-xl font-bold text-accent">2571元</div>
-            <div className="text-xs text-muted mt-1">合计（不含机动）</div>
-          </div>
+        {/* 合计 */}
+        <div className="bg-muted/10 border border-border rounded-2xl p-6 mb-6 text-center">
+          <div className="text-sm text-muted mb-1">预计总花费</div>
+          <div className="text-4xl font-bold">2571元</div>
+          <div className="text-sm text-muted mt-2">不含机动费用（建议预留 800-1000 元）</div>
         </div>
         
-        <p className="text-sm text-muted mt-4 text-center">
-          建议预备机动费用 800-1000 元
-        </p>
+        {/* 明细 */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
+            <Train className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+            <div className="text-lg font-semibold">290元</div>
+            <div className="text-xs text-muted">往返交通</div>
+          </div>
+          
+          <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
+            <MapPin className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+            <div className="text-lg font-semibold">236元</div>
+            <div className="text-xs text-muted">市内交通</div>
+          </div>
+          
+          <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
+            <Calendar className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+            <div className="text-lg font-semibold">1250元</div>
+            <div className="text-xs text-muted">住宿</div>
+          </div>
+          
+          <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
+            <Camera className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+            <div className="text-lg font-semibold">255元</div>
+            <div className="text-xs text-muted">门票</div>
+          </div>
+          
+          <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
+            <Utensils className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+            <div className="text-lg font-semibold">540元</div>
+            <div className="text-xs text-muted">餐饮</div>
+          </div>
+        </div>
       </section>
     </main>
   );
