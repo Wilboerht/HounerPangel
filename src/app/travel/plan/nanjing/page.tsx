@@ -259,146 +259,118 @@ export default function NanjingPage() {
       <section className="mt-12">
         <h2 className="text-2xl font-semibold mb-6">🏛️ 景点汇总</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 珍珠泉 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">珍珠泉</h3>
-            <p className="text-xs text-muted mb-2">浦口区 | 户外自然</p>
-            <p className="text-sm text-muted">泉水、瀑布、竹林景观，适合休闲游览</p>
-          </div>
-
-          {/* 老山国家森林公园 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">老山国家森林公园</h3>
-            <p className="text-xs text-muted mb-2">浦口区 | 自然公园</p>
-            <p className="text-sm text-muted">森林氧吧，南京最大的森林公园</p>
-          </div>
-
-          {/* 梧桐大道 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">梧桐大道</h3>
-            <p className="text-xs text-muted mb-2">钟山风景区 | 自然景观</p>
-            <p className="text-sm text-muted">陵园路两侧的梧桐树，被誉为"南京最美道路"</p>
-          </div>
-
-          {/* 中山陵 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">中山陵</h3>
-            <p className="text-xs text-muted mb-2">钟山风景区 | 历史景点</p>
-            <p className="text-sm text-muted">孙中山先生的陵墓，免费预约参观</p>
-          </div>
-
-          {/* 音乐台 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">音乐台</h3>
-            <p className="text-xs text-muted mb-2">钟山风景区 | 特色景观</p>
-            <p className="text-sm text-muted">中山陵景区内，鸽子飞翔的浪漫场景</p>
-          </div>
-
-          {/* 明孝陵 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">明孝陵</h3>
-            <p className="text-xs text-muted mb-2">钟山风景区 | 世界遗产</p>
-            <p className="text-sm text-muted">朱元璋及其皇后陵墓，明代皇家陵寝代表</p>
-          </div>
-
-          {/* 夫子庙秦淮河风光带 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">夫子庙秦淮河风光带</h3>
-            <p className="text-xs text-muted mb-2">秦淮区 | 文化商区</p>
-            <p className="text-sm text-muted">南京最繁华的商业街，夜游秦淮河必去</p>
-          </div>
-
-          {/* 南京博物院 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">南京博物院</h3>
-            <p className="text-xs text-muted mb-2">中山东路 | 博物馆</p>
-            <p className="text-sm text-muted">中国三大博物馆之一，免费预约</p>
-          </div>
-
-          {/* 总统府 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">总统府</h3>
-            <p className="text-xs text-muted mb-2">玄武区 | 历史景点</p>
-            <p className="text-sm text-muted">民国建筑代表，曾是孙中山和蒋介石办公地</p>
-          </div>
-
-          {/* 朝天宫 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">朝天宫</h3>
-            <p className="text-xs text-muted mb-2">秦淮区 | 历史景点</p>
-            <p className="text-sm text-muted">清代最大古建筑群，江南地区保存最完整的明代建筑</p>
-          </div>
-
-          {/* 中华门城堡 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">中华门城堡</h3>
-            <p className="text-xs text-muted mb-2">秦淮区 | 历史遗迹</p>
-            <p className="text-sm text-muted">明代城墙代表，世界现存最大城门</p>
-          </div>
-
-          {/* 老门东 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">老门东</h3>
-            <p className="text-xs text-muted mb-2">秦淮区 | 文化商区</p>
-            <p className="text-sm text-muted">南京古城遗韵，传统小吃和历史建筑</p>
-          </div>
-
-          {/* 燕子矶 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">燕子矶</h3>
-            <p className="text-xs text-muted mb-2">栖霞区 | 自然景观</p>
-            <p className="text-sm text-muted">长江三大名矶之首，看长江夜景绝佳位置</p>
-          </div>
-
-          {/* 阅江楼 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">阅江楼</h3>
-            <p className="text-xs text-muted mb-2">鼓楼区 | 历史景点</p>
-            <p className="text-sm text-muted">"江南第一楼"，俯瞰长江壮丽景色</p>
-          </div>
-
-          {/* 南京长江大桥 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">南京长江大桥</h3>
-            <p className="text-xs text-muted mb-2">鼓楼区 | 地标建筑</p>
-            <p className="text-sm text-muted">新中国第一座自行设计建造的长江大桥</p>
-          </div>
-
-          {/* 南京眼 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">南京眼</h3>
-            <p className="text-xs text-muted mb-2">建邺区 | 现代景观</p>
-            <p className="text-sm text-muted">河西现代步行景观桥，南京新地标</p>
-          </div>
-
-          {/* 玄武湖 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">玄武湖</h3>
-            <p className="text-xs text-muted mb-2">玄武区 | 城市公园</p>
-            <p className="text-sm text-muted">中国四大名湖之一，适合晨练划船</p>
-          </div>
-
-          {/* 鸡鸣寺 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">鸡鸣寺</h3>
-            <p className="text-xs text-muted mb-2">玄武区 | 寺庙</p>
-            <p className="text-sm text-muted">"金陵第一刹"，南京最古老的梵刹之一</p>
-          </div>
-
-          {/* 莫愁湖公园 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">莫愁湖公园</h3>
-            <p className="text-xs text-muted mb-2">建邺区 | 古典园林</p>
-            <p className="text-sm text-muted">南京古典园林，荷花季尤为美丽</p>
-          </div>
-
-          {/* 江南贡院 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-1">江南贡院</h3>
-            <p className="text-xs text-muted mb-2">秦淮区 | 历史遗迹</p>
-            <p className="text-sm text-muted">中国最大科举考场遗址，免费参观</p>
-          </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 pr-4">景点</th>
+                <th className="text-left py-2 pr-4">位置</th>
+                <th className="text-left py-2">简介</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted">
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">珍珠泉</td>
+                <td className="py-2 pr-4">浦口区</td>
+                <td className="py-2">泉水、瀑布、竹林景观，适合休闲游览</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">老山国家森林公园</td>
+                <td className="py-2 pr-4">浦口区</td>
+                <td className="py-2">森林氧吧，南京最大的森林公园</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">梧桐大道</td>
+                <td className="py-2 pr-4">钟山风景区</td>
+                <td className="py-2">陵园路两侧的梧桐树，被誉为"南京最美道路"</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">中山陵</td>
+                <td className="py-2 pr-4">钟山风景区</td>
+                <td className="py-2">孙中山先生的陵墓，免费预约参观</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">音乐台</td>
+                <td className="py-2 pr-4">钟山风景区</td>
+                <td className="py-2">中山陵景区内，鸽子飞翔的浪漫场景</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">明孝陵</td>
+                <td className="py-2 pr-4">钟山风景区</td>
+                <td className="py-2">朱元璋及其皇后陵墓，明代皇家陵寝代表</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">夫子庙秦淮河风光带</td>
+                <td className="py-2 pr-4">秦淮区</td>
+                <td className="py-2">南京最繁华的商业街，夜游秦淮河必去</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">南京博物院</td>
+                <td className="py-2 pr-4">中山东路</td>
+                <td className="py-2">中国三大博物馆之一，免费预约</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">总统府</td>
+                <td className="py-2 pr-4">玄武区</td>
+                <td className="py-2">民国建筑代表，曾是孙中山和蒋介石办公地</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">朝天宫</td>
+                <td className="py-2 pr-4">秦淮区</td>
+                <td className="py-2">清代最大古建筑群，江南地区保存最完整的明代建筑</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">中华门城堡</td>
+                <td className="py-2 pr-4">秦淮区</td>
+                <td className="py-2">明代城墙代表，世界现存最大城门</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">老门东</td>
+                <td className="py-2 pr-4">秦淮区</td>
+                <td className="py-2">南京古城遗韵，传统小吃和历史建筑</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">燕子矶</td>
+                <td className="py-2 pr-4">栖霞区</td>
+                <td className="py-2">长江三大名矶之首，看长江夜景绝佳位置</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">阅江楼</td>
+                <td className="py-2 pr-4">鼓楼区</td>
+                <td className="py-2">"江南第一楼"，俯瞰长江壮丽景色</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">南京长江大桥</td>
+                <td className="py-2 pr-4">鼓楼区</td>
+                <td className="py-2">新中国第一座自行设计建造的长江大桥</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">南京眼</td>
+                <td className="py-2 pr-4">建邺区</td>
+                <td className="py-2">河西现代步行景观桥，南京新地标</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">玄武湖</td>
+                <td className="py-2 pr-4">玄武区</td>
+                <td className="py-2">中国四大名湖之一，适合晨练划船</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">鸡鸣寺</td>
+                <td className="py-2 pr-4">玄武区</td>
+                <td className="py-2">"金陵第一刹"，南京最古老的梵刹之一</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">莫愁湖公园</td>
+                <td className="py-2 pr-4">建邺区</td>
+                <td className="py-2">南京古典园林，荷花季尤为美丽</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4">江南贡院</td>
+                <td className="py-2 pr-4">秦淮区</td>
+                <td className="py-2">中国最大科举考场遗址，免费参观</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
