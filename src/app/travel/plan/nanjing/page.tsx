@@ -87,20 +87,14 @@ export default function NanjingPage() {
             <dt className="text-muted font-medium">10:30</dt>
             <dd>地铁10号线→龙华路站（6元）</dd>
             
-            <dt className="text-muted font-medium">11:00</dt>
-            <dd className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 珍珠泉</dd>
-            
-            <dt className="text-muted font-medium">11:30-13:00</dt>
-            <dd>游览珍珠泉（泉水、瀑布、竹林）</dd>
+            <dt className="text-muted font-medium">11:00-13:00</dt>
+            <dd className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 珍珠泉（泉水、瀑布、竹林）</dd>
             
             <dt className="text-muted font-medium">13:00</dt>
             <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：珍珠泉附近农家乐（约50元）</dd>
             
-            <dt className="text-muted font-medium">14:30</dt>
-            <dd>打车→老山国家森林公园（约20元）</dd>
-            
             <dt className="text-muted font-medium">14:30-16:30</dt>
-            <dd>游玩老山（森林氧吧）</dd>
+            <dd>老山国家森林公园（森林氧吧）</dd>
             
             <dt className="text-muted font-medium">17:30</dt>
             <dd>入住江北酒店（200元）</dd>
@@ -261,38 +255,273 @@ export default function NanjingPage() {
         </article>
       </section>
 
+      {/* Attractions */}
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold mb-6">🏛️ 景点汇总</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 珍珠泉 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">珍珠泉</h3>
+            <p className="text-xs text-muted mb-2">浦口区 | 户外自然</p>
+            <p className="text-sm text-muted">泉水、瀑布、竹林景观，适合休闲游览</p>
+          </div>
+
+          {/* 老山国家森林公园 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">老山国家森林公园</h3>
+            <p className="text-xs text-muted mb-2">浦口区 | 自然公园</p>
+            <p className="text-sm text-muted">森林氧吧，南京最大的森林公园</p>
+          </div>
+
+          {/* 梧桐大道 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">梧桐大道</h3>
+            <p className="text-xs text-muted mb-2">钟山风景区 | 自然景观</p>
+            <p className="text-sm text-muted">陵园路两侧的梧桐树，被誉为"南京最美道路"</p>
+          </div>
+
+          {/* 中山陵 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">中山陵</h3>
+            <p className="text-xs text-muted mb-2">钟山风景区 | 历史景点</p>
+            <p className="text-sm text-muted">孙中山先生的陵墓，免费预约参观</p>
+          </div>
+
+          {/* 音乐台 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">音乐台</h3>
+            <p className="text-xs text-muted mb-2">钟山风景区 | 特色景观</p>
+            <p className="text-sm text-muted">中山陵景区内，鸽子飞翔的浪漫场景</p>
+          </div>
+
+          {/* 明孝陵 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">明孝陵</h3>
+            <p className="text-xs text-muted mb-2">钟山风景区 | 世界遗产</p>
+            <p className="text-sm text-muted">朱元璋及其皇后陵墓，明代皇家陵寝代表</p>
+          </div>
+
+          {/* 夫子庙秦淮河风光带 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">夫子庙秦淮河风光带</h3>
+            <p className="text-xs text-muted mb-2">秦淮区 | 文化商区</p>
+            <p className="text-sm text-muted">南京最繁华的商业街，夜游秦淮河必去</p>
+          </div>
+
+          {/* 南京博物院 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">南京博物院</h3>
+            <p className="text-xs text-muted mb-2">中山东路 | 博物馆</p>
+            <p className="text-sm text-muted">中国三大博物馆之一，免费预约</p>
+          </div>
+
+          {/* 总统府 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">总统府</h3>
+            <p className="text-xs text-muted mb-2">玄武区 | 历史景点</p>
+            <p className="text-sm text-muted">民国建筑代表，曾是孙中山和蒋介石办公地</p>
+          </div>
+
+          {/* 朝天宫 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">朝天宫</h3>
+            <p className="text-xs text-muted mb-2">秦淮区 | 历史景点</p>
+            <p className="text-sm text-muted">清代最大古建筑群，江南地区保存最完整的明代建筑</p>
+          </div>
+
+          {/* 中华门城堡 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">中华门城堡</h3>
+            <p className="text-xs text-muted mb-2">秦淮区 | 历史遗迹</p>
+            <p className="text-sm text-muted">明代城墙代表，世界现存最大城门</p>
+          </div>
+
+          {/* 老门东 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">老门东</h3>
+            <p className="text-xs text-muted mb-2">秦淮区 | 文化商区</p>
+            <p className="text-sm text-muted">南京古城遗韵，传统小吃和历史建筑</p>
+          </div>
+
+          {/* 燕子矶 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">燕子矶</h3>
+            <p className="text-xs text-muted mb-2">栖霞区 | 自然景观</p>
+            <p className="text-sm text-muted">长江三大名矶之首，看长江夜景绝佳位置</p>
+          </div>
+
+          {/* 阅江楼 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">阅江楼</h3>
+            <p className="text-xs text-muted mb-2">鼓楼区 | 历史景点</p>
+            <p className="text-sm text-muted">"江南第一楼"，俯瞰长江壮丽景色</p>
+          </div>
+
+          {/* 南京长江大桥 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">南京长江大桥</h3>
+            <p className="text-xs text-muted mb-2">鼓楼区 | 地标建筑</p>
+            <p className="text-sm text-muted">新中国第一座自行设计建造的长江大桥</p>
+          </div>
+
+          {/* 南京眼 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">南京眼</h3>
+            <p className="text-xs text-muted mb-2">建邺区 | 现代景观</p>
+            <p className="text-sm text-muted">河西现代步行景观桥，南京新地标</p>
+          </div>
+
+          {/* 玄武湖 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">玄武湖</h3>
+            <p className="text-xs text-muted mb-2">玄武区 | 城市公园</p>
+            <p className="text-sm text-muted">中国四大名湖之一，适合晨练划船</p>
+          </div>
+
+          {/* 鸡鸣寺 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">鸡鸣寺</h3>
+            <p className="text-xs text-muted mb-2">玄武区 | 寺庙</p>
+            <p className="text-sm text-muted">"金陵第一刹"，南京最古老的梵刹之一</p>
+          </div>
+
+          {/* 莫愁湖公园 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">莫愁湖公园</h3>
+            <p className="text-xs text-muted mb-2">建邺区 | 古典园林</p>
+            <p className="text-sm text-muted">南京古典园林，荷花季尤为美丽</p>
+          </div>
+
+          {/* 江南贡院 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-1">江南贡院</h3>
+            <p className="text-xs text-muted mb-2">秦淮区 | 历史遗迹</p>
+            <p className="text-sm text-muted">中国最大科举考场遗址，免费参观</p>
+          </div>
+        </div>
+      </section>
+
       {/* Food Recommendations */}
       <section className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">🍜 南京本地美食推荐</h2>
+        <h2 className="text-2xl font-semibold mb-6">🍜 南京本地美食</h2>
         
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-medium mb-2">🥟 早餐（15-25元）</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* 鸡汁汤包 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">鸡汁汤包</h3>
             <ul className="text-sm text-muted space-y-1">
-              <li>• 鸡汁汤包 - 雍醇家（科巷/丰富路）- 15元</li>
-              <li>• 鸭血粉丝汤 - 回味/小潘记（新街口/夫子庙）- 20元</li>
-              <li>• 赤豆元宵/糖芋苗 - 莲湖糕团店（夫子庙）- 10元</li>
-              <li>• 牛肉锅贴 - 鲍记（评事街）- 10元</li>
+              <li>• 雍醇家 - 科巷/丰富路 - 15元</li>
+              <li>• 胡记 - 科巷 - 约15元</li>
             </ul>
           </div>
-          
-          <div>
-            <h3 className="text-lg font-medium mb-2">🍽️ 晚餐（60-80元）</h3>
+
+          {/* 鸭血粉丝汤 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">鸭血粉丝汤</h3>
             <ul className="text-sm text-muted space-y-1">
-              <li>• 蒋有记（老门东）- 牛肉锅贴、牛肉汤 - 30元</li>
-              <li>• 陆氏老铺（老门东）- 饺面、锅贴 - 25元</li>
-              <li>• 南京大牌档（新街口/河西）- 盐水鸭、美龄粥 - 80元</li>
-              <li>• 鸣记小菜（河西）- 家常菜 - 60元</li>
+              <li>• 回味 - 新街口/夫子庙 - 20元</li>
+              <li>• 小潘记 - 评事街 - 约20元</li>
             </ul>
           </div>
-          
-          <div>
-            <h3 className="text-lg font-medium mb-2">🍷 必尝特色菜</h3>
+
+          {/* 牛肉锅贴 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">牛肉锅贴</h3>
             <ul className="text-sm text-muted space-y-1">
-              <li>• 盐水鸭 - 金宏兴/大行宫/南京大牌档</li>
-              <li>• 鸡汁汤包 - 雍醇家/胡记</li>
-              <li>• 牛肉锅贴 - 蒋有记/鲍记</li>
-              <li>• 鸭血粉丝汤 - 回味/小潘记</li>
+              <li>• 鲍记 - 评事街 - 10元</li>
+              <li>• 蒋有记 - 老门东 - 30元</li>
+            </ul>
+          </div>
+
+          {/* 盐水鸭 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">盐水鸭</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 金宏兴 - 约40元/份</li>
+              <li>• 大行宫 - 约40元/份</li>
+            </ul>
+          </div>
+
+          {/* 赤豆元宵 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">赤豆元宵</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 莲湖糕团店 - 夫子庙 - 10元</li>
+            </ul>
+          </div>
+
+          {/* 皮肚面 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">皮肚面</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 鸿福皮肚面 - 科巷 - 20元</li>
+              <li>• 小潘记 - 评事街 - 35元</li>
+            </ul>
+          </div>
+
+          {/* 饺面 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">饺面</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 陆氏老铺 - 老门东 - 约25元</li>
+            </ul>
+          </div>
+
+          {/* 美龄粥 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">美龄粥</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 南京大牌档 - 新街口/河西 - 80元</li>
+            </ul>
+          </div>
+
+          {/* 家常菜 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">家常菜</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 鸣记小菜 - 河西 - 60元</li>
+              <li>• 金陵小巷 - 新街口 - 100元</li>
+            </ul>
+          </div>
+
+          {/* 小笼包 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">小笼包</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 胡记 - 科巷 - 约15元</li>
+            </ul>
+          </div>
+
+          {/* 糖芋苗 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">糖芋苗</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 莲湖糕团店 - 夫子庙 - 约10元</li>
+            </ul>
+          </div>
+
+          {/* 牛肉汤 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">牛肉汤</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 蒋有记 - 老门东 - 约15元</li>
+            </ul>
+          </div>
+
+          {/* 鸡鸣寺素面 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">鸡鸣寺素面</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 鸡鸣寺 - 25元</li>
+            </ul>
+          </div>
+
+          {/* 南京名点 */}
+          <div className="border border-border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">南京名点</h3>
+            <ul className="text-sm text-muted space-y-1">
+              <li>• 河西IFC - 下午茶 - 30元</li>
             </ul>
           </div>
         </div>
