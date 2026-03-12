@@ -88,7 +88,7 @@ export default function NanjingPage() {
             <div className="text-center">
               <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">Day 3</span>
             </div>
-            <div className="text-center text-muted">城中（博物院/总统府/朝天宫/中华门/老门东） → 燕子矶 → 返回市区</div>
+            <div className="text-center text-muted">城中（博物院/总统府/新街口/朝天宫/中华门/老门东） → 燕子矶 → 返回市区</div>
             <span className="text-muted">↓</span>
             <div className="text-center">
               <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">Day 4</span>
@@ -183,7 +183,7 @@ export default function NanjingPage() {
         <article className="border border-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <h3 className="text-xl font-semibold">Day 3</h3>
-            <span className="text-muted text-sm">南京博物院 + 总统府 + 中华门</span>
+            <span className="text-muted text-sm">南京博物院 + 新街口 + 总统府 + 中华门</span>
           </div>
           <dl className="grid grid-cols-[100px_1fr] gap-x-4 gap-y-4 text-sm">
             <dt className="text-muted font-medium">7:30</dt>
@@ -194,6 +194,9 @@ export default function NanjingPage() {
             
             <dt className="text-muted font-medium">12:00</dt>
             <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：科巷 - 鸿福皮肚面（约20元）</dd>
+            
+            <dt className="text-muted font-medium">13:00</dt>
+            <dd className="flex items-center gap-1"><Camera className="w-3 h-3" /> 新街口</dd>
             
             <dt className="text-muted font-medium">14:00</dt>
             <dd className="flex items-center gap-1"><Camera className="w-3 h-3" /> 总统府（门票35元）</dd>
@@ -341,6 +344,11 @@ export default function NanjingPage() {
                 <td className="py-2 pr-4">南京博物院</td>
                 <td className="py-2 pr-4">中山东路</td>
                 <td className="py-2">中国三大博物馆之一，免费预约</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-4">新街口</td>
+                <td className="py-2 pr-4">玄武区</td>
+                <td className="py-2">中华第一商圈，购物美食一站式</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">总统府</td>
