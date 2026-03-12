@@ -378,124 +378,100 @@ export default function NanjingPage() {
       <section className="mt-12">
         <h2 className="text-2xl font-semibold mb-6">🍜 南京本地美食</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* 鸡汁汤包 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">鸡汁汤包</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 雍醇家 - 科巷/丰富路 - 15元</li>
-              <li>• 胡记 - 科巷 - 约15元</li>
-            </ul>
-          </div>
-
-          {/* 鸭血粉丝汤 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">鸭血粉丝汤</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 回味 - 新街口/夫子庙 - 20元</li>
-              <li>• 小潘记 - 评事街 - 约20元</li>
-            </ul>
-          </div>
-
-          {/* 牛肉锅贴 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">牛肉锅贴</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 鲍记 - 评事街 - 10元</li>
-              <li>• 蒋有记 - 老门东 - 30元</li>
-            </ul>
-          </div>
-
-          {/* 盐水鸭 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">盐水鸭</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 金宏兴 - 约40元/份</li>
-              <li>• 大行宫 - 约40元/份</li>
-            </ul>
-          </div>
-
-          {/* 赤豆元宵 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">赤豆元宵</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 莲湖糕团店 - 夫子庙 - 10元</li>
-            </ul>
-          </div>
-
-          {/* 皮肚面 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">皮肚面</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 鸿福皮肚面 - 科巷 - 20元</li>
-              <li>• 小潘记 - 评事街 - 35元</li>
-            </ul>
-          </div>
-
-          {/* 饺面 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">饺面</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 陆氏老铺 - 老门东 - 约25元</li>
-            </ul>
-          </div>
-
-          {/* 美龄粥 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">美龄粥</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 南京大牌档 - 新街口/河西 - 80元</li>
-            </ul>
-          </div>
-
-          {/* 家常菜 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">家常菜</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 鸣记小菜 - 河西 - 60元</li>
-              <li>• 金陵小巷 - 新街口 - 100元</li>
-            </ul>
-          </div>
-
-          {/* 小笼包 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">小笼包</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 胡记 - 科巷 - 约15元</li>
-            </ul>
-          </div>
-
-          {/* 糖芋苗 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">糖芋苗</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 莲湖糕团店 - 夫子庙 - 约10元</li>
-            </ul>
-          </div>
-
-          {/* 牛肉汤 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">牛肉汤</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 蒋有记 - 老门东 - 约15元</li>
-            </ul>
-          </div>
-
-          {/* 鸡鸣寺素面 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">鸡鸣寺素面</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 鸡鸣寺 - 25元</li>
-            </ul>
-          </div>
-
-          {/* 南京名点 */}
-          <div className="border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-2">南京名点</h3>
-            <ul className="text-sm text-muted space-y-1">
-              <li>• 河西IFC - 下午茶 - 30元</li>
-            </ul>
-          </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-3 px-4 font-semibold">美食类型</th>
+                <th className="text-left py-3 px-4 font-semibold">店铺</th>
+                <th className="text-left py-3 px-4 font-semibold">位置</th>
+                <th className="text-left py-3 px-4 font-semibold">价格</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted">
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4" rowSpan={2}>鸡汁汤包</td>
+                <td className="py-3 px-4">雍醇家</td>
+                <td className="py-3 px-4">科巷/丰富路</td>
+                <td className="py-3 px-4">15元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">胡记</td>
+                <td className="py-3 px-4">科巷</td>
+                <td className="py-3 px-4">约15元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">赤豆元宵</td>
+                <td className="py-3 px-4">莲湖糕团店</td>
+                <td className="py-3 px-4">夫子庙</td>
+                <td className="py-3 px-4">10元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4" rowSpan={2}>皮肚面</td>
+                <td className="py-3 px-4">鸿福皮肚面</td>
+                <td className="py-3 px-4">科巷</td>
+                <td className="py-3 px-4">20元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">小潘记</td>
+                <td className="py-3 px-4">评事街</td>
+                <td className="py-3 px-4">35元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">饺面</td>
+                <td className="py-3 px-4">陆氏老铺</td>
+                <td className="py-3 px-4">老门东</td>
+                <td className="py-3 px-4">约25元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">美龄粥</td>
+                <td className="py-3 px-4">南京大牌档</td>
+                <td className="py-3 px-4">新街口/河西</td>
+                <td className="py-3 px-4">约80元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4" rowSpan={2}>家常菜</td>
+                <td className="py-3 px-4">鸣记小菜</td>
+                <td className="py-3 px-4">河西</td>
+                <td className="py-3 px-4">60元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">金陵小巷</td>
+                <td className="py-3 px-4">新街口</td>
+                <td className="py-3 px-4">100元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">小笼包</td>
+                <td className="py-3 px-4">胡记</td>
+                <td className="py-3 px-4">科巷</td>
+                <td className="py-3 px-4">约15元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">糖芋苗</td>
+                <td className="py-3 px-4">莲湖糕团店</td>
+                <td className="py-3 px-4">夫子庙</td>
+                <td className="py-3 px-4">约10元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">牛肉汤</td>
+                <td className="py-3 px-4">蒋有记</td>
+                <td className="py-3 px-4">老门东</td>
+                <td className="py-3 px-4">约15元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">鸡鸣寺素面</td>
+                <td className="py-3 px-4">鸡鸣寺</td>
+                <td className="py-3 px-4">鸡鸣寺</td>
+                <td className="py-3 px-4">25元</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-3 px-4">下午茶</td>
+                <td className="py-3 px-4">河西IFC</td>
+                <td className="py-3 px-4">河西</td>
+                <td className="py-3 px-4">约30元</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
