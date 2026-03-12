@@ -536,11 +536,11 @@ export default function NanjingPage() {
             <div className="text-sm text-muted">往返交通</div>
           </div>
           <div>
-            <div className="text-2xl font-bold">235元</div>
+            <div className="text-2xl font-bold">236元</div>
             <div className="text-sm text-muted">市内交通</div>
           </div>
           <div>
-            <div className="text-2xl font-bold">1450元</div>
+            <div className="text-2xl font-bold">1250元</div>
             <div className="text-sm text-muted">住宿</div>
           </div>
           <div>
@@ -553,7 +553,7 @@ export default function NanjingPage() {
           </div>
         </div>
         <div className="mt-4 pt-4 border-t border-border text-center">
-          <span className="text-lg font-semibold">总计：约2770元（不含机动800-1000元）</span>
+          <span className="text-lg font-semibold">总计：约2571元（不含机动800-1000元）</span>
         </div>
       </section>
     </main>
