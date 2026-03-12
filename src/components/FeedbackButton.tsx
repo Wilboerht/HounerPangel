@@ -89,7 +89,10 @@ export function FeedbackButton({ articleTitle }: { articleTitle: string }) {
                                     <textarea
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
-                                            placeholder="例如：第三段有错别字..."
+                                        placeholder="例如：第三段有错别字..."
+                                        disabled={status === 'success' || status === 'submitting'}
+                                        className="w-full bg-foreground/[0.02] border border-white/5 rounded-2xl p-4 text-sm text-foreground placeholder:text-muted/40 focus:outline-none focus:border-white/20 focus:bg-foreground/[0.04] transition-all duration-300 min-h-[160px] resize-none"
+                                    />
                                     
                                     <AnimatePresence>
                                         {status === 'success' && (
