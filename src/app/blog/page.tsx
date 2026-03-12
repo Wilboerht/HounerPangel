@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Library, Search, BookOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Library, Search } from "lucide-react";
 import { CollectionsDrawer } from "@/components/CollectionsDrawer";
 import { BlogSearch } from "@/components/BlogSearch";
 import { getPublishedPosts } from "@/lib/notion";
@@ -163,10 +163,6 @@ export default async function Blog({
                                                 <span className="flex items-center gap-1.5">
                                                     <CalendarDays className="w-4 h-4" />
                                                     {post.date}
-                                                </span>
-                                                <span className="flex items-center gap-1.5">
-                                                    <BookOpen className="w-4 h-4" />
-                                                    {post.readTime || "3 min read"}
                                                 </span>
                                             </div>
                                         </Link>
