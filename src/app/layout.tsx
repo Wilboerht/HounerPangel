@@ -27,6 +27,10 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Hank Wong", url: "https://wilboerht.com" }],
   creator: "wilboerht",
+  icons: {
+    icon: '/',
+    apple: '/',
+  },
   openGraph: {
     type: "website",
     locale: "zh_CN",
