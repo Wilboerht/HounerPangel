@@ -77,7 +77,6 @@ export default function NanjingPage() {
         {/* Day 1 */}
         <article className="border border-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">📆</span>
             <h3 className="text-xl font-semibold">Day 1</h3>
             <span className="text-muted text-sm">珍珠泉 + 老山国家森林公园</span>
           </div>
@@ -117,7 +116,6 @@ export default function NanjingPage() {
         {/* Day 2 */}
         <article className="border border-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">📆</span>
             <h3 className="text-xl font-semibold">Day 2</h3>
             <span className="text-muted text-sm">中山陵 + 明孝陵 + 夫子庙</span>
           </div>
@@ -157,7 +155,6 @@ export default function NanjingPage() {
         {/* Day 3 */}
         <article className="border border-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">📆</span>
             <h3 className="text-xl font-semibold">Day 3</h3>
             <span className="text-muted text-sm">南京博物院 + 总统府 + 中华门</span>
           </div>
@@ -194,7 +191,6 @@ export default function NanjingPage() {
         {/* Day 4 */}
         <article className="border border-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">📆</span>
             <h3 className="text-xl font-semibold">Day 4</h3>
             <span className="text-muted text-sm">阅江楼 + 南京眼 + 河西</span>
           </div>
@@ -228,7 +224,6 @@ export default function NanjingPage() {
         {/* Day 5 */}
         <article className="border border-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">📆</span>
             <h3 className="text-xl font-semibold">Day 5</h3>
             <span className="text-muted text-sm">玄武湖 + 鸡鸣寺 + 莫愁湖</span>
           </div>
