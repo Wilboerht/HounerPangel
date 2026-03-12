@@ -81,46 +81,36 @@ export default function NanjingPage() {
             <h3 className="text-xl font-semibold">Day 1</h3>
             <span className="text-muted text-sm">珍珠泉 + 老山国家森林公园</span>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">10:00</span>
-              <span>南京南站到达</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">10:30</span>
-              <span>地铁10号线→龙华路站（6元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">11:00</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 珍珠泉</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">11:30-13:00</span>
-              <span>游览珍珠泉（泉水、瀑布、竹林）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">13:00</span>
-              <span className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：珍珠泉附近农家乐（约50元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">14:30</span>
-              <span>打车→老山国家森林公园（约20元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">14:30-16:30</span>
-              <span>游玩老山（森林氧吧）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">17:30</span>
-              <span>入住江北酒店（200元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">18:30</span>
-              <span className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 弘阳广场晚餐 - 南京大牌档（约60元）</span>
-            </div>
-          </div>
+          <dl className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 text-sm">
+            <dt className="text-muted">10:00</dt>
+            <dd>南京南站到达</dd>
+            
+            <dt className="text-muted">10:30</dt>
+            <dd>地铁10号线→龙华路站（6元）</dd>
+            
+            <dt className="text-muted">11:00</dt>
+            <dd className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 珍珠泉</dd>
+            
+            <dt className="text-muted">11:30-13:00</dt>
+            <dd>游览珍珠泉（泉水、瀑布、竹林）</dd>
+            
+            <dt className="text-muted">13:00</dt>
+            <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：珍珠泉附近农家乐（约50元）</dd>
+            
+            <dt className="text-muted">14:30</dt>
+            <dd>打车→老山国家森林公园（约20元）</dd>
+            
+            <dt className="text-muted">14:30-16:30</dt>
+            <dd>游玩老山（森林氧吧）</dd>
+            
+            <dt className="text-muted">17:30</dt>
+            <dd>入住江北酒店（200元）</dd>
+            
+            <dt className="text-muted">18:30</dt>
+            <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 弘阳广场晚餐 - 南京大牌档（约60元）</dd>
+          </dl>
           <div className="mt-4 pt-4 border-t border-border text-sm text-muted">
-            <span>当日花费：约361元</span>
+            当日花费：约361元
           </div>
         </article>
 
@@ -131,46 +121,36 @@ export default function NanjingPage() {
             <h3 className="text-xl font-semibold">Day 2</h3>
             <span className="text-muted text-sm">中山陵 + 明孝陵 + 夫子庙</span>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">7:30</span>
-              <span className="flex items-center gap-1"><Coffee className="w-3 h-3" /> 早餐：科巷 - 雍醇家汤包+糖芋苗（约25元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">9:00</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 梧桐大道（陵园路）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">10:00</span>
-              <span>中山陵（免费预约）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">12:00</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 音乐台</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">13:30</span>
-              <span>观光车→明孝陵（15元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">16:00</span>
-              <span>入住市区新街口酒店（350元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">18:30</span>
-              <span className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 晚餐：蒋有记（老门东店）- 锅贴+牛肉汤（约30元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">20:00</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 夫子庙秦淮河风光带</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">20:30</span>
-              <span>秦淮河画舫夜游（80元）</span>
-            </div>
-          </div>
+          <dl className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 text-sm">
+            <dt className="text-muted">7:30</dt>
+            <dd className="flex items-center gap-1"><Coffee className="w-3 h-3" /> 早餐：科巷 - 雍醇家汤包+糖芋苗（约25元）</dd>
+            
+            <dt className="text-muted">9:00</dt>
+            <dd className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 梧桐大道（陵园路）</dd>
+            
+            <dt className="text-muted">10:00</dt>
+            <dd>中山陵（免费预约）</dd>
+            
+            <dt className="text-muted">12:00</dt>
+            <dd className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 音乐台</dd>
+            
+            <dt className="text-muted">13:30</dt>
+            <dd>观光车→明孝陵（15元）</dd>
+            
+            <dt className="text-muted">16:00</dt>
+            <dd>入住市区新街口酒店（350元）</dd>
+            
+            <dt className="text-muted">18:30</dt>
+            <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 晚餐：蒋有记（老门东店）- 锅贴+牛肉汤（约30元）</dd>
+            
+            <dt className="text-muted">20:00</dt>
+            <dd className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 夫子庙秦淮河风光带</dd>
+            
+            <dt className="text-muted">20:30</dt>
+            <dd>秦淮河画舫夜游（80元）</dd>
+          </dl>
           <div className="mt-4 pt-4 border-t border-border text-sm text-muted">
-            <span>当日花费：约649元</span>
+            当日花费：约649元
           </div>
         </article>
 
@@ -181,42 +161,33 @@ export default function NanjingPage() {
             <h3 className="text-xl font-semibold">Day 3</h3>
             <span className="text-muted text-sm">南京博物院 + 总统府 + 中华门</span>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">7:30</span>
-              <span className="flex items-center gap-1"><Coffee className="w-3 h-3" /> 早餐：科巷 - 胡记汤包+赤豆元宵（约25元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">9:15</span>
-              <span className="flex items-center gap-1"><Camera className="w-3 h-3" /> 南京博物院（免费预约，中国三大博物馆之一）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">12:00</span>
-              <span className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：科巷 - 鸿福皮肚面（约20元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">14:00</span>
-              <span className="flex items-center gap-1"><Camera className="w-3 h-3" /> 总统府（门票35元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">15:30</span>
-              <span>朝天宫（门票20元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">17:30</span>
-              <span>中华门城堡（门票50元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">18:30</span>
-              <span>老门东</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">19:30</span>
-              <span>打车→燕子矶看长江夜景</span>
-            </div>
-          </div>
+          <dl className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 text-sm">
+            <dt className="text-muted">7:30</dt>
+            <dd className="flex items-center gap-1"><Coffee className="w-3 h-3" /> 早餐：科巷 - 胡记汤包+赤豆元宵（约25元）</dd>
+            
+            <dt className="text-muted">9:15</dt>
+            <dd className="flex items-center gap-1"><Camera className="w-3 h-3" /> 南京博物院（免费预约，中国三大博物馆之一）</dd>
+            
+            <dt className="text-muted">12:00</dt>
+            <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：科巷 - 鸿福皮肚面（约20元）</dd>
+            
+            <dt className="text-muted">14:00</dt>
+            <dd className="flex items-center gap-1"><Camera className="w-3 h-3" /> 总统府（门票35元）</dd>
+            
+            <dt className="text-muted">15:30</dt>
+            <dd>朝天宫（门票20元）</dd>
+            
+            <dt className="text-muted">17:30</dt>
+            <dd>中华门城堡（门票50元）</dd>
+            
+            <dt className="text-muted">18:30</dt>
+            <dd>老门东</dd>
+            
+            <dt className="text-muted">19:30</dt>
+            <dd>打车→燕子矶看长江夜景</dd>
+          </dl>
           <div className="mt-4 pt-4 border-t border-border text-sm text-muted">
-            <span>当日花费：约500元</span>
+            当日花费：约500元
           </div>
         </article>
 
@@ -227,38 +198,30 @@ export default function NanjingPage() {
             <h3 className="text-xl font-semibold">Day 4</h3>
             <span className="text-muted text-sm">阅江楼 + 南京眼 + 河西</span>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">8:00</span>
-              <span className="flex items-center gap-1"><Coffee className="w-3 h-3" /> 早餐：夫子庙 - 回味鸭血粉丝汤（约20元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">9:30</span>
-              <span className="flex items-center gap-1"><Camera className="w-3 h-3" /> 阅江楼（门票40元，长江第一楼）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">11:00</span>
-              <span>南京长江大桥（桥头堡公园）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">12:00</span>
-              <span className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：下关码头 - 江南朋友餐厅（约50元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">13:30</span>
-              <span>打车→南京眼（河西，现代步行景观桥）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">16:00</span>
-              <span>河西IFC休息/下午茶（约30元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">18:00</span>
-              <span className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 晚餐：河西 - 鸣记小菜（约60元）</span>
-            </div>
-          </div>
+          <dl className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 text-sm">
+            <dt className="text-muted">8:00</dt>
+            <dd className="flex items-center gap-1"><Coffee className="w-3 h-3" /> 早餐：夫子庙 - 回味鸭血粉丝汤（约20元）</dd>
+            
+            <dt className="text-muted">9:30</dt>
+            <dd className="flex items-center gap-1"><Camera className="w-3 h-3" /> 阅江楼（门票40元，长江第一楼）</dd>
+            
+            <dt className="text-muted">11:00</dt>
+            <dd>南京长江大桥（桥头堡公园）</dd>
+            
+            <dt className="text-muted">12:00</dt>
+            <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：下关码头 - 江南朋友餐厅（约50元）</dd>
+            
+            <dt className="text-muted">13:30</dt>
+            <dd>打车→南京眼（河西，现代步行景观桥）</dd>
+            
+            <dt className="text-muted">16:00</dt>
+            <dd>河西IFC休息/下午茶（约30元）</dd>
+            
+            <dt className="text-muted">18:00</dt>
+            <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 晚餐：河西 - 鸣记小菜（约60元）</dd>
+          </dl>
           <div className="mt-4 pt-4 border-t border-border text-sm text-muted">
-            <span>当日花费：约581元</span>
+            当日花费：约581元
           </div>
         </article>
 
@@ -269,46 +232,36 @@ export default function NanjingPage() {
             <h3 className="text-xl font-semibold">Day 5</h3>
             <span className="text-muted text-sm">玄武湖 + 鸡鸣寺 + 莫愁湖</span>
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">7:30</span>
-              <span className="flex items-center gap-1"><Coffee className="w-3 h-3" /> 早餐：莲湖糕团店 - 赤豆元宵+糖芋苗（约15元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">9:00</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 玄武湖晨练/划船</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">10:30</span>
-              <span>解放门城墙（明城墙遗址）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">12:00</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 鸡鸣寺（金陵第一刹）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">13:00</span>
-              <span className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：鸡鸣寺素面（约25元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">15:00</span>
-              <span className="flex items-center gap-1"><Camera className="w-3 h-3" /> 莫愁湖公园（门票25元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">17:00</span>
-              <span>江南贡院（免费）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">18:00</span>
-              <span className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 晚餐：夫子庙 - 南京大牌档（约80元）</span>
-            </div>
-            <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1">
-              <span className="text-muted">19:30</span>
-              <span>返程上海</span>
-            </div>
-          </div>
+          <dl className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 text-sm">
+            <dt className="text-muted">7:30</dt>
+            <dd className="flex items-center gap-1"><Coffee className="w-3 h-3" /> 早餐：莲湖糕团店 - 赤豆元宵+糖芋苗（约15元）</dd>
+            
+            <dt className="text-muted">9:00</dt>
+            <dd className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 玄武湖晨练/划船</dd>
+            
+            <dt className="text-muted">10:30</dt>
+            <dd>解放门城墙（明城墙遗址）</dd>
+            
+            <dt className="text-muted">12:00</dt>
+            <dd className="flex items-center gap-1"><MapPin className="w-3 h-3" /> 鸡鸣寺（金陵第一刹）</dd>
+            
+            <dt className="text-muted">13:00</dt>
+            <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 午餐：鸡鸣寺素面（约25元）</dd>
+            
+            <dt className="text-muted">15:00</dt>
+            <dd className="flex items-center gap-1"><Camera className="w-3 h-3" /> 莫愁湖公园（门票25元）</dd>
+            
+            <dt className="text-muted">17:00</dt>
+            <dd>江南贡院（免费）</dd>
+            
+            <dt className="text-muted">18:00</dt>
+            <dd className="flex items-center gap-1"><Utensils className="w-3 h-3" /> 晚餐：夫子庙 - 南京大牌档（约80元）</dd>
+            
+            <dt className="text-muted">19:30</dt>
+            <dd>返程上海</dd>
+          </dl>
           <div className="mt-4 pt-4 border-t border-border text-sm text-muted">
-            <span>当日花费：约140元</span>
+            当日花费：约140元
           </div>
         </article>
       </section>
