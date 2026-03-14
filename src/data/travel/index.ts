@@ -9,6 +9,7 @@ import { macauPlan } from "./macau";
 import { yangzhouPlan } from "./yangzhou";
 import { datongPlan } from "./datong";
 import { changbaishanPlan } from "./changbaishan";
+import { daliPlan } from "./dali";
 
 export const cnPlans = [
   beijingPlan,
@@ -22,4 +23,5 @@ export const cnPlans = [
   yangzhouPlan,
   datongPlan,
   changbaishanPlan,
+  daliPlan,
 ];
