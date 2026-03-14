@@ -1,6 +1,7 @@
 "use client";
 
-import { MapPin, Calendar, Wallet, Train, Utensils, Ticket, Check, LucideIcon } from "lucide-react";
+import { MapPin, Calendar, Wallet, Train, Utensils, Ticket, Check, ArrowLeft, LucideIcon } from "lucide-react";
+import Link from "next/link";
 import { TravelPlan } from "@/types/travel";
 
 const IconMap: Record<string, LucideIcon> = {
@@ -19,6 +20,14 @@ interface Props {
 export default function TravelPlanTemplate({ data }: Props) {
   return (
     <main className="min-h-screen px-6 pt-12 pb-0 max-w-4xl mx-auto relative">
+      {/* Back Button */}
+      <Link 
+        href="/travel/plan/CN" 
+        className="fixed top-8 left-4 lg:top-12 lg:left-12 flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-all z-50 group hidden md:flex"
+      >
+        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+        <span>返回目录</span>
+      </Link>
       {/* Floating TOC */}
       <aside className="hidden lg:block fixed top-[182px] left-[calc(50%+468px)] w-48 xl:w-56">
         <nav className="flex flex-col gap-3 text-sm border-l border-border pl-4">
