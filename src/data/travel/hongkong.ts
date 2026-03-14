@@ -59,9 +59,11 @@ export const hongkongPlan: TravelPlan = {
   foods: [
     { type: "极速茶餐", name: "澳洲牛奶公司", location: "佐敦", price: "50元" },
     { type: "传统早茶", name: "莲香居", location: "上环", price: "120元" },
-    { type: "地道烧味", name: "甘牌/再兴/强记", location: "港岛", price: "100元" },
+    { type: "地道烧味", name: "甘牌烧鹅", location: "湾仔", price: "150元", rowSpan: 2 },
+    { type: "地道烧味", name: "再兴烧腊", location: "湾仔", price: "80元" },
     { type: "宵夜甜品", name: "佳佳甜品", location: "佐敦", price: "40元" },
-    { type: "街头小吃", name: "鸡蛋仔/咖喱鱼蛋", location: "全港", price: "30元" },
+    { type: "街头小吃", name: "十八座狗仔粉", location: "佐敦/旺角", price: "40元", rowSpan: 2 },
+    { type: "街头小吃", name: "妈咪鸡蛋仔", location: "尖沙咀", price: "30元" },
   ],
   bankTasks: [
     {

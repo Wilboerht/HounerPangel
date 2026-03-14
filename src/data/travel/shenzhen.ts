@@ -64,7 +64,8 @@ export const shenzhenPlan: TravelPlan = {
   foods: [
     { type: "深圳必吃", name: "润园四季椰子鸡", location: "全城连锁", price: "150元" },
     { type: "粤派烧腊", name: "陈鹏鹏鹅肉店", location: "万象天地", price: "120元" },
-    { type: "地道早茶", name: "蘩楼/点都德", location: "福田/南山", price: "100元" },
+    { type: "地道早茶", name: "蘩楼", location: "福田/南山", price: "100元", rowSpan: 2 },
+    { type: "地道早茶", name: "点都德", location: "全城连锁", price: "100元" },
     { type: "宵夜解压", name: "辉记炭烧海鲜", location: "南山", price: "180元" },
   ],
   summary: {
