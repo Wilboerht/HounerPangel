@@ -10,6 +10,10 @@ import { yangzhouPlan } from "./yangzhou";
 import { datongPlan } from "./datong";
 import { changbaishanPlan } from "./changbaishan";
 import { daliPlan } from "./dali";
+import { tokyoPlan } from "./tokyo";
+import { kyotoPlan } from "./kyoto";
+import { osakaPlan } from "./osaka";
+import { kumamotoPlan } from "./kumamoto";
 
 export const cnPlans = [
   beijingPlan,
@@ -24,4 +28,11 @@ export const cnPlans = [
   datongPlan,
   changbaishanPlan,
   daliPlan,
+];
+
+export const jpPlans = [
+  tokyoPlan,
+  kyotoPlan,
+  osakaPlan,
+  kumamotoPlan,
 ];

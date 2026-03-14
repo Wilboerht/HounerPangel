@@ -38,6 +38,7 @@ export interface TravelPlan {
   title: string;
   icon?: string;
   slug: string;
+  countryCode?: string;
   subtitle: string;
   description: string;
   budget: BudgetItem[];

@@ -22,7 +22,7 @@ export default function TravelPlanTemplate({ data }: Props) {
     <main className="min-h-screen px-6 pt-12 pb-0 max-w-4xl mx-auto relative">
       {/* Back Button */}
       <Link 
-        href="/travel/plan/CN" 
+        href={`/travel/plan/${data.countryCode || 'CN'}`} 
         className="fixed top-8 left-4 lg:top-12 lg:left-12 flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-all z-50 group hidden md:flex"
       >
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
