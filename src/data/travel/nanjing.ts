@@ -2,6 +2,7 @@ import { TravelPlan } from "@/types/travel";
 
 export const nanjingPlan: TravelPlan = {
   title: "南京5日旅行计划",
+  icon: "🏯",
   slug: "nanjing",
   subtitle: "深度探索金陵古都",
   description: "一份详尽的南京5日深度游计划，包含预算、路线、每日行程及本地美食推荐。",

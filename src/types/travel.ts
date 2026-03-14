@@ -36,6 +36,7 @@ export interface FoodItem {
 
 export interface TravelPlan {
   title: string;
+  icon?: string;
   slug: string;
   subtitle: string;
   description: string;

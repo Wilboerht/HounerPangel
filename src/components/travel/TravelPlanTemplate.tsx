@@ -41,7 +41,9 @@ export default function TravelPlanTemplate({ data }: Props) {
 
       {/* Header */}
       <header className="mb-12 text-center">
-        <h1 className="text-4xl font-bold mb-3">🏯 {data.title}</h1>
+        <h1 className="text-4xl font-bold mb-3">
+          {data.icon} {data.title}
+        </h1>
         <p className="text-muted text-sm font-mono uppercase tracking-widest">
           {data.subtitle}
         </p>
