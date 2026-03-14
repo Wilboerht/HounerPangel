@@ -26,32 +26,32 @@ export default function NanjingPage() {
             <tbody className="text-muted">
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">往返交通</td>
-                <td className="py-2 pr-4">290元</td>
-                <td className="py-2">高铁上海虹桥→南京南站，二等座</td>
+                <td className="py-2 pr-4">300元</td>
+                <td className="py-2">高铁 上海站→南京站 & 南京南站→上海虹桥，二等座</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">市内交通</td>
-                <td className="py-2 pr-4">300-400元</td>
-                <td className="py-2">地铁/公交为主，适当选择打车</td>
+                <td className="py-2 pr-4">350-400/600元</td>
+                <td className="py-2">地铁/公交为主，适当选择打车（到顶上浮 200 元）</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">住宿</td>
-                <td className="py-2 pr-4">1400-1600元</td>
-                <td className="py-2">高性价比标准间/口碑民宿（约350-400元/晚×4晚）</td>
+                <td className="py-2 pr-4">800-1000元</td>
+                <td className="py-2">Day 1,2,4 酒店（约 150-300 元/晚 ×3 晚），Day3 青旅（约 40-90 元/晚 ×1 晚）</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">门票</td>
                 <td className="py-2 pr-4">300-400元</td>
-                <td className="py-2">含钟山风景区、总统府、明城墙门票等</td>
+                <td className="py-2">含钟山风景区、总统府、明城墙门票等（注意提前预约部分景点！）</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">餐饮</td>
                 <td className="py-2 pr-4">1200-1500元</td>
-                <td className="py-2">大众点评高分标准（约240元/天）</td>
+                <td className="py-2">南京老字号和老店中评分标准（150-240/天）</td>
               </tr>
               <tr>
                 <td className="py-2 pr-4">机动/购物</td>
-                <td className="py-2 pr-4">300-400元</td>
+                <td className="py-2 pr-4">400-500元</td>
                 <td className="py-2">金陵小吃、伴手礼、临时开销</td>
               </tr>
             </tbody>
@@ -67,7 +67,7 @@ export default function NanjingPage() {
             <div className="text-center">
               <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">Day 1</span>
             </div>
-            <div className="text-center text-muted">南京南站 → 珍珠泉 → 老山</div>
+            <div className="text-center text-muted">南京站 → 珍珠泉 → 老山</div>
             <span className="text-muted">↓</span>
             <div className="text-center">
               <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">Day 2</span>
@@ -104,7 +104,7 @@ export default function NanjingPage() {
           </div>
           <dl className="grid grid-cols-[100px_1fr] gap-x-4 gap-y-4 text-sm">
             <dt className="text-muted font-medium">10:00</dt>
-            <dd>南京南站到达</dd>
+            <dd>南京站到达（从北广场出站，感受玄武湖震撼湖景 🌊）</dd>
 
             <dt className="text-muted font-medium">10:30</dt>
             <dd>地铁10号线→龙华路站（6元）</dd>
@@ -125,7 +125,7 @@ export default function NanjingPage() {
             <dd className="flex items-start gap-1"><Utensils className="w-3 h-3 mt-1 shrink-0 text-muted opacity-40" /> 弘阳广场晚餐 - 南京大牌档（约60元）</dd>
           </dl>
           <div className="mt-6 pt-4 border-t border-border text-sm text-muted">
-            当日花费：约361元
+            预计花费：约650元（含首日江北住宿及地铁）
           </div>
         </article>
 
@@ -155,7 +155,7 @@ export default function NanjingPage() {
             <dd className="flex items-start gap-1"><MapPin className="w-3 h-3 mt-1 shrink-0 text-muted opacity-40" /> 夫子庙秦淮河风光带 + 画舫夜游（80元）</dd>
           </dl>
           <div className="mt-6 pt-4 border-t border-border text-sm text-muted">
-            当日花费：约649元
+            预计花费：约850元（含钟山套票及精致晚餐）
           </div>
         </article>
 
@@ -191,7 +191,7 @@ export default function NanjingPage() {
             <dd>返回酒店休息，缓解体力</dd>
           </dl>
           <div className="mt-6 pt-4 border-t border-border text-sm text-muted">
-            当日花费：约560元（含酒店住宿分摊）
+            预计花费：约750元（包含博物院之旅及青旅/老店餐饮）
           </div>
         </article>
 
@@ -224,7 +224,7 @@ export default function NanjingPage() {
             <dd className="flex items-start gap-1"><MapPin className="w-3 h-3 mt-1 shrink-0 text-muted opacity-40" /> 南京眼步行桥（夜景地标，免费）</dd>
           </dl>
           <div className="mt-6 pt-4 border-t border-border text-sm text-muted">
-            当日花费：约600元
+            预计花费：约850元（含打车游览及鱼嘴日落补给）
           </div>
         </article>
 
@@ -260,7 +260,7 @@ export default function NanjingPage() {
             <dd>前往南京南站，返程上海</dd>
           </dl>
           <div className="mt-6 pt-4 border-t border-border text-sm text-muted">
-            当日花费：约200元
+            预计花费：约700元（含返程补给、纪念品采购及车票分摊）
           </div>
         </article>
       </section>
@@ -495,47 +495,52 @@ export default function NanjingPage() {
         </div>
       </section>
 
+      {/* Food Footer Note */}
+      <section className="mt-8 text-center">
+        <p className="text-sm text-muted">※ 以上价格为单人均价建议，仅供参考</p>
+      </section>
+
       {/* Total Budget Summary */}
       <section className="mt-12">
         <h2 className="text-2xl font-semibold mb-6">💰 费用总结</h2>
 
         {/* 合计 */}
         <div className="bg-muted/10 border border-border rounded-2xl p-6 mb-6 text-center">
-          <div className="text-sm text-muted mb-1">预计总花费</div>
-          <div className="text-4xl font-bold">2571元</div>
-          <div className="text-sm text-muted mt-2">不含机动费用（建议预留 800-1000 元）</div>
+          <div className="text-sm text-muted mb-1">预计总花费（含机动/高性价比）</div>
+          <div className="text-4xl font-bold">3800元</div>
+          <div className="text-sm text-muted mt-2">基于最新的混合住宿（酒店/青旅）与老字号餐饮方案核算，包含 450 元购物机动</div>
         </div>
 
         {/* 明细 */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
             <Train className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <div className="text-lg font-semibold">290元</div>
+            <div className="text-lg font-semibold">300元</div>
             <div className="text-xs text-muted">往返交通</div>
           </div>
 
           <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
             <MapPin className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <div className="text-lg font-semibold">236元</div>
+            <div className="text-lg font-semibold">450元</div>
             <div className="text-xs text-muted">市内交通</div>
           </div>
 
           <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
             <Calendar className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <div className="text-lg font-semibold">1250元</div>
-            <div className="text-xs text-muted">住宿</div>
+            <div className="text-lg font-semibold">900元</div>
+            <div className="text-xs text-muted">混合住宿</div>
           </div>
 
           <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
             <Ticket className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <div className="text-lg font-semibold">255元</div>
-            <div className="text-xs text-muted">门票</div>
+            <div className="text-lg font-semibold">350元</div>
+            <div className="text-xs text-muted">门票费用</div>
           </div>
 
           <div className="bg-muted/5 border border-border rounded-xl p-3 text-center">
             <Utensils className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <div className="text-lg font-semibold">540元</div>
-            <div className="text-xs text-muted">餐饮</div>
+            <div className="text-lg font-semibold">1350元</div>
+            <div className="text-xs text-muted">美食餐饮</div>
           </div>
         </div>
       </section>
