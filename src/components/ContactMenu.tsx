@@ -7,7 +7,7 @@ import { ChevronDown, Mail, Github, Instagram, MessageCircle, Send, Linkedin } f
 interface SocialLink {
     name: string;
     href: string;
-    icon: any; // Type as any to accommodate Lucide React functional components passed from server to client
+    icon: React.ElementType;
     qrCode?: string;
 }
 
@@ -109,7 +109,7 @@ export function ContactMenu() {
 
                 {socialLinks.map((link) => (
                     <div key={link.name} className="relative group/item w-full">
-                        {link.name === "微信" ? (
+                        {link.name === "WeChat" ? (
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();

@@ -1,5 +1,11 @@
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "项目 - Hank Wong's Web",
+    description: "查看 Hank Wong (wilboerht) 开发的有趣项目，涵盖 Web 应用、AI 工具及数字化解决方案。",
+};
 
 // Mock data extending current projects to demonstrate pagination
 const MOCK_PROJECTS = [

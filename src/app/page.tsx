@@ -1,5 +1,4 @@
-import Image from "next/image";
-import { Mail, Github, Instagram, FileText, FolderKanban, Palette, User, MessageCircle, Send, Microscope, Linkedin } from "lucide-react";
+import { FileText, FolderKanban, Palette, User, Microscope } from "lucide-react";
 import { ContactMenu } from "@/components/ContactMenu";
 
 const XIcon = ({ className }: { className?: string }) => (

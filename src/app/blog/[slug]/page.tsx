@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, CalendarDays, Clock, Library, ChevronRight, ChevronLeft, BookOpen, Eye } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, Library, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -277,13 +277,13 @@ export default async function BlogPost({
                                             "@type": "ListItem",
                                             "position": 1,
                                             "name": "Blog",
-                                            "item": "https://yourdomain.com/blog"
+                                            "item": "https://wilboerht.com/blog"
                                         },
                                         {
                                             "@type": "ListItem",
                                             "position": 2,
                                             "name": post.series.name,
-                                            "item": `https://yourdomain.com/blog/${post.series.items[0].slug}`
+                                            "item": `https://wilboerht.com/blog/${post.series.items[0].slug}`
                                         },
                                         {
                                             "@type": "ListItem",

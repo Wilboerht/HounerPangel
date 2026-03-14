@@ -1,13 +1,19 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Library, Search } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Library, Search } from "lucide-react";
 import { CollectionsDrawer } from "@/components/CollectionsDrawer";
 import { BlogSearch } from "@/components/BlogSearch";
-import { getPublishedPosts } from "@/lib/notion";
+import { getPublishedPosts, Post } from "@/lib/notion";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "博客 - Hank Wong's Web",
+    description: "在此阅读 Hank Wong 的技术文章、生活随笔和创意分享。",
+};
 
 const ITEMS_PER_PAGE = 5;
 
 // Next.js 15+ Async Page Props
-export default async function Blog({
+export default async function BlogPage({
     searchParams,
 }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -22,7 +28,7 @@ export default async function Blog({
 
     // Dynamically generate collection lists from posts
     const collectionsMap = new Map();
-    allPosts.forEach((post: any) => {
+    allPosts.forEach((post: Post) => {
         if (post.series) {
             if (!collectionsMap.has(post.series.name)) {
                 collectionsMap.set(post.series.name, {
@@ -38,7 +44,7 @@ export default async function Blog({
 
     // Filter posts based on search query
     const filteredPosts = query
-        ? allPosts.filter((post: any) =>
+        ? allPosts.filter((post: Post) =>
             post.title?.toLowerCase().includes(query) ||
             post.excerpt?.toLowerCase().includes(query) ||
             (post.series?.name.toLowerCase().includes(query))
@@ -136,7 +142,7 @@ export default async function Blog({
                             <BlogSearch />
                             {query && (
                                 <div className="text-xs text-muted font-medium bg-foreground/5 px-3 py-1.5 rounded-full border border-border/50">
-                                    找到 <span className="text-foreground font-bold">{filteredPosts.length}</span> {filteredPosts.length === 1 ? '篇文章' : '篇文章'} 关于 "{query}"
+                                    找到 <span className="text-foreground font-bold">{filteredPosts.length}</span> 篇文章 关于 "{query}"
                                 </div>
                             )}
                         </div>
@@ -144,7 +150,7 @@ export default async function Blog({
                         {/* Blog posts list */}
                         <div className="flex flex-col gap-8 min-h-[400px]">
                             {currentPosts.length > 0 ? (
-                                currentPosts.map((post: any, idx: number) => (
+                                currentPosts.map((post: Post) => (
                                     <div key={post.id} className="flex flex-col gap-8">
                                         <Link href={`/blog/${post.slug}`} className="group flex flex-col gap-3">
                                             {post.series && (

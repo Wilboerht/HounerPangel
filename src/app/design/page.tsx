@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Sparkles, Smile, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "设计 - Hank Wong's Web",
+    description: "Hank Wong 的设计探索、UI 概念及视觉实验作品集。",
+};
 
 // Mock data extending current design items to demonstrate pagination
 const MOCK_DESIGNS = [

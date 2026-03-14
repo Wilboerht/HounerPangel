@@ -93,7 +93,7 @@ export default async function ResearchDetail({
                                 ))}
                             </div>
                         </div>
-                        <ShareButton title={research.title} text={`阅读这篇研究：e}`} />
+                        <ShareButton title={research.title} text={`阅读这篇研究：${research.title}`} />
                     </div>
                 </header>
 

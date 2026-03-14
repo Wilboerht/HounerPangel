@@ -1,10 +1,16 @@
 import { MapPin, Calendar, Wallet, Train, Utensils, Ticket } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "南京5日旅行计划 - Hank Wong's Web",
+  description: "一份详尽的南京5日深度游计划，包含预算、路线、每日行程及本地美食推荐。",
+};
 
 export default function NanjingPage() {
   return (
     <main className="min-h-screen px-6 pt-12 pb-0 max-w-4xl mx-auto relative">
       {/* Floating TOC */}
-      <aside className="hidden 2xl:block fixed top-[182px] left-[calc(50%+468px)] w-48">
+      <aside className="hidden lg:block fixed top-[182px] left-[calc(50%+468px)] w-48 xl:w-56">
         <nav className="flex flex-col gap-3 text-sm border-l border-border pl-4">
           <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-2 whitespace-nowrap">目录索引</p>
           <a href="#budget" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">📦 预算明细</a>
@@ -26,7 +32,7 @@ export default function NanjingPage() {
       <header className="mb-12 text-center">
         <h1 className="text-4xl font-bold mb-3">🏯 南京5日旅行计划</h1>
         <p className="text-muted text-sm font-mono uppercase tracking-widest">
-          2026.07.xx — 2026.07.xx
+          深度探索金陵古都
         </p>
       </header>
 

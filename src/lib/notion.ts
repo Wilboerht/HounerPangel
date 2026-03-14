@@ -1,6 +1,43 @@
 import { Client } from "@notionhq/client";
 import { NotionToMarkdown } from "notion-to-md";
 
+// 定义接口以减少 any 的使用
+export interface SeriesItem {
+    slug: string;
+    title: string;
+    index: number;
+}
+
+export interface Series {
+    name: string;
+    current: number;
+    total: number;
+    items: SeriesItem[];
+}
+
+export interface Post {
+    id: string;
+    title: string;
+    slug: string;
+    date: string;
+    excerpt: string;
+    series: Series | null;
+    readTime?: string;
+    views?: number;
+    content?: string;
+}
+
+export interface Research {
+    id: string;
+    title: string;
+    slug: string;
+    date: string;
+    abstract: string;
+    tags: string[];
+    readTime?: string;
+    content?: string;
+}
+
 // 初始化 Notion 客户端
 const notion = new Client({
     auth: process.env.NOTION_TOKEN,
@@ -10,11 +47,12 @@ const n2m = new NotionToMarkdown({ notionClient: notion });
 
 // 拦截 Notion 的空行（空段落），强制转换成 <br/> 标签，
 // 这样就能保留你在 Notion 里敲回车产生的连续空白行，不会被 Markdown 折叠了。
-n2m.setCustomTransformer("paragraph", async (block: any) => {
-    if (!block.paragraph?.rich_text || block.paragraph.rich_text.length === 0) {
+n2m.setCustomTransformer("paragraph", async (block) => {
+    const paragraphBlock = block as any; // Still need some casting for complex Notion blocks
+    if (!paragraphBlock.paragraph?.rich_text || paragraphBlock.paragraph.rich_text.length === 0) {
         return "<br/>";
     }
-    return false; // 返回 false 让插件使用默认解析方式渲染有文字的段落
+    return false;
 });
 
 /**
@@ -43,7 +81,7 @@ const calculateReadingTime = (content: string): string => {
     return `${Math.max(1, minutes)} min read`;
 };
 
-export const getPublishedPosts = async () => {
+export const getPublishedPosts = async (): Promise<Post[]> => {
     if (!process.env.NOTION_TOKEN || !process.env.NOTION_DATABASE_ID) {
         console.warn("Missing Notion environment variables");
         return [];
@@ -67,33 +105,43 @@ export const getPublishedPosts = async () => {
         });
 
         const rawPosts = response.results.map((post: any) => {
+            const properties = post.properties;
             return {
                 id: post.id,
-                title: post.properties.Name?.title?.[0]?.plain_text || "Untitled",
-                slug: post.properties.Slug?.rich_text?.[0]?.plain_text || post.id,
-                date: post.properties.Date?.date?.start || "",
-                excerpt: post.properties.Excerpt?.rich_text?.[0]?.plain_text || "",
-                seriesName: post.properties.Series?.select?.name || null,
+                title: properties.Name?.title?.[0]?.plain_text || "Untitled",
+                slug: properties.Slug?.rich_text?.[0]?.plain_text || post.id,
+                date: properties.Date?.date?.start || "",
+                excerpt: properties.Excerpt?.rich_text?.[0]?.plain_text || "",
+                seriesName: properties.Series?.select?.name || null,
             };
         });
 
-        const seriesMap = new Map();
+        const seriesMap = new Map<string, any[]>();
         rawPosts.forEach((post: any) => {
             if (post.seriesName) {
                 if (!seriesMap.has(post.seriesName)) {
                     seriesMap.set(post.seriesName, []);
                 }
-                seriesMap.get(post.seriesName).push(post);
+                seriesMap.get(post.seriesName)?.push(post);
             }
         });
 
-        rawPosts.forEach((post: any) => {
+        const posts: Post[] = rawPosts.map((post: any) => {
+            let processedPost: Post = {
+                id: post.id,
+                title: post.title,
+                slug: post.slug,
+                date: post.date,
+                excerpt: post.excerpt,
+                series: null
+            };
+
             if (post.seriesName) {
-                const group = seriesMap.get(post.seriesName);
+                const group = seriesMap.get(post.seriesName) || [];
                 const sortedGroup = [...group].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
                 const index = sortedGroup.findIndex((p) => p.id === post.id);
                 
-                post.series = {
+                processedPost.series = {
                     name: post.seriesName,
                     current: index + 1,
                     total: sortedGroup.length,
@@ -103,20 +151,18 @@ export const getPublishedPosts = async () => {
                         index: i + 1,
                     })),
                 };
-            } else {
-                post.series = null;
             }
-            delete post.seriesName;
+            return processedPost;
         });
 
-        return rawPosts;
+        return posts;
     } catch (error) {
         console.error("Error fetching Notion posts:", error);
         return [];
     }
 };
 
-export const getPublishedResearch = async () => {
+export const getPublishedResearch = async (): Promise<Research[]> => {
     if (!process.env.NOTION_TOKEN || !process.env.NOTION_RESEARCH_DATABASE_ID) {
         console.warn("Missing Notion environment variables for Research");
         return [];
@@ -155,7 +201,7 @@ export const getPublishedResearch = async () => {
     }
 };
 
-export const getSingleResearch = async (slug: string) => {
+export const getSingleResearch = async (slug: string): Promise<Research | null> => {
     if (!process.env.NOTION_TOKEN || !process.env.NOTION_RESEARCH_DATABASE_ID) {
         return null;
     }
@@ -197,7 +243,7 @@ export const getSingleResearch = async (slug: string) => {
     }
 };
 
-export const getSinglePost = async (slug: string) => {
+export const getSinglePost = async (slug: string): Promise<Post | null> => {
     if (!process.env.NOTION_TOKEN || !process.env.NOTION_DATABASE_ID) {
         return null;
     }
@@ -219,12 +265,12 @@ export const getSinglePost = async (slug: string) => {
             return null;
         }
 
-        const post: any = response.results[0];
-        const mdblocks = await n2m.pageToMarkdown(post.id);
+        const postObject: any = response.results[0];
+        const mdblocks = await n2m.pageToMarkdown(postObject.id);
         const mdString = n2m.toMarkdownString(mdblocks);
 
-        let series = null;
-        const seriesName = post.properties.Series?.select?.name;
+        let series: Series | null = null;
+        const seriesName = postObject.properties.Series?.select?.name;
         if (seriesName) {
             const seriesResponse = await notion.databases.query({
                 database_id: process.env.NOTION_DATABASE_ID,
@@ -236,12 +282,12 @@ export const getSinglePost = async (slug: string) => {
                 },
                 sorts: [{ property: "Date", direction: "ascending" }]
             });
-            const items = seriesResponse.results.map((p: any, i: number) => ({
+            const items: SeriesItem[] = seriesResponse.results.map((p: any, i: number) => ({
                 slug: p.properties.Slug?.rich_text?.[0]?.plain_text || p.id,
                 title: p.properties.Name?.title?.[0]?.plain_text || "Untitled",
                 index: i + 1
             }));
-            const currentItem = items.find((item) => item.slug === (post.properties.Slug?.rich_text?.[0]?.plain_text || post.id));
+            const currentItem = items.find((item) => item.slug === (postObject.properties.Slug?.rich_text?.[0]?.plain_text || postObject.id));
             series = {
                 name: seriesName,
                 current: currentItem ? currentItem.index : 1,
@@ -251,13 +297,13 @@ export const getSinglePost = async (slug: string) => {
         }
 
         return {
-            id: post.id,
-            title: post.properties.Name?.title?.[0]?.plain_text || "Untitled",
-            slug: post.properties.Slug?.rich_text?.[0]?.plain_text || post.id,
-            date: post.properties.Date?.date?.start || "",
+            id: postObject.id,
+            title: postObject.properties.Name?.title?.[0]?.plain_text || "Untitled",
+            slug: postObject.properties.Slug?.rich_text?.[0]?.plain_text || postObject.id,
+            date: postObject.properties.Date?.date?.start || "",
             readTime: calculateReadingTime(mdString.parent),
-            views: post.properties.Views?.number || 0,
-            excerpt: post.properties.Excerpt?.rich_text?.[0]?.plain_text || "",
+            views: postObject.properties.Views?.number || 0,
+            excerpt: postObject.properties.Excerpt?.rich_text?.[0]?.plain_text || "",
             series: series,
             content: mdString.parent,
         };
@@ -316,26 +362,27 @@ export const getComments = async (pageId: string) => {
     try {
         const response = await notion.comments.list({ block_id: pageId });
         return response.results.map((comment: any) => {
-            const fullText = comment.rich_text?.map((rt: any) => rt.plain_text).join("") || "";
+            const commentObj = comment as any;
+            const fullText = commentObj.rich_text?.map((rt: any) => rt.plain_text).join("") || "";
             
             // Try to parse our custom format: "Author [email]: Message"
             const match = fullText.match(/^(.+?)(?:\s\[(.*?)\])?:\s([\s\S]*)$/);
             
             if (match) {
                 return {
-                    id: comment.id,
+                    id: commentObj.id,
                     text: match[3],
-                    created_time: comment.created_time,
+                    created_time: commentObj.created_time,
                     author: match[1],
                     email: match[2] || null,
                 };
             }
 
             return {
-                id: comment.id,
+                id: commentObj.id,
                 text: fullText,
-                created_time: comment.created_time,
-                author: comment.created_by?.name || "Reader",
+                created_time: commentObj.created_time,
+                author: commentObj.created_by?.name || "Reader",
             };
         });
     } catch (error) {

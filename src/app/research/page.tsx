@@ -2,12 +2,18 @@ import Link from "next/link";
 import { ResearchSearch } from "@/components/ResearchSearch";
 import { ArrowLeft, ExternalLink, BookOpen, ChevronLeft, ChevronRight, Search } from "lucide-react";
 
-import { getPublishedResearch } from "@/lib/notion";
+import { getPublishedResearch, Research } from "@/lib/notion";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "研究 - Hank Wong's Web",
+    description: "探索 Hank Wong 对技术、设计及跨学科领域的深度研究记录。",
+};
 
 const ITEMS_PER_PAGE = 4;
 
 // Next.js 15+ Async Page Props
-export default async function Research({
+export default async function ResearchPage({
     searchParams,
 }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -22,7 +28,7 @@ export default async function Research({
 
     // Filter research items based on search query
     const filteredItems = query
-        ? allItems.filter((item: any) =>
+        ? allItems.filter((item: Research) =>
             item.title?.toLowerCase().includes(query) ||
             item.abstract?.toLowerCase().includes(query) ||
             item.tags?.some((tag: string) => tag.toLowerCase().includes(query))
@@ -80,7 +86,7 @@ export default async function Research({
                     {/* Research items list */}
                     <div className="flex flex-col gap-6 min-h-[400px]">
                         {currentItems.length > 0 ? (
-                            currentItems.map((item: any) => (
+                            currentItems.map((item: Research) => (
                                 <Link href={`/research/${item.slug}`} key={item.id} className="p-6 rounded-2xl border border-border/50 bg-foreground/[0.02] flex flex-col gap-3 group cursor-pointer hover:border-foreground/40 hover:bg-foreground/[0.04] transition-all duration-300">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
