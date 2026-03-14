@@ -500,7 +500,7 @@ export default function NanjingPage() {
 
       {/* Food Footer Note */}
       <section className="mt-8 text-center">
-        <p className="text-sm text-muted">※ 以上价格为单人均价建议，仅供参考</p>
+        <p className="text-sm text-muted">※ 以上价格为单人均价，根据实际存在浮动</p>
       </section>
 
       {/* Total Budget Summary */}
