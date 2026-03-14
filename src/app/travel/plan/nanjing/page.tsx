@@ -42,7 +42,7 @@ export default function NanjingPage() {
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">门票</td>
                 <td className="py-2 pr-4">300-400元</td>
-                <td className="py-2">含钟山风景区、总统府、明城墙门票等（注意提前预约部分景点！）</td>
+                <td className="py-2">含钟山风景区、总统府、明城墙门票等（需提前预约部分景点！）</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">餐饮</td>
@@ -285,112 +285,112 @@ export default function NanjingPage() {
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">珍珠泉</td>
                 <td className="py-2 pr-4">浦口区</td>
-                <td className="py-2">泉水、瀑布、竹林景观，适合休闲游览</td>
+                <td className="py-2">以泉水和自然风景为主，环境较幽静，适合休闲散步</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">老山国家森林公园</td>
                 <td className="py-2 pr-4">浦口区</td>
-                <td className="py-2">森林氧吧，南京最大的森林公园</td>
+                <td className="py-2">森林覆盖率高，是登山徒步和呼吸新鲜空气的好去处</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">梧桐大道</td>
                 <td className="py-2 pr-4">钟山风景区</td>
-                <td className="py-2">陵园路两侧的梧桐树，被誉为"南京最美道路"</td>
+                <td className="py-2">陵园路两侧种满高大的法桐，形成了极具特色的林荫通道</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">中山陵</td>
                 <td className="py-2 pr-4">钟山风景区</td>
-                <td className="py-2">孙中山先生的陵墓，免费预约参观</td>
+                <td className="py-2">孙中山陵寝，建筑气势宏伟（需提前预约）</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">音乐台</td>
                 <td className="py-2 pr-4">钟山风景区</td>
-                <td className="py-2">中山陵景区内，鸽子飞翔的浪漫场景</td>
+                <td className="py-2">中西合璧的露天舞台，常有成群鸽子飞翔，适合驻足小憩</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">明孝陵</td>
                 <td className="py-2 pr-4">钟山风景区</td>
-                <td className="py-2">朱元璋及其皇后陵墓，明代皇家陵寝代表</td>
+                <td className="py-2">明太祖朱元璋的陵寝，石象路的石刻景观值得一看</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">夫子庙秦淮河风光带</td>
                 <td className="py-2 pr-4">秦淮区</td>
-                <td className="py-2">南京最繁华的商业街，夜游秦淮河必去</td>
+                <td className="py-2">南京的核心历史商业区，晚间可以体验秦淮河的人文灯影</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">南京博物院</td>
                 <td className="py-2 pr-4">中山东路</td>
-                <td className="py-2">中国三大博物馆之一，免费预约</td>
+                <td className="py-2">馆藏丰富的综合性博物馆，其中的民国馆深受游客喜爱</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">新街口</td>
-                <td className="py-2 pr-4">玄武区</td>
-                <td className="py-2">中华第一商圈，购物美食一站式</td>
+                <td className="py-2 pr-4">核心城区</td>
+                <td className="py-2">南京最现代化的商业中心，购物和餐饮选择非常丰富</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">总统府</td>
                 <td className="py-2 pr-4">玄武区</td>
-                <td className="py-2">民国建筑代表，曾是孙中山和蒋介石办公地</td>
+                <td className="py-2">保存较完整的近代建筑群，展示了多个历史时期的行政遗迹</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">朝天宫</td>
                 <td className="py-2 pr-4">秦淮区</td>
-                <td className="py-2">清代最大古建筑群，江南地区保存最完整的明代建筑</td>
+                <td className="py-2">古建筑群宏大精美，是了解南京历史文化变迁的重要窗口</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">中华门城堡</td>
                 <td className="py-2 pr-4">秦淮区</td>
-                <td className="py-2">明代城墙代表，世界现存最大城门</td>
+                <td className="py-2">明朝初期建造的规模宏大的瓮城，可登上城墙一览老城景色</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">老门东</td>
                 <td className="py-2 pr-4">秦淮区</td>
-                <td className="py-2">南京古城遗韵，传统小吃和历史建筑</td>
+                <td className="py-2">地处老城南核心区域，以仿古建筑风格和当地传统小吃集散闻名</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">燕子矶</td>
                 <td className="py-2 pr-4">栖霞区</td>
-                <td className="py-2">长江三大名矶之首，看长江夜景绝佳位置</td>
+                <td className="py-2">直插长江的石矶，是欣赏长江景色和观赏日落的传统佳地</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">阅江楼</td>
                 <td className="py-2 pr-4">鼓楼区</td>
-                <td className="py-2">"江南第一楼"，俯瞰长江壮丽景色</td>
+                <td className="py-2">位于狮子山顶，视野极为开阔，可以从多角度观测长江与大桥</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">南京长江大桥</td>
                 <td className="py-2 pr-4">鼓楼区</td>
-                <td className="py-2">新中国第一座自行设计建造的长江大桥</td>
+                <td className="py-2">长江上第一座自主设计的双层公铁大桥，具有鲜明的时代特征</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">南京眼</td>
                 <td className="py-2 pr-4">建邺区</td>
-                <td className="py-2">河西现代步行景观桥，南京新地标</td>
+                <td className="py-2">河西现代化的步行景观桥，夜间灯光效果较好，适合散步拍照</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">鱼嘴湿地公园</td>
                 <td className="py-2 pr-4">建邺区</td>
-                <td className="py-2">红白灯塔、绝美日落、出片率极高</td>
+                <td className="py-2">拥有标志性的灯塔建筑，江边地势开阔，是南京看晚霞的好地点</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">玄武湖</td>
                 <td className="py-2 pr-4">玄武区</td>
-                <td className="py-2">中国四大名湖之一，适合晨练划船</td>
+                <td className="py-2">与南京火车站紧邻，湖面广阔，是市民日常休闲和划船的热门地点</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">鸡鸣寺</td>
                 <td className="py-2 pr-4">玄武区</td>
-                <td className="py-2">"金陵第一刹"，南京最古老的梵刹之一</td>
+                <td className="py-2">历史悠久的标志性寺庙，以早春樱花景观和药师塔最为出名</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="py-2 pr-4">莫愁湖公园</td>
                 <td className="py-2 pr-4">建邺区</td>
-                <td className="py-2">南京古典园林，荷花季尤为美丽</td>
+                <td className="py-2">典型的江南风格园林，湖光山色较为幽静，尤以荷花景致闻名</td>
               </tr>
               <tr>
                 <td className="py-2 pr-4">江南贡院</td>
                 <td className="py-2 pr-4">秦淮区</td>
-                <td className="py-2">中国最大科举考场遗址，免费参观</td>
+                <td className="py-2">曾经是科举考试的重要场所，现为全方位展示科举文化的博物馆</td>
               </tr>
             </tbody>
           </table>
