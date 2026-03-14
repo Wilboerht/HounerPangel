@@ -2,7 +2,26 @@ import { MapPin, Calendar, Wallet, Train, Utensils, Ticket } from "lucide-react"
 
 export default function NanjingPage() {
   return (
-    <main className="min-h-screen px-6 pt-12 pb-0 max-w-4xl mx-auto">
+    <main className="min-h-screen px-6 pt-12 pb-0 max-w-4xl mx-auto relative">
+      {/* Floating TOC */}
+      <aside className="hidden 2xl:block fixed top-[182px] left-[calc(50%+468px)] w-48">
+        <nav className="flex flex-col gap-3 text-sm border-l border-border pl-4">
+          <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-2 whitespace-nowrap">目录索引</p>
+          <a href="#budget" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">📦 预算明细</a>
+          <a href="#route" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">🗺️ 行程路线图</a>
+          <a href="#itinerary" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">📅 每日详细行程</a>
+          <div className="flex flex-col gap-2.5 pl-4 border-l border-border/40 ml-1">
+            <a href="#day1" className="text-muted-foreground/60 hover:text-primary transition-all text-sm whitespace-nowrap">Day 1 珍珠泉/老山</a>
+            <a href="#day2" className="text-muted-foreground/60 hover:text-primary transition-all text-sm whitespace-nowrap">Day 2 钟山/秦淮河</a>
+            <a href="#day3" className="text-muted-foreground/60 hover:text-primary transition-all text-sm whitespace-nowrap">Day 3 南博/总统府</a>
+            <a href="#day4" className="text-muted-foreground/60 hover:text-primary transition-all text-sm whitespace-nowrap">Day 4 阅江楼/长江</a>
+            <a href="#day5" className="text-muted-foreground/60 hover:text-primary transition-all text-sm whitespace-nowrap">Day 5 玄武湖/返程</a>
+          </div>
+          <a href="#attractions" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">🏛️ 景点汇总</a>
+          <a href="#food" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">🍜 本地美食</a>
+          <a href="#summary" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">💰 费用总结</a>
+        </nav>
+      </aside>
       {/* Header */}
       <header className="mb-12 text-center">
         <h1 className="text-4xl font-bold mb-3">🏯 南京5日旅行计划</h1>
@@ -12,7 +31,7 @@ export default function NanjingPage() {
       </header>
 
       {/* Budget Overview */}
-      <section className="mb-12">
+      <section id="budget" className="mb-12 scroll-mt-20">
         <h2 className="text-2xl font-semibold mb-4">📦 预算明细</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
@@ -60,7 +79,7 @@ export default function NanjingPage() {
       </section>
 
       {/* Route Map */}
-      <section className="mb-12">
+      <section id="route" className="mb-12 scroll-mt-20">
         <h2 className="text-2xl font-semibold mb-6">🗺️ 行程路线图</h2>
         <div className="bg-muted/10 border border-border rounded-lg p-6">
           <div className="flex flex-col items-center gap-2 text-sm">
@@ -93,11 +112,11 @@ export default function NanjingPage() {
       </section>
 
       {/* Daily Itinerary */}
-      <section className="space-y-12">
+      <section id="itinerary" className="space-y-12 scroll-mt-20">
         <h2 className="text-2xl font-semibold">📅 每日详细行程</h2>
 
         {/* Day 1 */}
-        <article className="border border-border rounded-lg p-6">
+        <article id="day1" className="border border-border rounded-lg p-6 scroll-mt-20">
           <div className="flex items-center gap-3 mb-6">
             <h3 className="text-xl font-semibold">Day 1</h3>
             <span className="text-muted text-sm">珍珠泉 + 老山国家森林公园</span>
@@ -130,7 +149,7 @@ export default function NanjingPage() {
         </article>
 
         {/* Day 2 */}
-        <article className="border border-border rounded-lg p-6">
+        <article id="day2" className="border border-border rounded-lg p-6 scroll-mt-20">
           <div className="flex items-center gap-3 mb-6">
             <h3 className="text-xl font-semibold">Day 2</h3>
             <span className="text-muted text-sm">中山陵 + 明孝陵 + 夫子庙</span>
@@ -163,7 +182,7 @@ export default function NanjingPage() {
         </article>
 
         {/* Day 3 */}
-        <article className="border border-border rounded-lg p-6">
+        <article id="day3" className="border border-border rounded-lg p-6 scroll-mt-20">
           <div className="flex items-center gap-3 mb-6">
             <h3 className="text-xl font-semibold">Day 3</h3>
             <span className="text-muted text-sm">南京博物院 + 新街口 + 总统府 + 中华门/老门东</span>
@@ -199,7 +218,7 @@ export default function NanjingPage() {
         </article>
 
         {/* Day 4 */}
-        <article className="border border-border rounded-lg p-6">
+        <article id="day4" className="border border-border rounded-lg p-6 scroll-mt-20">
           <div className="flex items-center gap-3 mb-6">
             <h3 className="text-xl font-semibold">Day 4</h3>
             <span className="text-muted text-sm">阅江楼 + 长江大桥 + 燕子矶 + 南京眼</span>
@@ -232,7 +251,7 @@ export default function NanjingPage() {
         </article>
 
         {/* Day 5 */}
-        <article className="border border-border rounded-lg p-6">
+        <article id="day5" className="border border-border rounded-lg p-6 scroll-mt-20">
           <div className="flex items-center gap-3 mb-6">
             <h3 className="text-xl font-semibold">Day 5</h3>
             <span className="text-muted text-sm">玄武湖 + 鸡鸣寺 + 莫愁湖 + 返程</span>
@@ -269,7 +288,7 @@ export default function NanjingPage() {
       </section>
 
       {/* Attractions */}
-      <section className="mt-12">
+      <section id="attractions" className="mt-12 scroll-mt-20">
         <h2 className="text-2xl font-semibold mb-6">🏛️ 景点汇总</h2>
 
         <div className="overflow-x-auto">
@@ -398,7 +417,7 @@ export default function NanjingPage() {
       </section>
 
       {/* Food Recommendations */}
-      <section className="mt-12">
+      <section id="food" className="mt-12 scroll-mt-20">
         <h2 className="text-2xl font-semibold mb-6">🍜 南京本地美食</h2>
 
         <div className="overflow-x-auto">
@@ -504,7 +523,7 @@ export default function NanjingPage() {
       </section>
 
       {/* Total Budget Summary */}
-      <section className="mt-12">
+      <section id="summary" className="mt-12 scroll-mt-20">
         <h2 className="text-2xl font-semibold mb-6">💰 费用总结</h2>
 
         {/* 合计 */}
