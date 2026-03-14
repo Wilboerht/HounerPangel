@@ -2,7 +2,7 @@ import { TravelPlan } from "@/types/travel";
 
 export const macauPlan: TravelPlan = {
   title: "澳门2日旅行计划",
-  icon: "🇲🇴",
+  icon: "🎰",
   slug: "macau",
   subtitle: "2026.12.22 - 2026.12.23",
   description: "澳门2日深度游：涵盖大三巴牌坊、妈阁庙、官也街美食及金光大道璀璨夜景体验。",

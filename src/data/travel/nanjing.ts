@@ -4,7 +4,7 @@ export const nanjingPlan: TravelPlan = {
   title: "南京5日旅行计划",
   icon: "🏯",
   slug: "nanjing",
-  subtitle: "深度探索金陵古都",
+  subtitle: "2026.07.xx - 2026.07.xx",
   description: "一份详尽的南京5日深度游计划，包含预算、路线、每日行程及本地美食推荐。",
   budget: [
     { name: "往返交通", range: "300元", note: "高铁 上海站→南京站 & 南京南站→上海虹桥，二等座" },
