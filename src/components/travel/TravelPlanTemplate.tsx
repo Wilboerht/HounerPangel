@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Calendar, Wallet, Train, Utensils, Ticket, LucideIcon } from "lucide-react";
+import { MapPin, Calendar, Wallet, Train, Utensils, Ticket, Check, LucideIcon } from "lucide-react";
 import { TravelPlan } from "@/types/travel";
 
 const IconMap: Record<string, LucideIcon> = {
@@ -35,6 +35,9 @@ export default function TravelPlanTemplate({ data }: Props) {
           </div>
           <a href="#attractions" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">🏛️ 景点汇总</a>
           <a href="#food" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">🍜 本地美食</a>
+          {data.bankTasks && (
+            <a href="#banking" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">🏦 银行开户</a>
+          )}
           <a href="#summary" className="text-muted-foreground hover:text-primary transition-all whitespace-nowrap flex items-center gap-2 font-medium">💰 费用总结</a>
         </nav>
       </aside>
@@ -187,6 +190,50 @@ export default function TravelPlanTemplate({ data }: Props) {
       <section className="mt-8 text-center">
         <p className="text-sm text-muted">※ 以上价格为单人均价，根据实际存在浮动</p>
       </section>
+
+      {/* Banking Section */}
+      {data.bankTasks && (
+        <section id="banking" className="mt-12 scroll-mt-20">
+          <h2 className="text-2xl font-semibold mb-6">🏦 银行开户指南</h2>
+          <div className="space-y-6">
+            {data.bankTasks.map((task, idx) => (
+              <div key={idx} className="border border-border rounded-xl p-6 bg-muted/5">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  {task.bank}
+                </h3>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">申请步骤</h4>
+                    <ol className="space-y-2 text-sm text-muted">
+                      {task.steps.map((step, sIdx) => (
+                        <li key={sIdx} className="flex gap-2">
+                          <span className="text-primary/60 font-mono">{sIdx + 1}.</span>
+                          {step}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">必备材料</h4>
+                    <ul className="space-y-2 text-sm text-muted">
+                      {task.docs.map((doc, dIdx) => (
+                        <li key={dIdx} className="flex items-center gap-2">
+                          <div className="w-1 h-1 rounded-full bg-border" />
+                          {doc}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 p-4 bg-primary/5 border border-primary/10 rounded-lg text-xs text-muted leading-relaxed">
+            💡 <strong>避坑提示：</strong> 务必在香港境内连接本地网络操作；出入境记录需为 PDF 格式且不得改名；汇丰扫描证件时建议寻找纯色背景以提高识别率。
+          </div>
+        </section>
+      )}
 
       {/* Total Budget Summary */}
       <section id="summary" className="mt-12 scroll-mt-20">

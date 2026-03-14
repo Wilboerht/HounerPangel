@@ -44,6 +44,11 @@ export interface TravelPlan {
   itinerary: DailyItinerary[];
   attractions: Attraction[];
   foods: FoodItem[];
+  bankTasks?: {
+    bank: string;
+    steps: string[];
+    docs: string[];
+  }[];
   summary: {
     total: string;
     note: string;
