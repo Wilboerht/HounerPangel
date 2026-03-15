@@ -21,9 +21,9 @@ export const chengduPlan: TravelPlan = {
       route: "抵达成都 → 熊猫基地 → 宽窄巷子 → 锦江夜游",
       events: [
         { time: "08:30 - 12:00", content: "熊猫基地：清晨出发，看熊猫吃竹子", type: "location" },
-        { time: "12:30 - 14:00", content: "午餐：宽窄巷子周边川菜（如成都吃客）", type: "food" },
-        { time: "14:30 - 17:00", content: "漫步宽窄巷子：感受清代古街道与现代创意的交融", type: "location" },
-        { time: "18:00 - 19:30", content: "晚餐：地道成都火锅，体验麻辣鲜香", type: "food" },
+        { time: "12:30 - 14:00", content: "午餐：成都吃客", type: "food" },
+        { time: "14:30 - 17:00", content: "宽窄巷子", type: "location" },
+        { time: "18:00 - 19:30", content: "晚餐：火锅", type: "food" },
         { time: "20:00 - 21:30", content: "锦江夜游", type: "location" },
       ],
       daySummary: "预计花费：约600元"
@@ -34,10 +34,10 @@ export const chengduPlan: TravelPlan = {
       tocTitle: "三国 · 采耳",
       route: "武侯祠 → 锦里 → 人民公园 → 琴台路",
       events: [
-        { time: "09:00 - 11:30", content: "武侯祠：探访三国文化遗迹，过红墙夹道", type: "location" },
-        { time: "11:30 - 13:00", content: "锦里漫步：品尝各色非遗小吃，感受民俗魅力", type: "location" },
-        { time: "13:30 - 16:30", content: "人民公园鹤鸣茶社：像成都人一样喝茶、采耳、发呆", type: "location" },
-        { time: "17:00 - 19:00", content: "晚餐：体验成都串串香，辣而不燥", type: "food" },
+        { time: "09:00 - 11:30", content: "武侯祠", type: "location" },
+        { time: "11:30 - 13:00", content: "锦里", type: "location" },
+        { time: "13:30 - 16:30", content: "人民公园鹤鸣茶社：喝茶、采耳", type: "location" },
+        { time: "17:00 - 19:00", content: "晚餐：串串香", type: "food" },
         { time: "19:30 - 21:00", content: "川剧表演", type: "location" },
       ],
       daySummary: "预计花费：约500元"
@@ -48,8 +48,8 @@ export const chengduPlan: TravelPlan = {
       tocTitle: "文化 · 归途",
       route: "太古里/IFS → 金沙遗址博物馆 → 返程",
       events: [
-        { time: "10:00 - 12:30", content: "远洋太古里 & IFS：打卡爬墙熊猫，看现代商业与古刹共生", type: "location" },
-        { time: "13:00 - 15:30", content: "金沙遗址博物馆：目睹‘太阳神鸟’，穿越回古蜀时代", type: "location" },
+        { time: "10:00 - 12:30", content: "太古里 & IFS", type: "location" },
+        { time: "13:00 - 15:30", content: "金沙遗址博物馆", type: "location" },
         { time: "16:00 - 18:00", content: "返程", type: "transport" },
       ],
       daySummary: "预计花费：约400元"

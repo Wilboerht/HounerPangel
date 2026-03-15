@@ -239,7 +239,7 @@ export default function TravelPlanTemplate({ data }: Props) {
             ))}
           </div>
           <div className="mt-6 p-4 bg-primary/5 border border-primary/10 rounded-lg text-xs text-muted leading-relaxed">
-            💡 <strong>避坑提示：</strong> 务必在香港境内连接本地网络操作；出入境记录需为 PDF 格式且不得改名；汇丰扫描证件时建议寻找纯色背景以提高识别率。
+            💡 <strong>注意事项：</strong> 需在香港境内连接本地网络；出入境记录需为 PDF 格式且不得改名；汇丰扫描证件时建议寻找纯色背景。
           </div>
         </section>
       )}

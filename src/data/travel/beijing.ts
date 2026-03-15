@@ -20,9 +20,9 @@ export const beijingPlan: TravelPlan = {
       tocTitle: "故宫 · 皇城",
       route: "天安门广场 → 故宫博物院 → 景山公园 → 王府井",
       events: [
-        { time: "08:30 - 10:00", content: "天安门广场：瞻仰纪念碑，打卡红墙绿瓦下的庄严轴线", type: "location" },
-        { time: "10:00 - 15:30", content: "故宫博物院：深度漫步六百年皇宫，探访三大殿与东西六宫（需提前7天预约）", type: "location" },
-        { time: "15:30 - 17:00", content: "景山公园：登上万春亭，俯瞰紫禁城全景及北京城市中轴线", type: "location" },
+        { time: "08:30 - 10:00", content: "天安门广场", type: "location" },
+        { time: "10:00 - 15:30", content: "故宫博物院（需提前7天预约）", type: "location" },
+        { time: "15:30 - 17:00", content: "景山公园：俯瞰紫禁城", type: "location" },
         { time: "18:00 - 20:30", content: "晚餐：王府井或东单周边", type: "food" },
       ],
       daySummary: "预计花费：约600元"
@@ -34,8 +34,8 @@ export const beijingPlan: TravelPlan = {
       route: "慕田峪长城 → 奥运塔 → 鸟巢 → 水立方",
       events: [
         { time: "08:00 - 13:30", content: "慕田峪长城：人少风景好，乘坐缆车往返", type: "location" },
-        { time: "14:00 - 15:30", content: "午餐：长城脚下特色农家院，尝试怀柔红鳟鱼", type: "food" },
-        { time: "16:30 - 18:30", content: "奥林匹克公园：打卡鸟巢、水立方及玲珑塔夜景", type: "location" },
+        { time: "14:00 - 15:30", content: "午餐：农家院", type: "food" },
+        { time: "16:30 - 18:30", content: "打卡鸟巢、水立方夜景", type: "location" },
         { time: "19:00 - 21:00", content: "晚餐：北边商业区美食", type: "food" },
       ],
       daySummary: "预计花费：约700元"
@@ -46,8 +46,8 @@ export const beijingPlan: TravelPlan = {
       tocTitle: "天坛 · 归途",
       route: "天坛公园 → 颐和园（可选） → 前门大街 → 返程",
       events: [
-        { time: "08:30 - 10:30", content: "天坛公园：参观祈年殿，感受祭天文化的神秘", type: "location" },
-        { time: "11:00 - 14:00", content: "颐和园（可选）：感受皇家园林之气派；或前往前门大街漫步，品尝北京烤鸭", type: "location" },
+        { time: "08:30 - 10:30", content: "天坛公园", type: "location" },
+        { time: "11:00 - 14:00", content: "颐和园或前门大街", type: "location" },
         { time: "14:30 - 16:30", content: "返程", type: "transport" },
       ],
       daySummary: "预计花费：约400元"

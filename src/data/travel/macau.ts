@@ -49,7 +49,7 @@ export const macauPlan: TravelPlan = {
     { name: "大三巴牌坊", location: "澳门半岛", description: "澳门最著名的地标，圣保禄大教堂遗址，中西合璧的艺术杰作" },
     { name: "伦敦人大本钟", location: "路氹城", description: "1:1还原伦敦地标，是目前澳门最热门的摄影打卡位" },
     { name: "官也街", location: "氹仔", description: "著名的美食与手信一条街，聚集了大量网红老字号" },
-    { name: "渔人码头", location: "澳门半岛", description: "复刻古罗马风情的文化区，非常适合人像拍摄" },
+    { name: "渔人码头", location: "澳门半岛", description: "复刻古罗马风情的文化区" },
     { name: "威尼斯人运河", location: "路氹城", description: "室内运河与贡多拉体验，仿佛置身水城意境" },
   ],
   foods: [

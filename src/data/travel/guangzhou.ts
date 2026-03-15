@@ -20,9 +20,9 @@ export const guangzhouPlan: TravelPlan = {
       tocTitle: "新城 · 广州塔",
       route: "抵达广州 → 珠江新城 → 花城广场 → 广州塔 → 珠江夜游",
       events: [
-        { time: "14:00 - 15:30", content: "抵达广州并入住天河区酒店，初步感受 CBD 活力", type: "transport" },
-        { time: "16:00 - 18:00", content: "花城广场漫步，在“城市客厅”拍摄广州塔（小蛮腰）全景", type: "location" },
-        { time: "18:00 - 19:30", content: "晚餐：炳胜品味或陶陶居（体验精致粤菜）", type: "food" },
+        { time: "14:00 - 15:30", content: "入住天河区酒店", type: "transport" },
+        { time: "16:00 - 18:00", content: "花城广场、拍摄广州塔", type: "location" },
+        { time: "18:00 - 19:30", content: "晚餐：炳胜品味或陶陶居", type: "food" },
         { time: "20:00 - 21:30", content: "珠江夜游", type: "location" },
       ],
       daySummary: "预计花费：约600元"
@@ -33,11 +33,11 @@ export const guangzhouPlan: TravelPlan = {
       tocTitle: "西关 · 老城",
       route: "泮溪酒家 → 荔枝湾涌 → 永庆坊 → 沙面岛",
       events: [
-        { time: "09:00 - 11:00", content: "早茶：泮溪酒家（园林式酒家，体验地道‘一盅两件’）", type: "food" },
-        { time: "11:00 - 13:00", content: "漫步荔枝湾涌，感受西关大屋与岭南水乡建筑风情", type: "location" },
-        { time: "13:30 - 16:00", content: "永庆坊：老旧街区改造的典范，打卡李小龙祖居与非遗馆", type: "location" },
-        { time: "16:30 - 18:30", content: "沙面岛：漫步欧式建筑群，感受闹市中的异国宁静", type: "location" },
-        { time: "19:00 - 20:30", content: "晚餐：上下九美食", type: "food" },
+        { time: "09:00 - 11:00", content: "早茶：泮溪酒家", type: "food" },
+        { time: "11:00 - 13:00", content: "荔枝湾涌", type: "location" },
+        { time: "13:30 - 16:00", content: "永庆坊：打卡李小龙祖居与非遗馆", type: "location" },
+        { time: "16:30 - 18:30", content: "沙面岛", type: "location" },
+        { time: "19:00 - 20:30", content: "晚餐：上下九", type: "food" },
       ],
       daySummary: "预计花费：约500元"
     },
@@ -47,9 +47,9 @@ export const guangzhouPlan: TravelPlan = {
       tocTitle: "陈家祠 · 省博",
       route: "陈家祠 → 越秀公园 → 广东省博物馆 → 返程",
       events: [
-        { time: "09:00 - 10:30", content: "陈家祠：领略岭南建筑‘七绝’工艺", type: "location" },
-        { time: "11:00 - 13:00", content: "越秀公园：看五羊石雕，探访古城墙残垣", type: "location" },
-        { time: "13:30 - 16:00", content: "广东省博物馆：深度了解岭南历史脉络与自然资源", type: "location" },
+        { time: "09:00 - 10:30", content: "陈家祠", type: "location" },
+        { time: "11:00 - 13:00", content: "越秀公园：五羊石雕、古城墙", type: "location" },
+        { time: "13:30 - 16:00", content: "广东省博物馆", type: "location" },
         { time: "16:30 - 18:00", content: "返程", type: "transport" },
       ],
       daySummary: "预计花费：约400元"

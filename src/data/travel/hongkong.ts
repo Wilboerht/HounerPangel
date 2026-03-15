@@ -50,7 +50,7 @@ export const hongkongPlan: TravelPlan = {
     },
   ],
   attractions: [
-    { name: "旺角/金鱼街", location: "九龙", description: "电影质感场景，适合快速街拍" },
+    { name: "旺角/金鱼街", location: "九龙", description: "电影质感场景" },
     { name: "坚尼地城", location: "港岛西", description: "近年最火临海机位，出片率极高" },
     { name: "怪兽大楼", location: "鲗鱼涌", description: "极致的城市压迫感，变形金刚取景地" },
     { name: "山顶凌霄阁", location: "太平山", description: "2天行程中唯一的高空全景俯瞰点" },

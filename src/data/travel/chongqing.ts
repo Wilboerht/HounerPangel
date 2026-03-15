@@ -22,7 +22,7 @@ export const chongqingPlan: TravelPlan = {
       events: [
         { time: "14:00 - 15:30", content: "抵达并入住解放碑附近酒店", type: "transport" },
         { time: "16:00 - 17:30", content: "十八梯", type: "location" },
-        { time: "17:30 - 19:00", content: "晚餐：解放碑周边老火锅（如佩姐或周师兄）", type: "food" },
+        { time: "17:30 - 19:00", content: "晚餐：火锅", type: "food" },
         { time: "19:30 - 21:00", content: "魁星楼及洪崖洞", type: "location" },
         { time: "21:30 - 22:30", content: "千厮门大桥", type: "location" },
       ],
@@ -34,13 +34,13 @@ export const chongqingPlan: TravelPlan = {
       tocTitle: "穿楼 · 二厂",
       route: "李子坝 → 鹅岭二厂 → 磁器口古镇 → 观音桥",
       events: [
-        { time: "09:30 - 10:30", content: "李子坝观景平台：近距离拍摄单轨2号线“穿楼而过”景观", type: "location" },
-        { time: "11:00 - 13:30", content: "鹅岭二厂文创园：工业风打卡，《从你的全世界路过》取景地", type: "location" },
-        { time: "13:30 - 14:30", content: "午餐：二厂周边特色餐食或江湖菜", type: "food" },
-        { time: "15:00 - 18:00", content: "磁器口古镇：漫步石板路，体验民俗商铺与传统工艺", type: "location" },
-        { time: "19:00 - 21:00", content: "观音桥步行街：感受九街丰富的夜生活与赛博空间夜景", type: "location" },
+        { time: "09:30 - 10:30", content: "李子坝：拍摄单轨穿楼", type: "location" },
+        { time: "11:00 - 13:30", content: "鹅岭二厂", type: "location" },
+        { time: "13:30 - 14:30", content: "午餐：江湖菜", type: "food" },
+        { time: "15:00 - 18:00", content: "磁器口古镇", type: "location" },
+        { time: "19:00 - 21:00", content: "观音桥步行街", type: "location" },
       ],
-      daySummary: "预计花费：约500元（穿梭在传统怀旧与现代潮流之间）"
+      daySummary: "预计花费：约500元"
     },
     {
       day: 3,
@@ -48,10 +48,10 @@ export const chongqingPlan: TravelPlan = {
       tocTitle: "索道 · 老街",
       route: "长江索道 → 龙门浩老街 → 弹子石老街 → 返程",
       events: [
-        { time: "09:00 - 10:30", content: "长江索道：乘坐单线往返（需抢票），感受空中穿越两江的震撼", type: "location" },
-        { time: "11:00 - 13:00", content: "龙门浩老街：在修复完好的老建筑群中远眺渝中半岛", type: "location" },
-        { time: "13:00 - 14:30", content: "午餐：南滨路沿线美食，边吃边看江景", type: "food" },
-        { time: "15:00 - 16:30", content: "弹子石老街：打卡大佛段等景观，眺望朝天门来福士", type: "location" },
+        { time: "09:00 - 10:30", content: "长江索道", type: "location" },
+        { time: "11:00 - 13:00", content: "龙门浩老街", type: "location" },
+        { time: "13:00 - 14:30", content: "午餐：南滨路", type: "food" },
+        { time: "15:00 - 16:30", content: "弹子石老街", type: "location" },
         { time: "17:00 - 18:30", content: "返程", type: "transport" },
       ],
       daySummary: "预计花费：约400元"
