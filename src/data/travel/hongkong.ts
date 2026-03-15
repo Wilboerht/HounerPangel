@@ -4,7 +4,7 @@ export const hongkongPlan: TravelPlan = {
   title: "香港2日旅行计划",
   icon: "🚋",
   slug: "hongkong",
-  subtitle: "2026.12.20 - 2026.12.21",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "【最高优先级：金融开卡】2日极速刷点指南。核心任务：丝滑开立 ZA Bank（众安）与 HSBC（汇丰）。必备：身份证、通行证、通关小票、出入境记录PDF（移民局小程序下载）、手机开启漫游及常用手机号。全程 App 操作，无需分行面谈。",
   budget: [
     { name: "往返交通", range: "800-1500元", note: "高铁或飞机往返" },

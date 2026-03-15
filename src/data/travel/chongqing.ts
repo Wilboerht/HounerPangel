@@ -4,7 +4,7 @@ export const chongqingPlan: TravelPlan = {
   title: "重庆3日旅行计划",
   icon: "🌶️",
   slug: "chongqing",
-  subtitle: "2027.05.05 - 2027.05.07",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "重庆3日深度游：涵盖洪崖洞夜景、解放碑、李子坝轻轨穿楼及地道重庆火锅体验。",
   budget: [
     { name: "往返交通", range: "800-1500元", note: "大交通费用，建议飞抵江北机场或高铁至重庆北站" },

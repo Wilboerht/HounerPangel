@@ -5,7 +5,7 @@ export const osakaPlan: TravelPlan = {
   icon: "🐙",
   slug: "osaka",
   countryCode: "JP",
-  subtitle: "2027.06.06 - 2027.06.07",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "大阪2日吃货行：涵盖心斋桥、道顿堀、大阪城、通天阁及地道大阪烧与章鱼烧体验。",
   budget: [
     { name: "城际交通", range: "100-300元", note: "从京都或东京抵达" },

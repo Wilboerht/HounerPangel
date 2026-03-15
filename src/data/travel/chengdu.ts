@@ -4,7 +4,7 @@ export const chengduPlan: TravelPlan = {
   title: "成都4日旅行计划",
   icon: "🐼",
   slug: "chengdu",
-  subtitle: "2027.05.01 - 2027.05.04",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "成都4日深度游：涵盖大熊猫基地、武侯祠、宽窄巷子及地道川味美食体验。",
   budget: [
     { name: "往返交通", range: "1000-1800元", note: "大交通费用，建议提前预订天府或双流机场航班" },

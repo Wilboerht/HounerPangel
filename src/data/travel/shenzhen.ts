@@ -1,10 +1,10 @@
 import { TravelPlan } from "@/types/travel";
 
 export const shenzhenPlan: TravelPlan = {
-  title: "深圳2-3日弹性计划",
+  title: "深圳2-3日旅游计划（配套香港）",
   icon: "🌲",
   slug: "shenzhen",
-  subtitle: "2026.12.17 - 2026.12.19",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "针对深港联游设计的灵活行程。1-2日主打科技与都市，3日可深度探索古城或海岸线。作为香港行的先行站，重点在于资料核验与体力储备。",
   budget: [
     { name: "往返交通", range: "600-1200元", note: "大交通费用，根据出发地浮动" },

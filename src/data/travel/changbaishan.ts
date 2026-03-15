@@ -4,7 +4,7 @@ export const changbaishanPlan: TravelPlan = {
   title: "长白山3日旅行计划",
   icon: "🏔️",
   slug: "changbaishan",
-  subtitle: "2026.07.15 - 2026.07.17",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "长白山3日深度游：涵盖北坡天池、西坡大峡谷、高山花园及地道延边/东北特色美食体验。",
   budget: [
     { name: "往返交通", range: "800-1600元", note: "大交通费用，建议飞抵长白山机场或高铁至延吉/二道白河" },

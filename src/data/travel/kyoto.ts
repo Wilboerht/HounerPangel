@@ -5,7 +5,7 @@ export const kyotoPlan: TravelPlan = {
   icon: "⛩️",
   slug: "kyoto",
   countryCode: "JP",
-  subtitle: "2027.06.04 - 2027.06.05",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "京都2日古都行：涵盖金阁寺、清水寺、伏见稻荷大社及地道京料理与抹茶体验。",
   budget: [
     { name: "城际交通", range: "300-600元", note: "从东京乘新干线或从大阪抵达" },

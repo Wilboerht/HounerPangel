@@ -4,7 +4,7 @@ export const macauPlan: TravelPlan = {
   title: "澳门2日旅行计划",
   icon: "🎰",
   slug: "macau",
-  subtitle: "2026.12.22 - 2026.12.23",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "澳门2日深度游：涵盖大三巴牌坊、妈阁庙、官也街美食及金光大道璀璨夜景体验。",
   budget: [
     { name: "往返交通", range: "200-500元", note: "从香港乘喷射飞航/金光飞航或经珠海口岸入澳" },

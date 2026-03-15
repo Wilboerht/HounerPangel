@@ -4,7 +4,7 @@ export const guangzhouPlan: TravelPlan = {
   title: "广州4日美食人文旅行计划",
   icon: "🍜",
   slug: "guangzhou",
-  subtitle: "2027.04.01 - 2027.04.04",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "沉浸式体验食在广州与岭南文化。从珠江新城的摩天大楼到西关大屋的石板路，在烟火气中感受广府韵味。",
   budget: [
     { name: "往返交通", range: "800-1500元", note: "高铁直达广州南站或民航抵达白云机场" },

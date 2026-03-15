@@ -4,7 +4,7 @@ export const yangzhouPlan: TravelPlan = {
   title: "扬州2日旅行计划",
   icon: "🍵",
   slug: "yangzhou",
-  subtitle: "2026.04.10 - 2026.04.11",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "扬州2日深度游：涵盖瘦西湖、大明寺、东关街及地道扬州早茶体验。",
   budget: [
     { name: "往返交通", range: "200-500元", note: "大交通费用，建议高铁直达扬州东站" },

@@ -16,7 +16,6 @@ import { osakaPlan } from "./osaka";
 import { kumamotoPlan } from "./kumamoto";
 
 export const cnPlans = [
-  beijingPlan,
   nanjingPlan,
   hongkongPlan,
   shenzhenPlan,
@@ -28,6 +27,7 @@ export const cnPlans = [
   datongPlan,
   changbaishanPlan,
   daliPlan,
+  beijingPlan,
 ];
 
 export const jpPlans = [

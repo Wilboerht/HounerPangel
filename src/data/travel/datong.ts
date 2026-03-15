@@ -4,7 +4,7 @@ export const datongPlan: TravelPlan = {
   title: "大同3日旅行计划",
   icon: "🗿",
   slug: "datong",
-  subtitle: "2026.08.10 - 2026.08.12",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "大同3日深度游：涵盖云冈石窟、悬空寺、华严寺及地道大同刀削面体验。",
   budget: [
     { name: "往返交通", range: "400-800元", note: "大交通费用，建议高铁抵达大同南站或飞抵大同机场" },

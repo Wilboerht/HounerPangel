@@ -5,7 +5,7 @@ export const kumamotoPlan: TravelPlan = {
   icon: "🐻",
   slug: "kumamoto",
   countryCode: "JP",
-  subtitle: "2027.06.08 - 2027.06.08",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "熊本1日深度游：探访日本三大名城之一的熊本城，体验水前寺成趣园，品尝地道马肉料理与熊本拉面。",
   budget: [
     { name: "城际交通", range: "200-500元", note: "从福冈或鹿儿岛乘新干线抵达" },

@@ -4,7 +4,7 @@ export const daliPlan: TravelPlan = {
   title: "大理4日旅行计划",
   icon: "🌊",
   slug: "dali",
-  subtitle: "2026.08.xx - 2026.08.xx",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "大理4日深度游：涵盖大理古城、洱海环湖骑行、苍山索道及地道白族美食体验。",
   budget: [
     { name: "往返交通", range: "800-1500元", note: "飞抵或高铁抵达大理站" },
