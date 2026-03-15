@@ -9,8 +9,8 @@ export const tokyoPlan: TravelPlan = {
   description: "东京3日深度游：涵盖涩谷、新宿、浅草寺、秋叶原及地道日式拉面与寿司体验。",
   budget: [
     { name: "往返交通", range: "2000-4000元", note: "国际航班飞往成田或羽田机场" },
-    { name: "市内交通", range: "300-500元", note: "利用东京地铁/JR，建议购买西瓜卡或地铁周游券" },
-    { name: "住宿", range: "2000-4000元", note: "3晚住宿，建议选在新宿或上野附近" },
+    { name: "市内交通", range: "300-500元", note: "地铁/JR，购买西瓜卡或地铁周游券" },
+    { name: "住宿", range: "2000-4000元", note: "3晚住宿，选在新宿或上野附近" },
     { name: "餐饮费用", range: "1500-2500元", note: "拉面、寿司、居酒屋、甜点" },
     { name: "门票支出", range: "400-800元", note: "Shibuya Sky、美术馆、寺庙观光" },
   ],

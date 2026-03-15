@@ -7,11 +7,11 @@ export const yangzhouPlan: TravelPlan = {
   subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "扬州2日深度游：涵盖瘦西湖、大明寺、东关街及地道扬州早茶体验。",
   budget: [
-    { name: "往返交通", range: "200-500元", note: "大交通费用，建议高铁直达扬州东站" },
-    { name: "市内交通", range: "50-100元", note: "公交与打车结合，老城区内可步行为主" },
-    { name: "住宿", range: "600-1200元", note: "1晚住宿，建议选在文昌阁或东关街附近" },
-    { name: "餐饮费用", range: "500-800元", note: "扬州早茶、淮扬菜（狮子头、大煮干丝）" },
-    { name: "门票支出", range: "200-300元", note: "瘦西湖、个园、何园等景点门票" },
+    { name: "往返交通", range: "200-500元", note: "高铁直达扬州东站" },
+    { name: "市内交通", range: "50-100元", note: "公交与打车，老城区内可步行" },
+    { name: "住宿", range: "600-1200元", note: "1晚住宿，选在文昌阁或东关街" },
+    { name: "餐饮费用", range: "500-800元", note: "早茶、淮扬菜" },
+    { name: "门票支出", range: "200-300元", note: "瘦西湖、个园、何园等" },
   ],
   itinerary: [
     {
@@ -26,7 +26,7 @@ export const yangzhouPlan: TravelPlan = {
         { time: "17:00 - 19:30", content: "东关街：逛古街巷，品尝各类传统小吃及选购伴手礼", type: "location" },
         { time: "20:00 - 21:30", content: "晚餐：蒋家桥饺面店（体验平价老字号的烟火气）", type: "food" },
       ],
-      daySummary: "预计花费：约600元（沉浸在‘烟花三月下扬州’的诗意中）"
+      daySummary: "预计花费：约600元"
     },
     {
       day: 2,
@@ -40,7 +40,7 @@ export const yangzhouPlan: TravelPlan = {
         { time: "13:30 - 15:30", content: "何园：探访‘晚清第一园’，漫步其独特的复道回廊", type: "location" },
         { time: "16:00 - 17:30", content: "在文昌阁转盘最后留影，前往车站返程", type: "transport" },
       ],
-      daySummary: "预计花费：约500元（在精致的私家园林中结束行程）"
+      daySummary: "预计花费：约500元"
     },
   ],
   attractions: [

@@ -1,17 +1,17 @@
 import { TravelPlan } from "@/types/travel";
 
 export const chengduPlan: TravelPlan = {
-  title: "成都4日旅行计划",
+  title: "成都3日计划",
   icon: "🐼",
   slug: "chengdu",
   subtitle: "20xx.xx.xx - 20xx.xx.xx",
-  description: "成都4日深度游：涵盖大熊猫基地、武侯祠、宽窄巷子及地道川味美食体验。",
+  description: "成都3日：大熊猫基地、武侯祠、宽窄巷子、川味美食。",
   budget: [
-    { name: "往返交通", range: "1000-1800元", note: "大交通费用，建议提前预订天府或双流机场航班" },
-    { name: "市内交通", range: "120-200元", note: "地铁极其便利，打车性价比较高（非高峰期）" },
-    { name: "住宿", range: "1200-2400元", note: "3晚住宿，建议选在春熙路、太古里或锦江区周边" },
-    { name: "餐饮费用", range: "1000-1600元", note: "火锅、串串、川菜及各类名小吃" },
-    { name: "门票/娱乐", range: "300-500元", note: "熊猫基地、武侯祠、杜甫草堂等门票" },
+    { name: "往返交通", range: "1000-1800元", note: "大交通费用，提前预订天府或双流机场航班" },
+    { name: "市内交通", range: "80-150元", note: "地铁极其便利，打车性价比较高" },
+    { name: "住宿", range: "800-1600元", note: "2晚住宿，选在春熙路或太古里附近" },
+    { name: "餐饮费用", range: "800-1200元", note: "火锅、串串、川菜及名小吃" },
+    { name: "门票/娱乐", range: "200-400元", note: "熊猫基地、武侯祠等门票" },
   ],
   itinerary: [
     {
@@ -20,13 +20,13 @@ export const chengduPlan: TravelPlan = {
       tocTitle: "熊猫 · 宽窄",
       route: "抵达成都 → 熊猫基地 → 宽窄巷子 → 锦江夜游",
       events: [
-        { time: "08:30 - 12:00", content: "成都大熊猫繁育研究基地：建议清晨出发，看最活泼的熊猫吃竹子", type: "location" },
+        { time: "08:30 - 12:00", content: "熊猫基地：清晨出发，看熊猫吃竹子", type: "location" },
         { time: "12:30 - 14:00", content: "午餐：宽窄巷子周边川菜（如成都吃客）", type: "food" },
         { time: "14:30 - 17:00", content: "漫步宽窄巷子：感受清代古街道与现代创意的交融", type: "location" },
         { time: "18:00 - 19:30", content: "晚餐：地道成都火锅，体验麻辣鲜香", type: "food" },
-        { time: "20:00 - 21:30", content: "锦江夜游：登船赏两岸夜景，感受‘夜色锦江’", type: "location" },
+        { time: "20:00 - 21:30", content: "锦江夜游", type: "location" },
       ],
-      daySummary: "预计花费：约600元（初识天府之国的萌点与辣味）"
+      daySummary: "预计花费：约600元"
     },
     {
       day: 2,
@@ -38,34 +38,21 @@ export const chengduPlan: TravelPlan = {
         { time: "11:30 - 13:00", content: "锦里漫步：品尝各色非遗小吃，感受民俗魅力", type: "location" },
         { time: "13:30 - 16:30", content: "人民公园鹤鸣茶社：像成都人一样喝茶、采耳、发呆", type: "location" },
         { time: "17:00 - 19:00", content: "晚餐：体验成都串串香，辣而不燥", type: "food" },
-        { time: "19:30 - 21:00", content: "琴台路/蜀风雅韵：看一场川剧变脸表演", type: "location" },
+        { time: "19:30 - 21:00", content: "川剧表演", type: "location" },
       ],
-      daySummary: "预计花费：约500元（沉浸式体验‘安逸’二字）"
+      daySummary: "预计花费：约500元"
     },
     {
       day: 3,
-      title: "太古里 + 杜甫草堂 + 九眼桥",
-      tocTitle: "太古里 · 诗意",
-      route: "太古里/IFS → 杜甫草堂 → 浣花溪公园 → 九眼桥",
+      title: "太古里 + 金沙遗址 + 返程",
+      tocTitle: "文化 · 归途",
+      route: "太古里/IFS → 金沙遗址博物馆 → 返程",
       events: [
         { time: "10:00 - 12:30", content: "远洋太古里 & IFS：打卡爬墙熊猫，看现代商业与古刹共生", type: "location" },
-        { time: "13:00 - 14:30", content: "午餐：品尝成都老牌名小吃（如龙抄手或钟水饺）", type: "food" },
-        { time: "15:00 - 17:30", content: "杜甫草堂：在清幽园林中寻觅草堂诗韵", type: "location" },
-        { time: "18:00 - 20:30", content: "九眼桥/兰桂坊：看夜景，感受成都的活力夜晚", type: "location" },
+        { time: "13:00 - 15:30", content: "金沙遗址博物馆：目睹‘太阳神鸟’，穿越回古蜀时代", type: "location" },
+        { time: "16:00 - 18:00", content: "返程", type: "transport" },
       ],
-      daySummary: "预计花费：约450元（穿梭在极度现代与极度诗意之间）"
-    },
-    {
-      day: 4,
-      title: "金沙遗址 + 东郊记忆 + 返程",
-      tocTitle: "金沙 · 归途",
-      route: "金沙遗址博物馆 → 逛吃东郊记忆 → 返程",
-      events: [
-        { time: "09:30 - 12:00", content: "金沙遗址博物馆：目睹‘太阳神鸟’，穿越回古蜀时代", type: "location" },
-        { time: "12:30 - 14:00", content: "东郊记忆：工业风打卡，享受最后的成都美食体验", type: "location" },
-        { time: "15:00 - 16:30", content: "前往机场/车站，结束安逸行程", type: "transport" },
-      ],
-      daySummary: "预计花费：约350元（带走金沙记忆与火锅底料手信）"
+      daySummary: "预计花费：约400元"
     },
   ],
   attractions: [
@@ -87,15 +74,15 @@ export const chengduPlan: TravelPlan = {
     { type: "盖碗名茶", name: "鹤鸣茶社", location: "人民公园", price: "30元" },
   ],
   summary: {
-    total: "5800元",
-    note: "基于4日深度悠闲方案核算，含往返大交通及市中心精品酒店住宿。",
+    total: "4500元",
+    note: "基于3日行程核算，含往返交通及市中心住宿。",
     details: [
-      { label: "往返大交通", value: "1400元", icon: "Train" },
-      { label: "市内交通", value: "200元", icon: "MapPin" },
-      { label: "3晚住宿", value: "1800元", icon: "Calendar" },
-      { label: "门票支出", value: "400元", icon: "Ticket" },
-      { label: "餐饮美食", value: "1600元", icon: "Utensils" },
-      { label: "机动金", value: "400元", icon: "Wallet" },
+      { label: "往返大交通", value: "1500元", icon: "Train" },
+      { label: "市内交通", value: "150元", icon: "MapPin" },
+      { label: "2晚住宿", value: "1400元", icon: "Calendar" },
+      { label: "门票支出", value: "300元", icon: "Ticket" },
+      { label: "餐饮美食", value: "900元", icon: "Utensils" },
+      { label: "机动金", value: "250元", icon: "Wallet" },
     ]
   }
 };

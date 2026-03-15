@@ -5,20 +5,20 @@ export const shenzhenPlan: TravelPlan = {
   icon: "🌲",
   slug: "shenzhen",
   subtitle: "20xx.xx.xx - 20xx.xx.xx",
-  description: "针对深港联游设计的灵活行程。1-2日主打科技与都市，3日可深度探索古城或海岸线。作为香港行的先行站，重点在于资料核验与体力储备。",
+  description: "深港行程衔接。1-2日看城市，3日备战香港。重点是核验资料和休息。",
   budget: [
     { name: "往返交通", range: "600-1200元", note: "大交通费用，根据出发地浮动" },
-    { name: "市内交通", range: "120-200元", note: "地铁为主，建议使用微信/支付宝乘车码" },
-    { name: "住宿", range: "1000-2000元", note: "2-3晚住宿，建议选在福田或南山核心区" },
+    { name: "市内交通", range: "120-200元", note: "地铁为主，使用微信/支付宝乘车码" },
+    { name: "住宿", range: "1000-2000元", note: "2-3晚住宿，选在福田或南山" },
     { name: "餐饮", range: "600-1200元", note: "椰子鸡、粤式早茶、深港风味宵夜" },
     { name: "门票/机动", range: "400元+", note: "包含平安中心观光、备用机动资金" },
   ],
   itinerary: [
     {
       day: 1,
-      title: "硬核科技 · 城市脊梁",
-      tocTitle: "CBD · 云端",
-      route: "抵达深圳 → 莲花山公园 → 平安金融中心 → 深业上城",
+      title: "福田 CBD + 莲花山",
+      tocTitle: "CBD · 莲花山",
+      route: "抵达深圳 → 莲花山 → 平安金融中心 → 深业上城",
       events: [
         { time: "14:00 - 15:30", content: "抵达深圳，入住福田 CBD 附近酒店", type: "transport" },
         { time: "16:00 - 17:30", content: "莲花山公园：瞻仰伟人雕像，俯瞰中轴线全景", type: "location" },
@@ -29,8 +29,8 @@ export const shenzhenPlan: TravelPlan = {
     },
     {
       day: 2,
-      title: "漫步湾区 · 艺术生活",
-      tocTitle: "湾区 · 滨海",
+      title: "南山 + 深圳湾 + 海上世界",
+      tocTitle: "南山 · 滨海",
       route: "南头古城 → 万象天地 → 深圳湾公园 → 海上世界",
       events: [
         { time: "09:30 - 11:30", content: "南头古城：在1700年历史的古迹中感受创意艺术与老街活力", type: "location" },
@@ -42,17 +42,17 @@ export const shenzhenPlan: TravelPlan = {
     },
     {
       day: 3,
-      title: "人文回响 · 赴港前哨",
-      tocTitle: "东门 · 备战",
-      route: "东门老街/华强北 → 资料总核验 → 移师福田口岸 → 休息",
+      title: "华强北 + 资料核验",
+      tocTitle: "华强北 · 资料",
+      route: "华强北 → 资料核验 → 移师口岸",
       events: [
-        { time: "10:00 - 12:30", content: "华强北步行街：感受中国电子第一街的震撼（适合选购数码配件）", type: "location" },
+        { time: "10:00 - 12:30", content: "华强北步行街：选购数码配件", type: "location" },
         { time: "13:00 - 14:30", content: "东门午餐：地道街头小吃或腊味煲仔饭", type: "food" },
         { time: "15:00 - 17:00", content: "【最高优先级】回酒店核验香港办卡资料，确保 PDF 已下载且网络顺畅", type: "location" },
         { time: "18:00 - 20:00", content: "移师福田口岸附近住宿，为次日过关做最后物理准备", type: "transport" },
-        { time: "21:00 - 22:00", content: "晚间休息：确保体力储备，迎接次日香港办卡刷点大战", type: "location" },
+        { time: "21:00 - 22:00", content: "休息，早睡准备过关", type: "location" },
       ],
-      daySummary: "预计花费：约400元（提示：若时间紧凑，本页可与 Day 2 合并）"
+      daySummary: "预计花费：约400元"
     },
   ],
   attractions: [
@@ -70,7 +70,7 @@ export const shenzhenPlan: TravelPlan = {
   ],
   summary: {
     total: "4500元",
-    note: "基于3日高品质行程核算。若改为2日，总费用可降至约3200元。",
+    note: "基于3日程行程核算。",
     details: [
       { label: "往返大交通", value: "1000元", icon: "Train" },
       { label: "公共交通", value: "200元", icon: "MapPin" },

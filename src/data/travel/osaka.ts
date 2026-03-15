@@ -9,8 +9,8 @@ export const osakaPlan: TravelPlan = {
   description: "大阪2日吃货行：涵盖心斋桥、道顿堀、大阪城、通天阁及地道大阪烧与章鱼烧体验。",
   budget: [
     { name: "城际交通", range: "100-300元", note: "从京都或东京抵达" },
-    { name: "市内交通", range: "100-200元", note: "大都会地铁网络，建议使用大阪周游券" },
-    { name: "住宿", range: "1200-2400元", note: "2晚住宿，建议选在难波或梅田附近" },
+    { name: "市内交通", range: "100-200元", note: "地铁网络，购买大阪周游券" },
+    { name: "住宿", range: "1200-2400元", note: "2晚住宿，选在难波或梅田附近" },
     { name: "餐饮费用", range: "1000-2000元", note: "道顿堀各种美食横扫" },
     { name: "门票支出", range: "300-600元", note: "大阪城、梅田蓝天大厦等（含大阪周游券景点）" },
   ],
@@ -26,7 +26,7 @@ export const osakaPlan: TravelPlan = {
         { time: "14:30 - 17:30", content: "心斋桥：在这里尽情享受购物的乐趣，感受关西商业活力", type: "location" },
         { time: "18:00 - 21:00", content: "道顿堀：与格力高看板合影，开启美食扫街模式（章鱼烧、炸串等）", type: "food" },
       ],
-      daySummary: "预计花费：约1000元（体验‘天下厨房’的极致魅力）"
+      daySummary: "预计花费：约1000元"
     },
     {
       day: 2,
@@ -40,7 +40,7 @@ export const osakaPlan: TravelPlan = {
         { time: "18:00 - 19:30", content: "晚餐：精选河豚料理或特色的炸串大餐", type: "food" },
         { time: "20:00 - 21:30", content: "梅田蓝天大厦：在空中庭院展望台俯瞰全城璀璨夜景", type: "location" },
       ],
-      daySummary: "预计花费：约1200元（在高空夜色中结束这段完美的旅程）"
+      daySummary: "预计花费：约1200元"
     },
   ],
   attractions: [

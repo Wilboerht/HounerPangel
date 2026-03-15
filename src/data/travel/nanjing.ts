@@ -29,7 +29,7 @@ export const nanjingPlan: TravelPlan = {
         { time: "17:30 - 18:30", content: "入住江北酒店（200元）", type: "stay" },
         { time: "18:30 - 19:30", content: "弘阳广场晚餐 - 南京大牌档（约60元）", type: "food" },
       ],
-      daySummary: "预计花费：约650元（含首日江北住宿及地铁）"
+      daySummary: "预计花费：约650元"
     },
     {
       day: 2,
@@ -45,7 +45,7 @@ export const nanjingPlan: TravelPlan = {
         { time: "18:30 - 20:00", content: "晚餐：蒋有记（老门东店）- 锅贴+牛肉汤（约30元）", type: "food" },
         { time: "20:00 - 21:30", content: "夫子庙秦淮河风光带 + 画舫夜游（80元）", type: "location" },
       ],
-      daySummary: "预计花费：约850元（含钟山套票及精致晚餐）"
+      daySummary: "预计花费：约850元"
     },
     {
       day: 3,
@@ -54,7 +54,7 @@ export const nanjingPlan: TravelPlan = {
       route: "城中（博物院/总统府/新街口/朝天宫/中华门/老门东）",
       events: [
         { time: "07:30 - 08:30", content: "早餐：科巷 - 胡记汤包+赤豆元宵（约25元）", type: "food" },
-        { time: "09:15 - 12:15", content: "南京博物院（建议游览3小时，深度看民国馆）", type: "location" },
+        { time: "09:15 - 12:15", content: "南京博物院（游览3小时，深度看民国馆）", type: "location" },
         { time: "12:30 - 14:00", content: "午餐：南博附近或返回科巷美食街（约30元）", type: "food" },
         { time: "14:00 - 16:00", content: "总统府（就在南博附近，门票35元）", type: "location" },
         { time: "16:00 - 17:30", content: "朝天宫（红墙黛瓦，非常出片，门票20元）", type: "location" },
@@ -62,7 +62,7 @@ export const nanjingPlan: TravelPlan = {
         { time: "18:30 - 20:00", content: "晚餐：老门东（寻找当地特色小吃，约50元）", type: "food" },
         { time: "20:00 - 21:00", content: "返回酒店休息，缓解体力", type: "stay" },
       ],
-      daySummary: "预计花费：约750元（包含博物院之旅及青旅/老店餐饮）"
+      daySummary: "预计花费：约750元"
     },
     {
       day: 4,
@@ -78,7 +78,7 @@ export const nanjingPlan: TravelPlan = {
         { time: "18:00 - 19:30", content: "打车至河西 国际青年会议中心", type: "transport" },
         { time: "19:30 - 21:00", content: "南京眼步行桥（夜景地标，免费）", type: "location" },
       ],
-      daySummary: "预计花费：约850元（含打车游览及鱼嘴日落补给）"
+      daySummary: "预计花费：约850元"
     },
     {
       day: 5,
@@ -87,15 +87,15 @@ export const nanjingPlan: TravelPlan = {
       route: "玄武湖/鸡鸣寺/莫愁湖 → 新街口午餐/购物 → 返程",
       events: [
         { time: "07:30 - 08:30", content: "早餐：芳婆糕团店 - 乌饭团+老卤蛋（约15元）", type: "food" },
-        { time: "08:00 - 09:30", content: "鸡鸣寺（建议趁早，祈福结束后从解放门进玄武湖）", type: "location" },
-        { time: "09:30 - 11:30", content: "玄武湖游湖（漫步五洲，看金陵明珠）", type: "location" },
+        { time: "08:00 - 09:30", content: "鸡鸣寺（趁早，祈福结束后从解放门进玄武湖）", type: "location" },
+        { time: "09:30 - 11:30", content: "玄武湖游湖", type: "location" },
         { time: "12:00 - 13:30", content: "午餐：新街口区域或本帮小吃（约30元）", type: "food" },
         { time: "14:00 - 15:30", content: "莫愁湖公园（门票35元）", type: "location" },
         { time: "16:00 - 18:00", content: "新街口（末班扫货、购特产盐水鸭）", type: "location" },
         { time: "18:00 - 19:30", content: "晚餐：小潘记鸭血粉丝汤（约35元）", type: "food" },
         { time: "19:30 - 20:45", content: "前往南京南站，返程上海", type: "transport" },
       ],
-      daySummary: "预计花费：约700元（含返程补给、纪念品采购及车票分摊）"
+      daySummary: "预计花费：约700元"
     },
   ],
   attractions: [

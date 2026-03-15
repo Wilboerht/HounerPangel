@@ -7,11 +7,11 @@ export const changbaishanPlan: TravelPlan = {
   subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "长白山3日深度游：涵盖北坡天池、西坡大峡谷、高山花园及地道延边/东北特色美食体验。",
   budget: [
-    { name: "往返交通", range: "800-1600元", note: "大交通费用，建议飞抵长白山机场或高铁至延吉/二道白河" },
-    { name: "市内交通", range: "200-400元", note: "包含景区接驳车、倒站车及必要的包车/租车费用" },
-    { name: "住宿", range: "1200-2400元", note: "2晚住宿，建议选在二道白河镇或万达/鲁能度假区" },
-    { name: "餐饮费用", range: "600-1000元", note: "铁锅炖、参鸡汤、冷面及韩式烤肉等" },
-    { name: "门票支出", range: "400-600元", note: "北坡/西坡门票、环保车及天池倒站车费用" },
+    { name: "往返交通", range: "800-1600元", note: "直达长白山机场或高铁至延吉/二道白河" },
+    { name: "市内交通", range: "200-400元", note: "景区接驳车、倒站车及包车" },
+    { name: "住宿", range: "1200-2400元", note: "2晚住宿，选在二道白河或度假区" },
+    { name: "餐饮费用", range: "600-1000元", note: "铁锅炖、参鸡汤、烤肉" },
+    { name: "门票支出", range: "400-600元", note: "门票、环保车及天池倒站车" },
   ],
   itinerary: [
     {
@@ -26,7 +26,7 @@ export const changbaishanPlan: TravelPlan = {
         { time: "17:00 - 19:30", content: "聚龙泉温泉：在 forest 中体验地道的长白山火山温泉", type: "location" },
         { time: "20:00 - 21:30", content: "晚餐：二道白河镇品尝朝族风味烧烤或冷面", type: "food" },
       ],
-      daySummary: "预计花费：约600元（体验长白山最经典的壮丽景观）"
+      daySummary: "预计花费：约600元"
     },
     {
       day: 2,
@@ -40,7 +40,7 @@ export const changbaishanPlan: TravelPlan = {
         { time: "16:30 - 18:00", content: "高山花园（季节性）：夏季可观赏漫山遍野的珍稀野生花卉", type: "location" },
         { time: "19:00 - 20:30", content: "晚餐：品尝滋补的参鸡汤，舒缓登山疲劳", type: "food" },
       ],
-      daySummary: "预计花费：约500元（感受原始森林与垂直植被带的奇观）"
+      daySummary: "预计花费：约500元"
     },
     {
       day: 3,
@@ -53,7 +53,7 @@ export const changbaishanPlan: TravelPlan = {
         { time: "14:00 - 15:30", content: "前往特产市场选购蓝莓干、黑木耳或人参制品", type: "location" },
         { time: "16:00 - 17:30", content: "前往长白山机场或车站，结束北国秘境之旅", type: "transport" },
       ],
-      daySummary: "预计花费：约400元（在森林氧吧的宁静中归家）"
+      daySummary: "预计花费：约400元"
     },
   ],
   attractions: [

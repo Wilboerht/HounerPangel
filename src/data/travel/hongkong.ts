@@ -9,7 +9,7 @@ export const hongkongPlan: TravelPlan = {
   budget: [
     { name: "往返交通", range: "800-1500元", note: "高铁或飞机往返" },
     { name: "市内交通", range: "150-200元", note: "全程八达通：港铁、天星小轮、叮叮车及巴士，绝不打车" },
-    { name: "住宿", range: "600-1200元", note: "建议住旺角或尖沙咀，方便深夜扫街" },
+    { name: "住宿", range: "600-1200元", note: "住旺角或尖沙咀，方便深夜扫街" },
     { name: "门票费用", range: "200-300元", note: "山顶缆车快线及少量景点门票" },
     { name: "餐饮美食", range: "600-1000元", note: "路边摊与茶餐厅无缝切换" },
     { name: "机动/购物", range: "500元+", note: "为体力补给和最后的扫货预留" },
@@ -29,7 +29,7 @@ export const hongkongPlan: TravelPlan = {
         { time: "17:30 - 19:00", content: "漫步：从维港沿海边步行至中环（约1-2公里），感受港岛天际线", type: "location" },
         { time: "19:30 - 21:00", content: "晚餐：中环/庙街大牌档 + 佳佳甜品宵夜", type: "food" },
       ],
-      daySummary: "预计花费：约1300元（提示：App 审核通常秒过，HSBC 需 NFC 扫描通行证）"
+      daySummary: "预计花费：约1300元"
     },
     {
       day: 2,
@@ -86,10 +86,10 @@ export const hongkongPlan: TravelPlan = {
       bank: "HSBC (汇丰银行) - One 账户",
       steps: [
         "身处地区选‘香港’，是否有香港证件选‘否’",
-        "拍摄港澳通行证并进行人脸识别（建议纯色背景）",
+        "拍摄港澳通行证并进行人脸识别",
         "使用手机 NFC 功能扫描通行证芯片",
         "上传移民局生成的出入境记录 PDF 原始文件",
-        "填写英文地址（建议使用 AI 优化地址翻译）",
+        "填写英文地址",
         "审核通过后立即注册手机银行并申请蓝狮子 Mastercard"
       ],
       docs: [
@@ -102,7 +102,7 @@ export const hongkongPlan: TravelPlan = {
   ],
   summary: {
     total: "4000元",
-    note: "针对全程无尿点的极速刷点行程核算，含往返交通、市区核心住宿及高频高效补给",
+    note: "极速行程核算，含往返交通及住宿。",
     details: [
       { label: "往返交通", value: "1200元", icon: "Train" },
       { label: "公共交通", value: "200元", icon: "Train" },

@@ -26,7 +26,7 @@ export const kumamotoPlan: TravelPlan = {
         { time: "16:30 - 18:00", content: "熊本熊广场：前往部长的办公室，运气好能偶遇熊本熊部长的元气表演", type: "location" },
         { time: "18:30 - 20:30", content: "晚餐：地道 Basashi（马刺身）高级料理或黑亭拉面", type: "food" },
       ],
-      daySummary: "预计花费：约600元（在古朴名城与软萌部长之间穿梭）"
+      daySummary: "预计花费：约600元"
     }
   ],
   attractions: [

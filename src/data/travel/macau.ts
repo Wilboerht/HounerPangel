@@ -9,7 +9,7 @@ export const macauPlan: TravelPlan = {
   budget: [
     { name: "往返交通", range: "200-500元", note: "从香港乘喷射飞航/金光飞航或经珠海口岸入澳" },
     { name: "市内交通", range: "50-100元", note: "善用发财车（酒店免费穿梭巴士）及公交车，基本无需打车" },
-    { name: "住宿", range: "800-1500元", note: "1晚住宿，建议选在氹仔路氹城或半岛核心区" },
+    { name: "住宿", range: "800-1500元", note: "1晚住宿，选在氹仔路氹城或半岛" },
     { name: "餐饮费用", range: "600-1000元", note: "葡国鸡、葡挞、猪扒包、水蟹粥及各类地道小吃" },
     { name: "预备资金", range: "300元+", note: "用于购买伴手礼（手信）及应急" },
   ],
@@ -27,7 +27,7 @@ export const macauPlan: TravelPlan = {
         { time: "17:00 - 19:00", content: "渔人码头：在仿罗马竞技场建筑中捕捉绝美日落影像", type: "location" },
         { time: "19:30 - 21:00", content: "晚餐：半岛区老铺（如义顺牛奶公司）或地道粤菜", type: "food" },
       ],
-      daySummary: "预计花费：约1200元（沉浸在澳门老城的历史底蕴中）"
+      daySummary: "预计花费：约1200元"
     },
     {
       day: 2,
@@ -42,7 +42,7 @@ export const macauPlan: TravelPlan = {
         { time: "18:30 - 19:30", content: "晚餐：在大型综合度假村内享受国际化饕餮大餐", type: "food" },
         { time: "20:00 - 21:00", content: "前往码头或口岸，结束完美的深港澳联游", type: "transport" },
       ],
-      daySummary: "预计花费：约1000元（体验澳门现代奢华与地道烟火的完美融合）"
+      daySummary: "预计花费：约1000元"
     },
   ],
   attractions: [

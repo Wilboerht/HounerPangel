@@ -7,11 +7,11 @@ export const datongPlan: TravelPlan = {
   subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "大同3日深度游：涵盖云冈石窟、悬空寺、华严寺及地道大同刀削面体验。",
   budget: [
-    { name: "往返交通", range: "400-800元", note: "大交通费用，建议高铁抵达大同南站或飞抵大同机场" },
-    { name: "市内交通", range: "100-200元", note: "打车或网约车性价比较高，部分远郊景点建议包车或租车" },
-    { name: "住宿", range: "600-1200元", note: "2晚住宿，建议选在古城内或平城区核心地带" },
-    { name: "餐饮费用", range: "400-800元", note: "大同刀削面、羊杂、什锦火锅及地道黄米面炸糕" },
-    { name: "门票支出", range: "300-500元", note: "云冈石窟、悬空寺、个别寺庙及城墙观光费用" },
+    { name: "往返交通", range: "400-800元", note: "大交通费用，直达大同南站或飞往大同机场" },
+    { name: "市内交通", range: "100-200元", note: "打车或网约车，远郊景点建议包车或租车" },
+    { name: "住宿", range: "600-1200元", note: "2晚住宿，选在古城内或平城区" },
+    { name: "餐饮费用", range: "400-800元", note: "刀削面、羊杂、什锦火锅、黄米面炸糕" },
+    { name: "门票支出", range: "300-500元", note: "云冈石窟、悬空寺、寺庙及城墙等" },
   ],
   itinerary: [
     {
@@ -23,10 +23,10 @@ export const datongPlan: TravelPlan = {
         { time: "09:00 - 13:00", content: "云冈石窟：深度游览北魏石窟艺术宝库，重点看第5、6、20窟", type: "location" },
         { time: "13:30 - 14:30", content: "午餐：品尝地道大同刀削面（如二板或任记）", type: "food" },
         { time: "15:00 - 17:00", content: "大同市博物馆：领略北魏都城的霸气与多元文化的缩影", type: "location" },
-        { time: "17:30 - 19:30", content: "漫步大同古城墙：建议骑行或徒步，在落日余晖下看古城风貌", type: "location" },
+        { time: "17:30 - 19:30", content: "漫步大同古城墙：骑行或徒步", type: "location" },
         { time: "20:00 - 21:00", content: "晚餐：怀旧风味的什锦铜火锅或大同土菜", type: "food" },
       ],
-      daySummary: "预计花费：约600元（跨越时空与北魏工匠‘对话’）"
+      daySummary: "预计花费：约600元"
     },
     {
       day: 2,
@@ -39,7 +39,7 @@ export const datongPlan: TravelPlan = {
         { time: "16:00 - 17:00", content: "下山后品尝地道的浑源凉粉", type: "food" },
         { time: "18:30 - 20:30", content: "返回大同市内，晚餐享受地道的‘羊蝎子’火锅", type: "food" },
       ],
-      daySummary: "预计花费：约500元（体验‘挂在峭壁上的信仰’）"
+      daySummary: "预计花费：约500元"
     },
     {
       day: 3,
@@ -53,7 +53,7 @@ export const datongPlan: TravelPlan = {
         { time: "15:30 - 16:30", content: "九龙壁：打卡中国现存规模最大的琉璃影壁", type: "location" },
         { time: "17:00 - 18:30", content: "前往大同南站/机场，结束精彩的北魏故都之旅", type: "transport" },
       ],
-      daySummary: "预计花费：约400元（在辽金木构的震撼中归途）"
+      daySummary: "预计花费：约400元"
     },
   ],
   attractions: [

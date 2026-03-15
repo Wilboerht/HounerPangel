@@ -10,7 +10,7 @@ export const kyotoPlan: TravelPlan = {
   budget: [
     { name: "城际交通", range: "300-600元", note: "从东京乘新干线或从大阪抵达" },
     { name: "市内交通", range: "100-200元", note: "京都巴士、地铁或打车" },
-    { name: "住宿", range: "1200-2400元", note: "2晚住宿，建议选在京都站或河原町附近" },
+    { name: "住宿", range: "1200-2400元", note: "2晚住宿，选在京都站或河原町附近" },
     { name: "餐饮费用", range: "800-1500元", note: "怀石料理、汤豆腐、抹茶甜点" },
     { name: "门票支出", range: "200-400元", note: "各大寺院及神社门票" },
   ],
@@ -27,7 +27,7 @@ export const kyotoPlan: TravelPlan = {
         { time: "17:00 - 19:00", content: "祗园花见小路：探寻艺伎的踪迹，感受浓厚的传统氛围", type: "location" },
         { time: "19:30 - 21:00", content: "晚餐：河原町附近体验京料理（需预约）", type: "food" },
       ],
-      daySummary: "预计花费：约1000元（沉溺于京都的千年古意中）"
+      daySummary: "预计花费：约1000元"
     },
     {
       day: 2,
@@ -41,7 +41,7 @@ export const kyotoPlan: TravelPlan = {
         { time: "14:30 - 16:30", content: "岚山竹林小径：步入幽静的绿色通道，静听竹浪沙沙声", type: "location" },
         { time: "17:00 - 18:30", content: "渡月桥：在如诗如画的山水间静享落日余晖", type: "location" },
       ],
-      daySummary: "预计花费：约800元（在古建筑与自然奇观中寻找宁静）"
+      daySummary: "预计花费：约800元"
     },
   ],
   attractions: [
