@@ -4,7 +4,7 @@ export const beijingPlan: TravelPlan = {
   title: "北京5日旅行计划",
   icon: "🏛️",
   slug: "beijing",
-  subtitle: "2026.09.15 - 2026.09.19",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "北京5日深度游：涵盖故宫、长城、颐和园、天坛及地道北京烤鸭与涮肉体验。",
   budget: [
     { name: "往返交通", range: "800-1600元", note: "大交通费用，建议高铁抵达北京南站或飞抵大兴/首都机场" },

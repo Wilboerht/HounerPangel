@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { jpPlans } from "@/data/travel";
+import { MapPin, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "旅行计划（日本） - Hank Wong's Web",
@@ -13,35 +14,34 @@ export default function JPPlanIndexPage() {
       <div className="flex-1 flex flex-col justify-center items-center py-16 px-6">
         <div className="max-w-5xl w-full">
         {/* Header */}
-        <header className="mb-16 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+        <header className="mb-12 text-center">
+          <h1 className="text-4xl font-bold tracking-tight">
             旅行计划（日本）
           </h1>
         </header>
 
-        {/* Grid */}
-        <div className="flex flex-wrap justify-center gap-4">
+        {/* Simple List */}
+        <div className="max-w-2xl mx-auto w-full border-t border-border/40">
           {jpPlans.map((plan) => (
             <Link
               key={plan.slug}
               href={`/travel/plan/JP/${plan.slug}`}
-              className="group relative w-40 sm:w-48 md:w-56 aspect-square flex flex-col items-center justify-center p-4 rounded-[2.5rem] border border-border/50 bg-muted/5 hover:bg-muted/10 transition-all duration-500 hover:scale-[1.02] active:scale-95 overflow-hidden"
+              className="group flex items-center justify-between py-5 border-b border-border/40 hover:bg-muted/5 transition-all px-4 -mx-4 rounded-lg"
             >
-              {/* Background Glow on Hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <span className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-500 ease-out z-10">
-                {plan.icon}
-              </span>
-              
-              <h2 className="text-sm font-medium text-muted group-hover:text-foreground transition-colors duration-300 z-10 text-center px-2">
-                {plan.title.replace("旅行计划", "").trim()}
-              </h2>
-
-              {/* Minimalist Path Hint */}
-              <div className="absolute bottom-3 text-[8px] font-mono text-muted-foreground/30 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10">
-                {plan.slug}
+              <div className="flex items-center gap-6">
+                <span className="text-2xl group-hover:scale-110 transition-transform duration-300">
+                  {plan.icon}
+                </span>
+                <div>
+                  <h2 className="text-lg font-medium group-hover:text-primary transition-colors">
+                    {plan.title}
+                  </h2>
+                  <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider opacity-60">
+                    {plan.slug}
+                  </p>
+                </div>
               </div>
+              <ArrowRight className="w-5 h-5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </Link>
           ))}
         </div>

@@ -5,7 +5,7 @@ export const tokyoPlan: TravelPlan = {
   icon: "🗼",
   slug: "tokyo",
   countryCode: "JP",
-  subtitle: "2027.06.01 - 2027.06.03",
+  subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "东京3日深度游：涵盖涩谷、新宿、浅草寺、秋叶原及地道日式拉面与寿司体验。",
   budget: [
     { name: "往返交通", range: "2000-4000元", note: "国际航班飞往成田或羽田机场" },
