@@ -7,9 +7,9 @@ export const northwestPlan: TravelPlan = {
   subtitle: "20xx.xx.xx - 20xx.xx.xx",
   description: "西宁、青海湖、柴达木、敦煌、嘉峪关、张掖9日深度大环线。",
   budget: [
-    { name: "往返交通", range: "2500-4500元", note: "大交通费用，建议西宁进出" },
-    { name: "租车/包车", range: "4000-6000元", note: "9日环线用车费用，含油费及路桥费" },
-    { name: "住宿费用", range: "3000-5000元", note: "9晚住宿（含到达当晚），提升酒店标准" },
+    { name: "往返交通", range: "1200-1500元", note: "大交通费用，西宁进出" },
+    { name: "当地交通", range: "3000-4500元", note: "西宁包车/拼车 3 日 + 动车票 + 敦煌当地拼车" },
+    { name: "住宿费用", range: "1500-2000元", note: "9晚性价比住宿" },
     { name: "餐饮费用", range: "2000-3000元", note: "全程西北特色餐饮费" },
     { name: "门票/体验", range: "1200-1800元", note: "莫高窟、青海湖、丹霞、关城、盐湖等" },
   ],
@@ -18,10 +18,10 @@ export const northwestPlan: TravelPlan = {
       day: 1,
       title: "塔尔寺 → 青海湖",
       tocTitle: "塔尔寺 · 湖边",
-      route: "办理取车 → 塔尔寺 → 拉脊山 → 青海湖 (二郎剑) → 黑马河",
+      route: "机场大巴/打车 → 取消自驾,改为全程包车/拼车与动车",
       events: [
         { time: "00:00 - 08:30", content: "前晚 23:40 抵宁，酒店休息", type: "stay" },
-        { time: "09:00 - 10:00", content: "办理取车手续", type: "transport" },
+        { time: "09:00 - 10:00", content: "西宁市区集合（拼车/包车师傅对接）", type: "transport" },
         { time: "10:30 - 13:00", content: "塔尔寺：藏传佛教格鲁派六大寺院之一", type: "location" },
         { time: "13:00 - 14:00", content: "午餐：湟源或路边简餐", type: "food" },
         { time: "15:30 - 18:30", content: "青海湖二郎剑景区及漫步湖畔", type: "location" },
@@ -125,7 +125,7 @@ export const northwestPlan: TravelPlan = {
       route: "马蹄寺 → 西宁/兰州返程",
       events: [
         { time: "08:30 - 12:00", content: "马蹄寺：石窟艺术与民族风情", type: "location" },
-        { time: "13:00 - 16:00", content: "返回西宁或兰州机场", type: "transport" },
+        { time: "12:00 - 15:30", content: "西宁/兰州站中转", type: "transport" },
         { time: "17:00 - 19:00", content: "返程", type: "transport" },
       ],
       daySummary: "预计花费：约400元"
@@ -145,12 +145,12 @@ export const northwestPlan: TravelPlan = {
     { type: "嘉峪关烤肉", name: "小猪羊肉串", location: "嘉峪关", price: "80元" },
   ],
   summary: {
-    total: "15000元",
-    note: "基于9日深度大环线核算，包含高标准租车/包车费用、景区门票及精品酒店住宿。",
+    total: "11500元",
+    note: "基于9日深度非自驾行程核算，含青甘连线拼车/包车、动车票及高性价比住宿。",
     details: [
-      { label: "往返大交通", value: "3500元", icon: "Train" },
-      { label: "租车用车", value: "5000元", icon: "MapPin" },
-      { label: "9晚住宿", value: "3500元", icon: "Calendar" },
+      { label: "往返大交通", value: "1400元", icon: "Train" },
+      { label: "当地交通费", value: "3800元", icon: "MapPin" },
+      { label: "9晚住宿", value: "1800元", icon: "Calendar" },
       { label: "门票体验", value: "1500元", icon: "Ticket" },
       { label: "全程餐饮", value: "2000元", icon: "Utensils" },
       { label: "机动备金", value: "500元", icon: "Wallet" },
