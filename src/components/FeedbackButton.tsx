@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { submitFeedbackAction } from '@/app/actions/notion';
+import { submitFeedbackAction } from '@/app/actions/supabase';
 import { MessageSquarePlus, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

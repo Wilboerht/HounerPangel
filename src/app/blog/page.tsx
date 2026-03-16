@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Library, Search } from "lucide-react";
 import { CollectionsDrawer } from "@/components/CollectionsDrawer";
 import { BlogSearch } from "@/components/BlogSearch";
-import { getPublishedPosts, Post } from "@/lib/notion";
+import { getPublishedPosts } from "@/lib/supabase";
+import type { Post } from "@/types/content";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

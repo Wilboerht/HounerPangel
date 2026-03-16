@@ -12,16 +12,8 @@ import { ViewTracker } from "@/components/ViewTracker";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { CommentsSection } from "@/components/CommentsSection";
 import { MotionWrapper } from "@/components/MotionWrapper";
-interface Post {
-    slug: string;
-    title: string;
-    series: Series | null;
-    date: string;
-    readTime: string;
-    content: string;
-}
-
-import { getSinglePost } from "@/lib/notion";
+import { getSinglePost } from "@/lib/supabase";
+import type { Post } from "@/types/content";
 
 // Remove the getMockPost definition since we use getSinglePost now.
 
@@ -72,7 +64,7 @@ export default async function BlogPost({
 
     return (
         <main className="min-h-screen flex flex-col items-center px-6 py-12 lg:py-20 relative overflow-hidden">
-            <ViewTracker pageId={post.id} />
+            <ViewTracker slug={post.slug} type="posts" />
             {/* Layout Wrapper with Sidebars */}
             <MotionWrapper>
             <div className="max-w-[1312px] w-full flex flex-col lg:flex-row lg:items-start gap-16 relative">

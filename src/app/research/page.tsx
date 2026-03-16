@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ResearchSearch } from "@/components/ResearchSearch";
 import { ArrowLeft, ExternalLink, BookOpen, ChevronLeft, ChevronRight, Search } from "lucide-react";
 
-import { getPublishedResearch, Research } from "@/lib/notion";
+import { getPublishedResearch } from "@/lib/supabase";
+import type { Research } from "@/types/content";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

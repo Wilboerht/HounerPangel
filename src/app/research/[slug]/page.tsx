@@ -4,9 +4,13 @@ import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import { getSingleResearch } from "@/lib/notion";
+import { getSingleResearch } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { ViewTracker } from "@/components/ViewTracker";
+import { FeedbackButton } from "@/components/FeedbackButton";
+import { CommentsSection } from "@/components/CommentsSection";
+import { Eye, Clock } from "lucide-react";
 
 export async function generateMetadata({
     params,
@@ -43,6 +47,7 @@ export default async function ResearchDetail({
 
     return (
         <main className="min-h-screen flex flex-col items-center px-6 py-12 lg:py-20">
+            <ViewTracker slug={research.slug} type="research" />
             <div className="max-w-2xl w-full flex flex-col gap-10">
                 {/* Navigation */}
                 <nav>
@@ -85,13 +90,17 @@ export default async function ResearchDetail({
                                     {research.date}
                                 </span>
                             )}
-                            <div className="flex gap-2">
+                            <div className="flex gap-4">
                                 {research.tags?.map((tag: string, idx: number) => (
                                     <span key={idx} className="text-xs px-2 py-1 rounded-md border border-border/50 text-muted">
                                         {tag}
                                     </span>
                                 ))}
                             </div>
+                            <span className="flex items-center gap-1.5 opacity-60">
+                                <Eye className="w-4 h-4" />
+                                阅读 {research.views || 0} 次
+                            </span>
                         </div>
                         <ShareButton title={research.title} text={`阅读这篇研究：${research.title}`} />
                     </div>
@@ -151,6 +160,14 @@ export default async function ResearchDetail({
                         </ReactMarkdown>
                     </article>
                 )}
+
+                {/* Feedback and Comments Section */}
+                <div className="mt-12 pt-8 border-t border-border/50 w-full">
+                    <div className="flex items-center justify-between mb-8">
+                        <FeedbackButton articleTitle={research.title} />
+                    </div>
+                    <CommentsSection pageId={research.slug} />
+                </div>
 
                 {/* Footer */}
                 <footer className="pt-12 pb-6 text-sm text-center text-muted border-t border-border/10 mt-8">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { fetchCommentsAction, addCommentAction } from '@/app/actions/notion';
+import { fetchCommentsAction, addCommentAction } from '@/app/actions/supabase';
 import { MessageSquare, User, Mail, Send } from 'lucide-react';
 
 export function CommentsSection({ pageId }: { pageId: string }) {

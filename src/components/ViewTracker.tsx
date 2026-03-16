@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { incrementViewsAction } from "@/app/actions/notion";
+import { incrementViewsAction } from "@/app/actions/supabase";
 
-export function ViewTracker({ pageId }: { pageId: string }) {
+export function ViewTracker({ slug, type }: { slug: string, type: 'posts' | 'research' }) {
     const tracked = useRef(false);
 
     useEffect(() => {
         if (!tracked.current) {
             tracked.current = true;
-            incrementViewsAction(pageId).catch(console.error);
+            incrementViewsAction(slug, type).catch(console.error);
         }
-    }, [pageId]);
+    }, [slug, type]);
 
     return null; // Silent component
 }
