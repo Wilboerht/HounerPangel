@@ -15,7 +15,8 @@ import {
     ExternalLink,
     Compass,
     Zap,
-    MousePointer2
+    MousePointer2,
+    Activity
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +27,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isPortalOpen, setIsPortalOpen] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [latency, setLatency] = useState<number | null>(null);
+    const [systemStatus, setSystemStatus] = useState<"Stable" | "Slow" | "Offline">("Stable");
     const portalRef = useRef<HTMLDivElement>(null);
 
     if (pathname === "/admin/login") {
@@ -38,6 +41,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return () => clearInterval(timer);
     }, []);
 
+    // REAL-TIME SYSTEM MONITORING LOGIC
+    useEffect(() => {
+        const checkHealth = async () => {
+            const start = performance.now();
+            try {
+                // Use a lightweight HEAD request to check connection
+                const response = await fetch("/api/health-check", { 
+                    method: "HEAD", 
+                    cache: "no-store" 
+                }).catch(() => {
+                     // Fallback if the specific route doesn't exist yet, just hit the root
+                     return fetch("/", { method: "HEAD", cache: "no-store" });
+                });
+
+                const end = performance.now();
+                const diff = Math.round(end - start);
+                setLatency(diff);
+
+                if (diff > 200) {
+                    setSystemStatus("Slow");
+                } else {
+                    setSystemStatus("Stable");
+                }
+            } catch (error) {
+                setSystemStatus("Offline");
+                setLatency(null);
+            }
+        };
+
+        checkHealth();
+        const timer = setInterval(checkHealth, 10000); // Check every 10 seconds
+        return () => clearInterval(timer);
+    }, []);
+
     // Close portal when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -46,7 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     const navGroups = [
@@ -74,11 +111,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     ];
 
     return (
-        <div className="h-screen bg-[#fafafa] text-black flex p-4 lg:p-6 gap-4 lg:gap-6 font-sans overflow-hidden">
-            {/* 
-                Deepened Premium Sidebar: 
-                - Using a fluid spring for a more elegant 'glide'
-             */}
+        <div className="h-screen bg-[#fafafa] text-black flex pt-4 pl-4 pb-4 pr-0 lg:pt-6 lg:pl-6 lg:pb-6 lg:pr-0 gap-4 lg:gap-6 font-sans overflow-hidden">
             <motion.aside 
                 initial={false}
                 animate={{ width: isCollapsed ? 84 : 280 }}
@@ -110,7 +143,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div className={`absolute top-0 right-0 h-full flex items-center pr-6 transition-all duration-300 ${isCollapsed ? "w-full justify-center !pr-0" : ""}`}>
                         <button 
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="p-2 rounded-xl hover:bg-white hover:shadow-sm text-zinc-400 hover:text-zinc-900 transition-all z-20"
+                            className="p-2 text-zinc-400 hover:text-zinc-900 transition-all z-20 hover:scale-110 active:scale-95"
                             title={isCollapsed ? "展开侧边栏" : "收起侧边栏"}
                         >
                             <AnimatePresence mode="wait" initial={false}>
@@ -241,18 +274,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </motion.aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto scrollbar-hide bg-transparent flex flex-col">
+            <main className="flex-1 overflow-y-auto bg-transparent flex flex-col">
                 {/* Clean Top Toolbar (System Monitoring) */}
                 <header className="w-full max-w-6xl mx-auto px-4 lg:px-8 xl:px-10 py-6 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-6 relative">
                         {/* Status Indicator */}
-                        <div className="flex items-center gap-2.5 group">
+                        <div className="flex items-center gap-2.5">
                             <div className="relative">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping opacity-40" />
+                                <div className={`w-2 h-2 rounded-full transition-colors duration-500 ${
+                                    systemStatus === "Stable" ? "bg-emerald-500" :
+                                    systemStatus === "Slow" ? "bg-amber-500" : "bg-red-500"
+                                }`} />
+                                {systemStatus !== "Offline" && (
+                                    <div className={`absolute inset-0 w-2 h-2 rounded-full animate-ping opacity-40 ${
+                                        systemStatus === "Stable" ? "bg-emerald-500" : "bg-amber-500"
+                                    }`} />
+                                )}
                             </div>
-                            <span className="text-[12px] font-bold text-zinc-400 group-hover:text-zinc-600 transition-colors uppercase tracking-widest">
-                                系统在线
+                            <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest leading-none">
+                                {systemStatus === "Offline" ? "系统离线" : "系统在线"}
                             </span>
                         </div>
 
@@ -262,11 +302,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 text-zinc-400">
                                 <Zap className="w-3.5 h-3.5" />
-                                <span className="text-[12px] font-medium tabular-nums">24ms</span>
+                                <span className="text-[12px] font-medium tabular-nums">
+                                    {latency !== null ? `${latency}ms` : "--"}
+                                </span>
                             </div>
                             <div className="flex items-center gap-2 text-zinc-400">
-                                <LayoutDashboard className="w-3.5 h-3.5" />
-                                <span className="text-[12px] font-medium uppercase tracking-tighter italic">Stable</span>
+                                <Activity className="w-3.5 h-3.5" />
+                                <span className={`text-[12px] font-medium uppercase tracking-tighter ${
+                                    systemStatus === "Stable" ? "text-emerald-600/70" :
+                                    systemStatus === "Slow" ? "text-amber-600/70" : "text-red-600/70"
+                                }`}>
+                                    {systemStatus}
+                                </span>
                             </div>
                         </div>
                     </div>

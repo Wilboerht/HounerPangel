@@ -37,8 +37,6 @@
     scroll-behavior: smooth;
     /* 防止垂直方向因动画位移产生的滚动条闪烁 */
     overflow-x: hidden;
-    /* 预留滚动条位置，防止页面左右跳动 */
-    scrollbar-gutter: stable;
   }
 
   body {
