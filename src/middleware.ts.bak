@@ -1,0 +1,51 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase for Middleware (Edge compatible)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export async function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
+    // 1. Filter out static assets, internal Next.js requests, and admin pages (unless you want to track admin too)
+    const isStaticAsset = /\.(png|jpg|jpeg|gif|svg|ico|css|js|webp)$/.test(pathname);
+    const isNextInternal = pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('favicon.ico');
+    const isAdmin = pathname.startsWith('/admin');
+
+    if (!isStaticAsset && !isNextInternal && !isAdmin) {
+        // 2. Perform background logging (non-blocking)
+        const host = request.headers.get('host') || 'unknown';
+        const url = pathname;
+        const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+        const userAgent = request.headers.get('user-agent') || 'unknown';
+
+        // we don't 'await' this to keep the response fast, 
+        // but Next.js middleware might terminate execution. 
+        // In a production app, you might use waitUntil (if on Vercel) or a better queue.
+        supabase
+            .from('activity_logs')
+            .insert([{ url, host, ip, user_agent: userAgent }])
+            .then(({ error }) => {
+                if (error) console.error('Logging error:', error);
+            });
+    }
+
+    return NextResponse.next();
+}
+
+// See "Matching Paths" below to learn more
+export const config = {
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - api (API routes)
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         */
+        '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    ],
+};

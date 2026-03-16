@@ -26,7 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const pathname = usePathname();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isPortalOpen, setIsPortalOpen] = useState(false);
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const [latency, setLatency] = useState<number | null>(null);
     const [systemStatus, setSystemStatus] = useState<"Stable" | "Slow" | "Offline">("Stable");
     const portalRef = useRef<HTMLDivElement>(null);
@@ -35,8 +35,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return <>{children}</>;
     }
 
-    // Update time every second
+    // Update time every second - initialize ONLY on client to avoid hydration mismatch
     useEffect(() => {
+        setCurrentTime(new Date()); // set initial value after mount
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
@@ -111,12 +112,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     ];
 
     return (
-        <div className="h-screen bg-[#fafafa] text-black flex pt-4 pl-4 pb-4 pr-0 lg:pt-6 lg:pl-6 lg:pb-6 lg:pr-0 gap-4 lg:gap-6 font-sans overflow-hidden">
+        <div className="h-screen bg-[#fafafa] text-black flex pl-4 lg:pl-6 pr-0 lg:pr-0 font-sans overflow-hidden">
             <motion.aside 
                 initial={false}
                 animate={{ width: isCollapsed ? 84 : 280 }}
                 transition={{ type: "spring", stiffness: 220, damping: 28, mass: 1.2 }}
-                className="hidden lg:flex bg-[#eceef2] rounded-[32px] border border-zinc-200 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex-col shrink-0 overflow-hidden relative"
+                className="hidden lg:flex my-4 lg:my-6 bg-[#eceef2] rounded-[32px] border border-zinc-200 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex-col shrink-0 overflow-hidden relative"
             >
                 {/* Header Section */}
                 <div className="h-24 flex items-center relative shrink-0">
@@ -274,9 +275,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </motion.aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto bg-transparent flex flex-col">
+            <main className="flex-1 overflow-y-auto bg-transparent flex flex-col ml-4 lg:ml-6">
                 {/* Clean Top Toolbar (System Monitoring) */}
-                <header className="w-full max-w-6xl mx-auto px-4 lg:px-8 xl:px-10 py-6 flex items-center justify-between shrink-0">
+                <header className="w-full max-w-6xl mx-auto px-4 lg:px-8 xl:px-10 pt-10 pb-6 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-6 relative">
                         {/* Status Indicator */}
                         <div className="flex items-center gap-2.5">
@@ -324,9 +325,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <div className="flex items-center gap-2">
                                 <span className="text-[9px] font-bold text-zinc-400 border border-zinc-200 px-1.5 py-0.5 rounded-md leading-none">CN</span>
                                 <span className="text-[11px] font-bold tabular-nums tracking-wider uppercase">
-                                    {currentTime.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}
-                                    <span className="mx-2 opacity-30">|</span>
-                                    {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                                    {currentTime ? (
+                                        <>
+                                            {currentTime.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}
+                                            <span className="mx-2 opacity-30">|</span>
+                                            {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                                        </>
+                                    ) : (
+                                        <span className="opacity-0">--/-- | --:--:--</span>
+                                    )}
                                 </span>
                             </div>
                         </div>
@@ -337,12 +344,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {children}
                 </div>
 
-                {/* Unified Admin Footer */}
-                <footer className="w-full max-w-6xl mx-auto px-4 lg:px-8 xl:px-10 pb-0">
-                    <div className="pt-4 border-t border-zinc-200/60 flex flex-col md:flex-row items-center justify-between gap-4">
+                {/* Simple Footer */}
+                <footer className="w-full max-w-6xl mx-auto px-4 lg:px-8 xl:px-10 pt-16 mb-4 lg:mb-6 shrink-0 mt-auto">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-black/[0.04]">
                         <div className="flex items-center">
                             <span className="text-[12.5px] text-zinc-300 font-medium tabular-nums">
-                                © {currentTime.getFullYear()} Wilboerht. All rights reserved.
+                                © {currentTime?.getFullYear() ?? new Date().getFullYear()} Wilboerht. All rights reserved.
                             </span>
                         </div>
 
