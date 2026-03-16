@@ -1,88 +1,111 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { Plus, Search, MoreHorizontal, FileText, Globe, Eye, Calendar, ArrowUpRight, Trash2, Edit3 } from "lucide-react";
+import { Plus, Search, FileText, Globe, Eye, Calendar, ArrowUpRight, Edit3 } from "lucide-react";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 
 export default async function AdminPostsPage() {
     const { data: posts, error } = await supabase
         .from('posts')
         .select('*')
-        .order('date', { ascending: false });
+        .order('created_at', { ascending: false });
 
     return (
         <div className="space-y-10">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">博客文章管理</h1>
-                    <p className="text-white/40 text-sm">管理你的博文、草稿和系列内容。</p>
+                    <p className="text-black/30 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Content Management</p>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-black">博客文章</h1>
                 </div>
                 <Link 
                     href="/admin/posts/new"
-                    className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-xl text-sm font-bold active:scale-95 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)]"
+                    className="bg-black text-white px-8 py-3.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-black/10"
                 >
                     <Plus className="w-4 h-4" />
-                    新建文章
+                    发布新文章
                 </Link>
             </div>
 
-            {/* List Table */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-[32px] overflow-hidden">
+            {/* Content Card */}
+            <div className="bg-white border border-black/[0.03] rounded-[40px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.03)] overflow-hidden">
+                {/* Search / Filters Bar (Static Design for now) */}
+                <div className="p-8 border-b border-black/[0.03] flex items-center gap-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black/20" />
+                        <input 
+                            type="text" 
+                            placeholder="搜索文章标题或关键词..." 
+                            className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-3 pl-12 pr-4 text-sm text-black placeholder:text-black/10 focus:outline-none focus:border-black/10 transition-all"
+                        />
+                    </div>
+                </div>
+
+                {/* Table */}
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full">
                         <thead>
-                            <tr className="border-b border-white/5 text-[10px] font-bold uppercase tracking-widest text-white/20">
-                                <th className="px-8 py-6 font-medium">文章信息</th>
-                                <th className="px-6 py-6 font-medium">状态</th>
-                                <th className="px-6 py-6 font-medium">阅读量</th>
-                                <th className="px-6 py-6 font-medium">发布日期</th>
-                                <th className="px-6 py-6 font-medium text-right">操作</th>
+                            <tr className="border-b border-black/[0.03]">
+                                <th className="px-8 py-5 text-left text-[10px] font-bold text-black/20 uppercase tracking-widest">文章详情</th>
+                                <th className="px-8 py-5 text-left text-[10px] font-bold text-black/20 uppercase tracking-widest">状态</th>
+                                <th className="px-8 py-5 text-left text-[10px] font-bold text-black/20 uppercase tracking-widest">数据指标</th>
+                                <th className="px-8 py-5 text-right text-[10px] font-bold text-black/20 uppercase tracking-widest">操作项</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/[0.03]">
+                        <tbody className="divide-y divide-black/[0.03]">
                             {posts?.map((post) => (
-                                <tr key={post.id} className="group hover:bg-white/[0.01] transition-colors">
+                                <tr key={post.id} className="group hover:bg-black/[0.01] transition-colors">
                                     <td className="px-8 py-6">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="font-bold text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight line-clamp-1">{post.title}</span>
-                                            <span className="text-[10px] font-mono text-white/20 italic">/{post.slug}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-6">
-                                        {post.published ? (
-                                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-500 uppercase">
-                                                <Globe className="w-3 h-3" /> 已发布
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-black/[0.02] border border-black/[0.05] flex items-center justify-center text-black/30 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                                                <FileText className="w-5 h-5" />
                                             </div>
-                                        ) : (
-                                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white/20 uppercase">
-                                                <FileText className="w-3 h-3" /> 草稿
+                                            <div className="flex flex-col gap-1 min-w-0">
+                                                <span className="text-sm font-bold text-black truncate max-w-[240px] leading-tight">{post.title}</span>
+                                                <span className="text-[10px] font-bold text-black/20 flex items-center gap-1.5 uppercase">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {new Date(post.created_at).toLocaleDateString()}
+                                                </span>
                                             </div>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-6 font-mono text-xs text-white/40">
-                                        <div className="flex items-center gap-2">
-                                            <Eye className="w-3 h-3" /> {post.views || 0}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-6 text-xs text-white/40">
+                                    <td className="px-8 py-6">
                                         <div className="flex items-center gap-2">
-                                            <Calendar className="w-3 h-3 opacity-40" />
-                                            {post.date}
+                                            {post.published ? (
+                                                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                                    <Globe className="w-3 h-3" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">已发布</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.02] text-black/30 border border-black/5">
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">草稿箱</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-6 text-right">
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-xs font-bold text-black flex items-center gap-1.5">
+                                                    <Eye className="w-3 h-3 text-purple-600" />
+                                                    {post.views || 0}
+                                                </span>
+                                                <span className="text-[10px] font-bold text-black/20 uppercase tracking-tight">浏览量</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-right">
                                         <div className="flex items-center justify-end gap-2">
                                             <Link 
-                                                href={`/blog/${post.slug}`} 
+                                                href={`/blog/${post.slug}`}
                                                 target="_blank"
-                                                className="p-2.5 rounded-lg bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                                                className="p-2.5 rounded-lg bg-black/[0.02] text-black/20 hover:text-black hover:bg-black/5 transition-all"
                                                 title="预览"
                                             >
                                                 <ArrowUpRight className="w-4 h-4" />
                                             </Link>
                                             <Link 
                                                 href={`/admin/posts/edit/${post.id}`}
-                                                className="p-2.5 rounded-lg bg-white/5 text-white/40 hover:text-blue-400 hover:bg-blue-400/10 transition-all"
+                                                className="p-2.5 rounded-lg bg-black/[0.02] text-black/20 hover:text-black hover:bg-black/5 transition-all"
                                                 title="编辑"
                                             >
                                                 <Edit3 className="w-4 h-4" />
@@ -92,14 +115,16 @@ export default async function AdminPostsPage() {
                                     </td>
                                 </tr>
                             ))}
+                            {(!posts || posts.length === 0) && (
+                                <tr>
+                                    <td colSpan={4} className="px-8 py-20 text-center">
+                                        <p className="text-sm font-bold text-black/20 uppercase tracking-widest">暂无博文内容</p>
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
-                {(!posts || posts.length === 0) && (
-                    <div className="py-24 text-center">
-                        <p className="text-white/20 text-sm italic font-medium">还没有任何文章，开始你的创作吧。</p>
-                    </div>
-                )}
             </div>
         </div>
     );

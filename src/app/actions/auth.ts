@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -16,38 +16,38 @@ export async function createServerClient() {
     // we use the base client. Note: For middleware protection, we need to handle 
     // session persistence.
     
-    return createClient(supabaseUrl, supabaseAnonKey, {
-        auth: {
-            persistSession: false // Server actions are stateless
-        }
-    });
+    // For simplicity, we use the pre-configured global client
+    return supabase;
 }
 
 export async function loginAction(formData: FormData) {
+    console.log("Login attempt started for:", formData.get("email"));
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-    });
+    try {
+        console.log("Calling Supabase signInWithPassword...");
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+        console.log("Supabase response received. Error:", error?.message || "none");
 
-    if (error) {
-        return { error: error.message };
+        if (error) {
+            return { error: error.message };
+        }
+
+        console.log("Setting session cookie...");
+        const cookieStore = await cookies();
+        cookieStore.set("admin-session", data.session?.access_token || "", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+            path: "/",
+        });
+    } catch (e: any) {
+        return { error: e.message || "Connection timeout or network error" };
     }
-
-    // Since we are using standard supabase-js without @supabase/ssr for now, 
-    // we'll rely on the client-side auth state for the dashboard, 
-    // but we can set a simple cookie for middleware as a basic gate.
-    const cookieStore = await cookies();
-    cookieStore.set("admin-session", data.session?.access_token || "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-        path: "/",
-    });
 
     redirect("/admin");
 }
@@ -55,10 +55,7 @@ export async function loginAction(formData: FormData) {
 export async function logoutAction() {
     const cookieStore = await cookies();
     cookieStore.delete("admin-session");
-    
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
     await supabase.auth.signOut();
-    
     redirect("/admin/login");
 }
 

@@ -30,15 +30,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     ];
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white flex flex-col lg:flex-row">
+        <div className="min-h-screen bg-[#fafafa] text-black flex flex-col lg:flex-row font-sans">
             {/* Sidebar */}
-            <aside className="w-full lg:w-64 xl:w-72 bg-[#0a0a0a] border-r border-white/5 flex flex-col shrink-0">
+            <aside className="w-full lg:w-64 xl:w-72 bg-white border-r border-black/[0.05] flex flex-col shrink-0">
                 <div className="p-8">
                     <Link href="/" className="flex items-center gap-3 group">
-                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-                            <Home className="w-4 h-4 text-black" />
+                        <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center shadow-lg shadow-black/10 transition-transform group-hover:scale-105">
+                            <Home className="w-4 h-4 text-white" />
                         </div>
-                        <span className="font-bold tracking-tight group-hover:text-white/60 transition-colors">站点主页</span>
+                        <span className="font-bold tracking-tight text-black/80 group-hover:text-black transition-colors">站点主页</span>
                     </Link>
                 </div>
 
@@ -51,13 +51,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 href={item.href}
                                 className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${
                                     isActive 
-                                    ? "bg-white/10 text-white" 
-                                    : "text-white/40 hover:text-white hover:bg-white/5"
+                                    ? "bg-black text-white shadow-lg shadow-black/5" 
+                                    : "text-black/40 hover:text-black hover:bg-black/[0.02]"
                                 }`}
                             >
                                 <div className="flex items-center gap-3">
-                                    <item.icon className="w-5 h-5" />
-                                    <span className="text-sm font-medium">{item.name}</span>
+                                    <item.icon className={`w-5 h-5 ${isActive ? "text-white" : "text-black/20 group-hover:text-black/40"}`} />
+                                    <span className="text-sm font-bold">{item.name}</span>
                                 </div>
                                 {isActive && (
                                     <motion.div layoutId="activeNav" className="w-1.5 h-1.5 rounded-full bg-white" />
@@ -70,11 +70,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-white/5">
+                <div className="p-6 border-t border-black/[0.05]">
                     <form action={logoutAction}>
-                        <button className="w-full flex items-center gap-3 px-4 py-3 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200">
+                        <button className="w-full flex items-center gap-3 px-4 py-3 text-red-500/60 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all duration-200 font-bold">
                             <LogOut className="w-5 h-5" />
-                            <span className="text-sm font-medium">退出登录</span>
+                            <span className="text-sm">退出登录</span>
                         </button>
                     </form>
                 </div>

@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import { ViewTracker } from "@/components/ViewTracker";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { CommentsSection } from "@/components/CommentsSection";
-import { Eye, Clock } from "lucide-react";
+import { Eye, Clock, Lock } from "lucide-react";
 
 export async function generateMetadata({
     params,
@@ -170,8 +170,12 @@ export default async function ResearchDetail({
                 </div>
 
                 {/* Footer */}
-                <footer className="pt-12 pb-6 text-sm text-center text-muted border-t border-border/10 mt-8">
+                <footer className="pt-12 pb-6 text-sm text-center text-muted border-t border-border/10 mt-8 flex items-center justify-center gap-3">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
+                    <span className="opacity-20">|</span>
+                    <Link href="/admin" className="hover:text-foreground transition-colors" title="Admin Login">
+                        <Lock className="w-3.5 h-3.5" />
+                    </Link>
                 </footer>
             </div>
         </main>

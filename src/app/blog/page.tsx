@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Library, Search } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Library, Search, Lock } from "lucide-react";
 import { CollectionsDrawer } from "@/components/CollectionsDrawer";
 import { BlogSearch } from "@/components/BlogSearch";
 import { getPublishedPosts } from "@/lib/supabase";
@@ -285,8 +285,12 @@ export default async function BlogPage({
             </div>
 
             {/* Global Footer */}
-            <footer className="max-w-2xl w-full pt-16 pb-8 text-sm text-center text-muted border-t border-white/5 mt-12">
+            <footer className="max-w-2xl w-full pt-16 pb-8 text-sm text-center text-muted border-t border-white/5 mt-12 flex items-center justify-center gap-3">
                 <p>&copy; {new Date().getFullYear()} wilboerht</p>
+                <span className="opacity-20">|</span>
+                <Link href="/admin" className="hover:text-foreground transition-colors" title="Admin Login">
+                    <Lock className="w-3.5 h-3.5" />
+                </Link>
             </footer>
         </main>
     );

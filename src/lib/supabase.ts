@@ -4,19 +4,29 @@ import { Post, Research, Comment, Series, SeriesItem } from "@/types/content";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Enhanced client with better timeout and retry logic for unstable networks
+// Enhanced fetch with retry and extended timeout
+const fetchWithRetry = async (input: RequestInfo | URL, options?: RequestInit, retries = 2): Promise<Response> => {
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await fetch(input, { 
+                ...options, 
+                signal: AbortSignal.timeout(60000) // Extended to 60s
+            });
+        } catch (err) {
+            if (i === retries - 1) throw err;
+            console.log(`Retrying fetch (${i + 1}/${retries})...`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    }
+    return fetch(input, options); // Fallback
+};
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: false,
     },
     global: {
-        fetch: (url, options) => {
-            return fetch(url, { 
-                ...options, 
-                // Increase timeout for slow connections
-                signal: AbortSignal.timeout(20000) 
-            });
-        },
+        fetch: fetchWithRetry,
     },
 });
 

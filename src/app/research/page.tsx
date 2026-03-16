@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ResearchSearch } from "@/components/ResearchSearch";
-import { ArrowLeft, ExternalLink, BookOpen, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowLeft, ExternalLink, BookOpen, ChevronLeft, ChevronRight, Search, Lock } from "lucide-react";
 
 import { getPublishedResearch } from "@/lib/supabase";
 import type { Research } from "@/types/content";
@@ -184,8 +184,12 @@ export default async function ResearchPage({
                 </section>
 
                 {/* Footer */}
-                <footer className="pt-8 text-sm text-muted border-t border-white/10">
+                <footer className="pt-8 text-sm text-muted border-t border-white/10 flex items-center gap-3">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
+                    <span className="opacity-20">|</span>
+                    <Link href="/admin" className="hover:text-foreground transition-colors" title="Admin Login">
+                        <Lock className="w-3.5 h-3.5" />
+                    </Link>
                 </footer>
             </div>
         </main>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, CalendarDays, Clock, Library, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, Library, Eye, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -288,8 +288,12 @@ export default async function BlogPost({
                         />
                     )}
 
-                    <footer className="pt-12 pb-6 text-sm text-center text-muted border-t border-border/10 mt-8">
+                    <footer className="pt-12 pb-6 text-sm text-center text-muted border-t border-border/10 mt-8 flex items-center justify-center gap-3">
                         <p>&copy; {new Date().getFullYear()} wilboerht</p>
+                        <span className="opacity-20">|</span>
+                        <Link href="/admin" className="hover:text-foreground transition-colors" title="Admin Login">
+                            <Lock className="w-3.5 h-3.5" />
+                        </Link>
                     </footer>
                 </div>
 

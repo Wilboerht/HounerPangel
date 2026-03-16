@@ -15,20 +15,29 @@ export default function LoginPage() {
         setError(null);
 
         const formData = new FormData(event.currentTarget);
-        const result = await loginAction(formData);
+        try {
+            const result = await loginAction(formData);
 
-        if (result?.error) {
-            setError(result.error);
-            setIsLoading(false);
+            if (result?.error) {
+                setError(result.error);
+                setIsLoading(false);
+            }
+        } catch (e) {
+            // Next.js redirect throws an error, which is expected.
+            // If it's a real error, handled here.
+            console.error("Login redirect/error:", e);
+            // We usually don't need to setIsLoading(false) if it's redirecting,
+            // but if it stays on page, we should.
+            setTimeout(() => setIsLoading(false), 3000); 
         }
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-[#0a0a0a]">
-            {/* Background Aesthetic */}
+        <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-[#fafafa]">
+            {/* Background Aesthetic - Subtle Light Orbs */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px]" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/[0.03] rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/[0.03] rounded-full blur-[120px]" />
             </div>
 
             <motion.div 
@@ -38,36 +47,36 @@ export default function LoginPage() {
                 className="w-full max-w-md relative z-10"
             >
                 {/* Logo/Icon Section */}
-                <div className="flex flex-col items-center mb-10">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-2xl backdrop-blur-xl">
-                        <ShieldCheck className="w-8 h-8 text-white/80" />
+                <div className="flex items-center justify-center gap-8 mb-12">
+                    <div className="w-14 h-14 rounded-2xl bg-white border border-black/[0.03] flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                        <ShieldCheck className="w-7 h-7 text-black/80" />
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Admin Gateway</h1>
-                    <p className="text-white/40 text-sm font-medium uppercase tracking-[0.2em]">Authorized Access Only</p>
+                    <div className="w-px h-8 bg-black/[0.05]" />
+                    <h1 className="text-2xl font-bold tracking-tight text-black">管理后台登录</h1>
                 </div>
 
                 {/* Login Card */}
-                <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-[32px] p-8 shadow-[0_24px_80px_rgba(0,0,0,0.4)]">
+                <div className="bg-white border border-black/[0.03] rounded-[40px] p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)]">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-4">
                             <div className="relative group">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-white/60 transition-colors" />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black/20 group-focus-within:text-black/40 transition-colors" />
                                 <input
                                     name="email"
                                     type="email"
                                     required
-                                    placeholder="Admin Email"
-                                    className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/10 focus:outline-none focus:border-white/20 focus:bg-white/[0.05] transition-all duration-300"
+                                    placeholder="管理员邮箱"
+                                    className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
                                 />
                             </div>
                             <div className="relative group">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-white/60 transition-colors" />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black/20 group-focus-within:text-black/40 transition-colors" />
                                 <input
                                     name="password"
                                     type="password"
                                     required
-                                    placeholder="Secret Key"
-                                    className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/10 focus:outline-none focus:border-white/20 focus:bg-white/[0.05] transition-all duration-300"
+                                    placeholder="访问密钥"
+                                    className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
                                 />
                             </div>
                         </div>
@@ -76,32 +85,37 @@ export default function LoginPage() {
                             <motion.div 
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-3 px-4 rounded-xl flex items-center gap-2"
+                                className="bg-red-500/[0.03] border border-red-500/10 text-red-500 text-xs py-3.5 px-4 rounded-xl flex items-center gap-2 font-medium"
                             >
-                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
                                 {error}
                             </motion.div>
                         )}
 
-                        <button
+                        <motion.button
+                            whileHover={{ y: -2 }}
+                            whileTap={{ scale: 0.98 }}
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-white text-black font-bold py-4 rounded-2xl flex items-center justify-center gap-2 group hover:bg-white/90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+                            className="w-full bg-white border border-black/[0.05] text-black font-bold py-4 px-6 rounded-2xl flex items-center justify-between group transition-all duration-300 disabled:opacity-50 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:border-black/10"
                         >
-                            {isLoading ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : (
-                                <>
-                                    进入管理端
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                </>
-                            )}
-                        </button>
+                            <span className="text-sm tracking-tight pl-2">
+                                {isLoading ? "验证中..." : "进入创作中心"}
+                            </span>
+                            
+                            <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center transition-transform duration-500 group-hover:rotate-[360deg]">
+                                {isLoading ? (
+                                    <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                ) : (
+                                    <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-0.5 transition-transform" />
+                                )}
+                            </div>
+                        </motion.button>
                     </form>
                 </div>
 
-                <p className="text-center mt-8 text-white/20 text-xs tracking-widest font-mono uppercase">
-                    &copy; {new Date().getFullYear()} Protected by HounerPangel
+                <p className="text-center mt-12 text-[11px] text-black/20 tracking-widest font-medium">
+                    &copy; {new Date().getFullYear()} Protected by wilboerht
                 </p>
             </motion.div>
         </main>

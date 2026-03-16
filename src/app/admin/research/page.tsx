@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { Plus, BookOpen, Globe, Eye, Calendar, ArrowUpRight, Trash2, Edit3, Tag } from "lucide-react";
+import { Plus, BookOpen, Globe, Eye, Calendar, ArrowUpRight, Edit3, Tag } from "lucide-react";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 
 export default async function AdminResearchPage() {
@@ -12,80 +12,92 @@ export default async function AdminResearchPage() {
     return (
         <div className="space-y-10">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">研究项目管理</h1>
-                    <p className="text-white/40 text-sm">管理你的技术研究、论文和深度探索内容。</p>
+                    <p className="text-black/30 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Academic Hub</p>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-black">研究项目</h1>
                 </div>
                 <Link 
                     href="/admin/research/new"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-bold active:scale-95 transition-all shadow-[0_10px_30px_rgba(37,99,235,0.2)]"
+                    className="bg-black text-white px-8 py-3.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-black/10"
                 >
                     <Plus className="w-4 h-4" />
-                    新建研究
+                    开启新项目
                 </Link>
             </div>
 
-            {/* List Table */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-[32px] overflow-hidden">
+            {/* Content Table Card */}
+            <div className="bg-white border border-black/[0.03] rounded-[40px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.03)] overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full">
                         <thead>
-                            <tr className="border-b border-white/5 text-[10px] font-bold uppercase tracking-widest text-white/20">
-                                <th className="px-8 py-6 font-medium">项目名称</th>
-                                <th className="px-6 py-6 font-medium">标签</th>
-                                <th className="px-6 py-6 font-medium">状态</th>
-                                <th className="px-6 py-6 font-medium">发布日期</th>
-                                <th className="px-6 py-6 font-medium text-right">操作</th>
+                            <tr className="border-b border-black/[0.03]">
+                                <th className="px-8 py-6 text-left text-[10px] font-bold text-black/20 uppercase tracking-widest">项目课题</th>
+                                <th className="px-8 py-6 text-left text-[10px] font-bold text-black/20 uppercase tracking-widest">标签</th>
+                                <th className="px-8 py-6 text-left text-[10px] font-bold text-black/20 uppercase tracking-widest">状态</th>
+                                <th className="px-8 py-6 text-right text-[10px] font-bold text-black/20 uppercase tracking-widest">操作项</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/[0.03]">
+                        <tbody className="divide-y divide-black/[0.03]">
                             {researchItems?.map((item) => (
-                                <tr key={item.id} className="group hover:bg-white/[0.01] transition-colors">
-                                    <td className="px-8 py-6">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="font-bold text-white group-hover:text-amber-400 transition-colors uppercase tracking-tight line-clamp-1">{item.title}</span>
-                                            <span className="text-[10px] font-mono text-white/20 italic">/research/{item.slug}</span>
+                                <tr key={item.id} className="group hover:bg-black/[0.01] transition-colors">
+                                    <td className="px-8 py-8">
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-14 h-14 rounded-[20px] bg-black/[0.02] border border-black/[0.05] flex items-center justify-center text-black/30 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                                                <BookOpen className="w-6 h-6" />
+                                            </div>
+                                            <div className="flex flex-col gap-1.5 min-w-0">
+                                                <span className="text-sm font-bold text-black truncate max-w-[280px] leading-snug">{item.title}</span>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-[10px] font-bold text-black/20 flex items-center gap-1.5 uppercase">
+                                                        <Calendar className="w-3 h-3" />
+                                                        {item.date}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold text-black/20 flex items-center gap-1.5 uppercase">
+                                                        <Eye className="w-3 h-3 text-purple-600" />
+                                                        {item.views || 0}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-6">
-                                        <div className="flex flex-wrap gap-1">
-                                            {item.tags?.slice(0, 2).map((tag: string, i: number) => (
-                                                <span key={i} className="text-[9px] px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-white/40">
+                                    <td className="px-8 py-8">
+                                        <div className="flex flex-wrap gap-1.5 max-w-[200px]">
+                                            {item.tags?.map((tag: string) => (
+                                                <span 
+                                                    key={tag} 
+                                                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-black/[0.02] text-black/40 border border-black/5 text-[9px] font-bold uppercase tracking-tight"
+                                                >
+                                                    <Tag className="w-2.5 h-2.5" />
                                                     {tag}
                                                 </span>
                                             ))}
-                                            {(item.tags?.length || 0) > 2 && (
-                                                <span className="text-[9px] px-1.5 py-0.5 text-white/20">+{item.tags.length - 2}</span>
-                                            )}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-6">
+                                    <td className="px-8 py-8">
                                         {item.published ? (
-                                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-500 uppercase">
-                                                <Globe className="w-3 h-3" /> 公开
+                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                                <Globe className="w-3 h-3" />
+                                                <span className="text-[10px] font-bold uppercase tracking-wider">已在线</span>
                                             </div>
                                         ) : (
-                                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white/20 uppercase">
-                                                <BookOpen className="w-3 h-3" /> 存档
+                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.02] text-black/20 border border-black/5">
+                                                <span className="text-[10px] font-bold uppercase tracking-wider">进行中</span>
                                             </div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-6 text-xs text-white/40 font-mono">
-                                        {item.date}
-                                    </td>
-                                    <td className="px-6 py-6 text-right">
+                                    <td className="px-8 py-8 text-right">
                                         <div className="flex items-center justify-end gap-2">
                                             <Link 
-                                                href={`/research/${item.slug}`} 
+                                                href={`/research/${item.slug}`}
                                                 target="_blank"
-                                                className="p-2.5 rounded-lg bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                                                className="p-2.5 rounded-xl bg-black/[0.02] text-black/20 hover:text-black hover:bg-black/5 transition-all"
                                             >
                                                 <ArrowUpRight className="w-4 h-4" />
                                             </Link>
                                             <Link 
                                                 href={`/admin/research/edit/${item.id}`}
-                                                className="p-2.5 rounded-lg bg-white/5 text-white/40 hover:text-amber-400 hover:bg-amber-400/10 transition-all"
+                                                className="p-2.5 rounded-xl bg-black/[0.02] text-black/20 hover:text-black hover:bg-black/5 transition-all"
                                             >
                                                 <Edit3 className="w-4 h-4" />
                                             </Link>
@@ -94,6 +106,13 @@ export default async function AdminResearchPage() {
                                     </td>
                                 </tr>
                             ))}
+                            {(!researchItems || researchItems.length === 0) && (
+                                <tr>
+                                    <td colSpan={4} className="px-8 py-20 text-center">
+                                        <p className="text-sm font-bold text-black/20 uppercase tracking-widest">暂无课题计划</p>
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
