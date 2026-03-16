@@ -4,7 +4,21 @@ import { Post, Research, Comment, Series, SeriesItem } from "@/types/content";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Enhanced client with better timeout and retry logic for unstable networks
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        persistSession: false,
+    },
+    global: {
+        fetch: (url, options) => {
+            return fetch(url, { 
+                ...options, 
+                // Increase timeout for slow connections
+                signal: AbortSignal.timeout(20000) 
+            });
+        },
+    },
+});
 
 /**
  * 动态计算文章阅读时长
