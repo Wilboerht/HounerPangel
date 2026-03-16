@@ -9,21 +9,38 @@ import {
     MessageSquare, 
     LogOut,
     Home,
+    ChevronLeft,
     ChevronRight,
-    PanelLeftClose,
-    PanelLeftOpen
+    Menu,
+    ExternalLink,
+    Compass,
+    Zap,
+    MousePointer2
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isPortalOpen, setIsPortalOpen] = useState(false);
+    const portalRef = useRef<HTMLDivElement>(null);
 
     if (pathname === "/admin/login") {
         return <>{children}</>;
     }
+
+    // Close portal when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (portalRef.current && !portalRef.current.contains(event.target as Node)) {
+                setIsPortalOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const navGroups = [
         {
@@ -42,24 +59,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     ];
 
+    const portalLinks = [
+        { name: "网站主页", href: "/", icon: Home },
+        { name: "博客频道", href: "/blog", icon: FileText },
+        { name: "项目展示", href: "/projects", icon: Zap },
+        { name: "研究中心", href: "/research", icon: BookOpen },
+    ];
+
     return (
         <div className="h-screen bg-[#fafafa] text-black flex p-4 lg:p-6 gap-4 lg:gap-6 font-sans overflow-hidden">
-            {/* Floating Sidebar */}
+            {/* 
+                Deepened Premium Sidebar: 
+                - Using a fluid spring for a more elegant 'glide'
+             */}
             <motion.aside 
                 initial={false}
                 animate={{ width: isCollapsed ? 84 : 280 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="hidden lg:flex bg-white rounded-[32px] border border-black/[0.04] shadow-sm flex-col shrink-0 overflow-hidden relative"
+                transition={{ type: "spring", stiffness: 220, damping: 28, mass: 1.2 }}
+                className="hidden lg:flex bg-[#eceef2] rounded-[32px] border border-zinc-200 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex-col shrink-0 overflow-hidden relative"
             >
-                {/* 1. Header Section - Fixed Height & Absolute Centering for Toggle */}
+                {/* Header Section */}
                 <div className="h-24 flex items-center relative shrink-0">
                     <AnimatePresence mode="wait">
                         {!isCollapsed && (
                             <motion.div 
                                 key="brand"
-                                initial={{ opacity: 0, x: -10 }}
+                                initial={{ opacity: 0, x: -8 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10, transition: { duration: 0.1 } }}
+                                exit={{ opacity: 0, x: -8, transition: { duration: 0.2 } }}
                                 className="flex items-center gap-3 pl-8"
                             >
                                 <div className="w-9 h-9 rounded-xl bg-white border border-black/[0.05] flex items-center justify-center shadow-sm shrink-0">
@@ -67,35 +94,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="font-bold text-[14px] tracking-tight text-zinc-900">控制中心</span>
-                                    <span className="text-[9px] font-medium text-zinc-400 uppercase tracking-widest whitespace-nowrap">Admin Center</span>
+                                    <span className="text-[9px] font-medium text-zinc-500 uppercase tracking-widest whitespace-nowrap">Admin Center</span>
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
 
-                    {/* Toggle Button - Correct Positioning */}
                     <div className={`absolute top-0 right-0 h-full flex items-center pr-6 transition-all duration-300 ${isCollapsed ? "w-full justify-center !pr-0" : ""}`}>
                         <button 
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="p-2 rounded-xl hover:bg-zinc-50 text-zinc-400 hover:text-zinc-900 transition-colors z-20"
+                            className="p-2 rounded-xl hover:bg-white hover:shadow-sm text-zinc-400 hover:text-zinc-900 transition-all z-20"
                             title={isCollapsed ? "展开侧边栏" : "收起侧边栏"}
                         >
                             <AnimatePresence mode="wait" initial={false}>
                                 <motion.div
                                     key={isCollapsed ? "collapsed" : "expanded"}
-                                    initial={{ opacity: 0, rotate: isCollapsed ? -90 : 90 }}
-                                    animate={{ opacity: 1, rotate: 0 }}
-                                    exit={{ opacity: 0, rotate: isCollapsed ? 90 : -90 }}
-                                    transition={{ duration: 0.15 }}
+                                    initial={{ opacity: 0, scale: 0.9, rotate: isCollapsed ? -45 : 45 }}
+                                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9, rotate: isCollapsed ? 45 : -45 }}
+                                    transition={{ duration: 0.2, ease: "easeOut" }}
                                 >
-                                    {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+                                    {isCollapsed ? <Menu className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
                                 </motion.div>
                             </AnimatePresence>
                         </button>
                     </div>
                 </div>
 
-                {/* 2. Navigation Section - Better Centering Logic */}
+                {/* Navigation Section */}
                 <nav className="flex-1 overflow-y-auto no-scrollbar">
                     {navGroups.map((group, groupIdx) => (
                         <div key={group.group} className={groupIdx > 0 ? "mt-8" : ""}>
@@ -103,10 +129,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 <AnimatePresence mode="wait">
                                     {!isCollapsed && (
                                         <motion.h2 
-                                            initial={{ opacity: 0, x: -10 }}
+                                            initial={{ opacity: 0, x: -8 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: -10, transition: { duration: 0.1 } }}
-                                            className="text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-300 whitespace-nowrap"
+                                            exit={{ opacity: 0, x: -8, transition: { duration: 0.2 } }}
+                                            className="text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-500 whitespace-nowrap"
                                         >
                                             {group.group}
                                         </motion.h2>
@@ -118,50 +144,60 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 {group.items.map((item) => {
                                     const isActive = pathname === item.href;
                                     return (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            title={isCollapsed ? item.name : ""}
-                                            className={`relative flex items-center h-12 rounded-xl transition-all duration-300 group overflow-hidden ${
-                                                isActive ? "text-zinc-950" : "text-zinc-500 hover:text-zinc-800"
-                                            }`}
-                                        >
-                                            {isActive && (
-                                                <motion.div 
-                                                    layoutId="active-pill"
-                                                    className="absolute inset-0 bg-zinc-100/70 rounded-xl z-0"
-                                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                                />
-                                            )}
+                                        <div key={item.href} className="relative">
+                                            <Link
+                                                href={item.href}
+                                                title={isCollapsed ? item.name : ""}
+                                                className={`relative flex items-center h-12 rounded-xl group transition-all duration-500 ${
+                                                    isActive ? "text-black" : "text-zinc-500 hover:text-zinc-900"
+                                                }`}
+                                            >
+                                                {isActive && (
+                                                    <motion.div 
+                                                        layoutId="active-pill"
+                                                        className="absolute inset-0 bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06),0_1px_4px_rgba(0,0,0,0.04)] border border-black/[0.03] rounded-xl z-0"
+                                                        transition={{ 
+                                                            type: "spring", 
+                                                            stiffness: 260, 
+                                                            damping: 32,
+                                                            mass: 1.2
+                                                        }}
+                                                    />
+                                                )}
 
-                                            {/* Icon Center Point - Based on 84px sidebar width */}
-                                            <div className="w-[78px] h-full flex items-center justify-center shrink-0 z-10 relative left-[-12px]">
-                                                <item.icon className="w-5 h-5" />
-                                            </div>
+                                                <div className="w-[78px] h-full flex items-center justify-center shrink-0 z-10 relative left-[-12px]">
+                                                    <motion.div
+                                                        animate={{ color: isActive ? "#000000" : "#94a3b8" }}
+                                                        transition={{ duration: 0.4 }}
+                                                    >
+                                                        <item.icon className="w-5 h-5" />
+                                                    </motion.div>
+                                                </div>
 
-                                            <div className="flex-1 flex items-center justify-between pr-4 z-10 relative">
-                                                <AnimatePresence mode="wait">
-                                                    {!isCollapsed && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, x: -10 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            exit={{ opacity: 0, x: -10, transition: { duration: 0.1 } }}
-                                                            className="flex-1 flex items-center justify-between"
-                                                        >
-                                                            <span className="text-[13.5px] tracking-tight whitespace-nowrap">
-                                                                {item.name}
-                                                            </span>
-                                                            
-                                                            <div className="ml-2 shrink-0">
+                                                <div className="flex-1 flex items-center justify-between pr-4 z-10 relative">
+                                                    <AnimatePresence mode="wait">
+                                                        {!isCollapsed && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, x: -8 }}
+                                                                animate={{ opacity: 1, x: 0 }}
+                                                                exit={{ opacity: 0, x: -8, transition: { duration: 0.15 } }}
+                                                                className="flex-1 flex items-center justify-between"
+                                                            >
+                                                                <span className="text-[13.5px] tracking-tight whitespace-nowrap">
+                                                                    {item.name}
+                                                                </span>
+                                                                
                                                                 {!isActive && (
-                                                                    <ChevronRight className="w-3.5 h-3.5 text-zinc-200 group-hover:text-zinc-400 group-hover:translate-x-0.5 transition-all opacity-0 group-hover:opacity-100" />
+                                                                    <div className="ml-2 shrink-0">
+                                                                        <ChevronRight className="w-3.5 h-3.5 text-zinc-300 group-hover:text-zinc-500 group-hover:translate-x-0.5 transition-all opacity-0 group-hover:opacity-100 duration-300" />
+                                                                    </div>
                                                                 )}
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
-                                            </div>
-                                        </Link>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
+                                            </Link>
+                                        </div>
                                     );
                                 })}
                             </div>
@@ -169,20 +205,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     ))}
                 </nav>
 
-                {/* 3. Footer Section - Unified Centering */}
-                <div className="p-3 shrink-0">
+                {/* Footer Section */}
+                <div className="p-3 pt-6 mt-4 border-t border-zinc-200/60 shrink-0">
                     <form action={logoutAction}>
-                        <button className="relative w-full h-12 flex items-center rounded-xl transition-all duration-300 font-medium border border-transparent hover:border-red-100/30 text-zinc-400 hover:text-red-500 hover:bg-red-50/50 overflow-hidden">
-                            <div className="w-[78px] h-full flex items-center justify-center shrink-0 relative left-[-12px] z-10">
+                        <button className="relative w-full h-12 flex items-center rounded-xl transition-all duration-300 font-medium group overflow-hidden">
+                            <div className="absolute inset-0 bg-white/0 group-hover:bg-white transition-colors duration-300" />
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 shadow-[0_4px_12px_rgba(244,63,94,0.08),0_1px_4px_rgba(0,0,0,0.02)] border border-rose-500/5 rounded-xl transition-opacity duration-300" />
+                            
+                            <div className="w-[78px] h-full flex items-center justify-center shrink-0 relative left-[-12px] z-10 transition-colors duration-300 text-zinc-400 group-hover:text-rose-500">
                                 <LogOut className="w-5 h-5" />
                             </div>
+                            
                             <AnimatePresence mode="wait">
                                 {!isCollapsed && (
                                     <motion.span 
-                                        initial={{ opacity: 0, x: -10 }}
+                                        initial={{ opacity: 0, x: -8 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -10, transition: { duration: 0.1 } }}
-                                        className="text-[13.5px] tracking-tight whitespace-nowrap z-10"
+                                        exit={{ opacity: 0, x: -8, transition: { duration: 0.15 } }}
+                                        className="text-[13.5px] tracking-tight whitespace-nowrap z-10 text-zinc-500 group-hover:text-rose-600 transition-colors duration-300"
                                     >
                                         退出系统
                                     </motion.span>
@@ -194,10 +234,83 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </motion.aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto scrollbar-hide bg-transparent">
-                <div className="max-w-6xl mx-auto p-4 lg:p-12 xl:p-16">
+            <main className="flex-1 overflow-y-auto scrollbar-hide bg-transparent flex flex-col">
+                <div className="flex-1 max-w-6xl mx-auto w-full p-4 lg:px-8 lg:pt-12 lg:pb-8 xl:px-10 xl:pt-12 xl:pb-10">
                     {children}
                 </div>
+
+                {/* Unified Admin Footer */}
+                <footer className="w-full max-w-6xl mx-auto px-4 lg:px-8 xl:px-10 pb-0">
+                    <div className="pt-4 border-t border-zinc-200/60 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center">
+                            <span className="text-[12.5px] text-zinc-300 font-medium tabular-nums">
+                                © {new Date().getFullYear()} Wilboerht. All rights reserved.
+                            </span>
+                        </div>
+
+                        <div className="flex items-center gap-6 relative" ref={portalRef}>
+                            {/* Project Teleport Menu */}
+                            <AnimatePresence>
+                                {isPortalOpen && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                                        transition={{ 
+                                            type: "spring",
+                                            stiffness: 400,
+                                            damping: 28
+                                        }}
+                                        className="absolute bottom-full left-0 mb-4 w-[150px] bg-white/95 backdrop-blur-md rounded-2xl border border-black/[0.04] shadow-[0_12px_24px_-8px_rgba(0,0,0,0.1),0_20px_40px_-12px_rgba(0,0,0,0.05)] p-1.5 z-50 overflow-hidden"
+                                    >
+                                        <div className="flex flex-col gap-0.5">
+                                            {portalLinks.map((link) => (
+                                                <Link 
+                                                    key={link.href}
+                                                    href={link.href}
+                                                    target="_blank"
+                                                    className="flex items-center gap-3 px-3 py-2.5 rounded-[10px] hover:bg-zinc-50/80 text-[12.5px] text-zinc-500 hover:text-zinc-950 transition-all duration-200 group"
+                                                >
+                                                    <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                                                        <link.icon className="w-full h-full text-zinc-400 group-hover:text-zinc-950 transition-colors" />
+                                                    </div>
+                                                    <span className="font-medium tracking-tight whitespace-nowrap">{link.name}</span>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <button 
+                                onClick={() => setIsPortalOpen(!isPortalOpen)}
+                                className={`text-[12.5px] font-medium transition-all flex items-center gap-1.5 group px-1 py-1.5 relative ${
+                                    isPortalOpen ? "text-zinc-950" : "text-zinc-500 hover:text-zinc-950"
+                                }`}
+                            >
+                                <Compass className={`w-3.5 h-3.5 transition-transform duration-500 ${isPortalOpen ? "rotate-180" : ""}`} />
+                                <span>访问站点</span>
+
+                                {/* Animated Underline Indicator */}
+                                {isPortalOpen && (
+                                    <motion.div 
+                                        layoutId="portal-underline"
+                                        className="absolute bottom-0 left-0 right-0 h-px bg-zinc-950 rounded-full"
+                                        initial={{ scaleX: 0 }}
+                                        animate={{ scaleX: 1 }}
+                                        exit={{ scaleX: 0 }}
+                                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                    />
+                                )}
+                            </button>
+
+                            <div className="h-4 w-px bg-zinc-200" />
+                            <span className="text-[12.5px] font-medium text-zinc-300">
+                                v1.2.4
+                            </span>
+                        </div>
+                    </div>
+                </footer>
             </main>
         </div>
     );
