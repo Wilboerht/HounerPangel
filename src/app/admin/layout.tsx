@@ -235,7 +235,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto scrollbar-hide bg-transparent flex flex-col">
-                <div className="flex-1 max-w-6xl mx-auto w-full p-4 lg:px-8 lg:pt-12 lg:pb-8 xl:px-10 xl:pt-12 xl:pb-10">
+                <div className="flex-1 max-w-6xl mx-auto w-full p-4 lg:p-8 xl:p-10">
                     {children}
                 </div>
 
