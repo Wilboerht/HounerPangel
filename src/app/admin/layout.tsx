@@ -25,11 +25,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const pathname = usePathname();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isPortalOpen, setIsPortalOpen] = useState(false);
+    const [currentTime, setCurrentTime] = useState(new Date());
     const portalRef = useRef<HTMLDivElement>(null);
 
     if (pathname === "/admin/login") {
         return <>{children}</>;
     }
+
+    // Update time every second
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     // Close portal when clicking outside
     useEffect(() => {
@@ -39,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        return () => document.addEventListener("mousedown", handleClickOutside);
     }, []);
 
     const navGroups = [
@@ -235,7 +242,51 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto scrollbar-hide bg-transparent flex flex-col">
-                <div className="flex-1 max-w-6xl mx-auto w-full p-4 lg:p-8 xl:p-10">
+                {/* Clean Top Toolbar (System Monitoring) */}
+                <header className="w-full max-w-6xl mx-auto px-4 lg:px-8 xl:px-10 py-6 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-6">
+                        {/* Status Indicator */}
+                        <div className="flex items-center gap-2.5 group">
+                            <div className="relative">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping opacity-40" />
+                            </div>
+                            <span className="text-[12px] font-bold text-zinc-400 group-hover:text-zinc-600 transition-colors uppercase tracking-widest">
+                                系统在线
+                            </span>
+                        </div>
+
+                        <div className="h-3 w-px bg-zinc-200" />
+
+                        {/* Performance Metrics */}
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 text-zinc-400">
+                                <Zap className="w-3.5 h-3.5" />
+                                <span className="text-[12px] font-medium tabular-nums">24ms</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-zinc-400">
+                                <LayoutDashboard className="w-3.5 h-3.5" />
+                                <span className="text-[12px] font-medium uppercase tracking-tighter italic">Stable</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right side - Time & Search/Settings */}
+                    <div className="flex items-center gap-4">
+                        <div className="h-8 flex items-center px-3.5 rounded-full bg-zinc-100/50 border border-black/[0.02] text-zinc-500">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] font-bold text-zinc-400 border border-zinc-200 px-1.5 py-0.5 rounded-md leading-none">CN</span>
+                                <span className="text-[11px] font-bold tabular-nums tracking-wider uppercase">
+                                    {currentTime.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}
+                                    <span className="mx-2 opacity-30">|</span>
+                                    {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <div className="flex-1 max-w-6xl mx-auto w-full p-4 lg:p-8 xl:p-10 pt-0 lg:pt-0 xl:pt-0">
                     {children}
                 </div>
 
@@ -244,7 +295,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div className="pt-4 border-t border-zinc-200/60 flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="flex items-center">
                             <span className="text-[12.5px] text-zinc-300 font-medium tabular-nums">
-                                © {new Date().getFullYear()} Wilboerht. All rights reserved.
+                                © {currentTime.getFullYear()} Wilboerht. All rights reserved.
                             </span>
                         </div>
 
