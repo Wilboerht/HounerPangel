@@ -11,21 +11,24 @@ import Link from "next/link";
 
 export default async function AdminDashboard() {
     // Fetch stats from Supabase
-    const { count: postsCount } = await supabase.from('posts').select('*', { count: 'exact', head: true });
-    const { count: researchCount } = await supabase.from('research').select('*', { count: 'exact', head: true });
-    const { count: commentsCount } = await supabase.from('comments').select('*', { count: 'exact', head: true });
-    
-    // Calculate total views
-    const { data: viewsData } = await supabase.from('posts').select('views');
-    const { data: researchViewsData } = await supabase.from('research').select('views');
-    const totalViews = [...(viewsData || []), ...(researchViewsData || [])].reduce((acc, curr) => acc + (curr.views || 0), 0);
+    // Parallelize all data fetching
+    const [
+        { count: postsCount },
+        { count: researchCount },
+        { count: commentsCount },
+        { data: viewsData },
+        { data: researchViewsData },
+        { data: latestComments }
+    ] = await Promise.all([
+        supabase.from('posts').select('*', { count: 'exact', head: true }),
+        supabase.from('research').select('*', { count: 'exact', head: true }),
+        supabase.from('comments').select('*', { count: 'exact', head: true }),
+        supabase.from('posts').select('views'),
+        supabase.from('research').select('views'),
+        supabase.from('comments').select('*').order('created_at', { ascending: false }).limit(3)
+    ]);
 
-    // Latest comments
-    const { data: latestComments } = await supabase
-        .from('comments')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(3);
+    const totalViews = [...(viewsData || []), ...(researchViewsData || [])].reduce((acc, curr) => acc + (curr.views || 0), 0);
 
     const stats = [
         { name: "文章总数", value: (postsCount || 0) + (researchCount || 0), icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
@@ -38,7 +41,6 @@ export default async function AdminDashboard() {
         <div className="space-y-12">
             {/* Header */}
             <div>
-                <p className="text-black/30 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Workspace Overview</p>
                 <h1 className="text-4xl font-extrabold tracking-tight text-black">欢迎回来</h1>
             </div>
 

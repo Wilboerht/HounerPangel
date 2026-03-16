@@ -66,7 +66,7 @@ export default function LoginPage() {
                                     type="email"
                                     required
                                     placeholder="管理员邮箱"
-                                    className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
+                                    className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black text-sm font-sans placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
                                 />
                             </div>
                             <div className="relative group">
@@ -76,7 +76,7 @@ export default function LoginPage() {
                                     type="password"
                                     required
                                     placeholder="访问密钥"
-                                    className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
+                                    className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black text-sm font-sans placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
                                 />
                             </div>
                         </div>

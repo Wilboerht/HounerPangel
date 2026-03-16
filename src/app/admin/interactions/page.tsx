@@ -2,20 +2,14 @@ import { supabase } from "@/lib/supabase";
 import { MessageSquare, Heart, Clock, User, Trash2, Mail } from "lucide-react";
 
 export default async function AdminInteractionsPage() {
-    const { data: comments } = await supabase
-        .from('comments')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    const { data: feedbacks } = await supabase
-        .from('feedbacks')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const [{ data: comments }, { data: feedbacks }] = await Promise.all([
+        supabase.from('comments').select('*').order('created_at', { ascending: false }),
+        supabase.from('feedbacks').select('*').order('created_at', { ascending: false })
+    ]);
 
     return (
         <div className="space-y-12">
             <div>
-                <p className="text-black/30 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Audience Response</p>
                 <h1 className="text-4xl font-extrabold tracking-tight text-black">评论与反馈</h1>
             </div>
 
