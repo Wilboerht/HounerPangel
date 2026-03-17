@@ -1,21 +1,10 @@
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
 import { 
-    Plus, 
-    Search, 
-    FileText, 
-    Globe, 
-    Eye, 
-    Calendar, 
-    ArrowUpRight, 
-    Edit3,
-    Trophy,
+    LayoutGrid,
     CheckCircle2,
-    Clock,
-    LayoutGrid
+    Trophy
 } from "lucide-react";
-import { DeleteButton } from "@/components/admin/DeleteButton";
-import * as motion from "framer-motion/client";
+import PostsManager from "@/components/admin/PostsManager";
 
 export default async function AdminPostsPage() {
     const { data: posts, error } = await supabase
@@ -74,111 +63,8 @@ export default async function AdminPostsPage() {
                 </div>
             </div>
 
-            {/* Content List */}
-            <div className="space-y-6">
-                {/* Search & Action Bar */}
-                <div className="flex flex-row items-center justify-between gap-4">
-                    <div className="relative w-full md:w-80 group">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-zinc-900 transition-colors" />
-                        <input 
-                            type="text" 
-                            placeholder="搜索文章标题..." 
-                            className="w-full bg-white border border-zinc-200 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 transition-all font-medium shadow-[0_2px_4px_rgba(0,0,0,0.02)]"
-                        />
-                    </div>
-                    <Link 
-                        href="/admin/posts/new"
-                        className="h-11 bg-zinc-800 text-white px-6 rounded-xl text-[13px] font-bold flex items-center gap-2.5 hover:bg-zinc-700 active:scale-[0.98] transition-all group shadow-sm shadow-zinc-200"
-                    >
-                        <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
-                        <span className="hidden sm:inline">发布新文章</span>
-                        <span className="sm:hidden">发布</span>
-                    </Link>
-                </div>
-
-                {/* Table Layout */}
-                <div className="bg-white border border-zinc-100 rounded-[24px] overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b border-zinc-50 bg-zinc-50/20">
-                                    <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">文章列表</th>
-                                    <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">发布状态</th>
-                                    <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">热度指标</th>
-                                    <th className="px-6 py-4 text-right text-[13px] font-bold text-zinc-400">管理操作</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-50">
-                                {posts?.map((post) => (
-                                    <tr key={post.id} className="group hover:bg-zinc-50/30 transition-colors">
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white transition-all duration-300">
-                                                    <FileText className="w-4 h-4" />
-                                                </div>
-                                                <div className="flex flex-col gap-0.5 min-w-0">
-                                                    <span className="text-sm font-bold text-zinc-900 truncate max-w-[280px] leading-tight group-hover:text-indigo-600 transition-colors">{post.title}</span>
-                                                    <span className="text-[10px] font-medium text-zinc-400 flex items-center gap-1.5 uppercase tracking-wide">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {new Date(post.created_at).toLocaleDateString('zh-CN')}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5 text-sm">
-                                            {post.published ? (
-                                                <span className="inline-flex items-center gap-1.5 text-emerald-600 font-bold text-xs">
-                                                    <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                                                    已发布
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1.5 text-zinc-400 font-bold text-xs">
-                                                    <Clock className="w-3 h-3" />
-                                                    草稿
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-1.5 text-zinc-600 font-bold text-sm">
-                                                <Eye className="w-3.5 h-3.5 text-zinc-300" />
-                                                {post.views || 0}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5 text-right">
-                                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Link 
-                                                    href={`/blog/${post.slug}`}
-                                                    target="_blank"
-                                                    className="p-2 rounded-lg text-zinc-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-                                                >
-                                                    <ArrowUpRight className="w-4 h-4" />
-                                                </Link>
-                                                <Link 
-                                                    href={`/admin/posts/edit/${post.id}`}
-                                                    className="p-2 rounded-lg text-zinc-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-                                                >
-                                                    <Edit3 className="w-4 h-4" />
-                                                </Link>
-                                                <DeleteButton id={post.id} slug={post.slug} type="posts" />
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {(!posts || posts.length === 0) && (
-                                    <tr>
-                                        <td colSpan={4} className="px-6 py-20 text-center">
-                                            <div className="flex flex-col items-center justify-center opacity-10">
-                                                <FileText className="w-8 h-8 mb-2" />
-                                                <p className="text-xs font-bold uppercase tracking-widest">暂无记录</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <PostsManager initialPosts={posts || []} />
         </div>
     );
 }
+
