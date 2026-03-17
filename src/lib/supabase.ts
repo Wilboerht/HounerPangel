@@ -254,20 +254,14 @@ export const addComment = async (pageId: string, text: string, nickname?: string
     return data;
 };
 
-export const getVisitorStats = async () => {
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    
-    const { data, error } = await supabase
-        .from('activity_logs')
-        .select('created_at, host, url')
-        .gte('created_at', twentyFourHoursAgo);
+export const getPendingTaskCount = async (): Promise<number> => {
+    const { count, error } = await supabase
+        .from('feedbacks')
+        .select('*', { count: 'exact', head: true });
 
     if (error) {
-        // Silently ignore if the table doesn't exist yet (PGRST205)
-        if (error.code !== 'PGRST205') {
-            console.error("Error fetching visitor stats:", error);
-        }
-        return [];
+        console.error("Error fetching task count:", error);
+        return 0;
     }
-    return data;
+    return count || 0;
 };
