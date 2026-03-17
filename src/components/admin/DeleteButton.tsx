@@ -31,7 +31,7 @@ export function DeleteButton({ id, slug, type }: DeleteButtonProps) {
         <button 
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-2.5 rounded-lg bg-white/5 text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-50"
+            className="p-2 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
             title="删除"
         >
             {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}

@@ -300,16 +300,16 @@ export default function PostEditor({ initialData, onSuccess, onCancel }: PostEdi
                                                             const body = textContent.replace(/^\[!\w+\]\s*/, '');
                                                             
                                                             const colors: Record<string, string> = {
-                                                                info: "border-blue-500 bg-blue-50/50 text-blue-900",
-                                                                note: "border-blue-500 bg-blue-50/50 text-blue-900",
+                                                                info: "border-zinc-500 bg-zinc-50/80 text-zinc-900",
+                                                                note: "border-zinc-500 bg-zinc-50/80 text-zinc-900",
                                                                 tip: "border-emerald-500 bg-emerald-50/50 text-emerald-900",
                                                                 success: "border-emerald-500 bg-emerald-50/50 text-emerald-900",
                                                                 warning: "border-amber-500 bg-amber-50/50 text-amber-900",
                                                                 caution: "border-orange-500 bg-orange-50/50 text-orange-900",
                                                                 danger: "border-red-500 bg-red-50/50 text-red-900",
                                                                 error: "border-red-500 bg-red-50/50 text-red-900",
-                                                                abstract: "border-cyan-500 bg-cyan-50/50 text-cyan-900",
-                                                                todo: "border-blue-500 bg-blue-50/50 text-blue-900",
+                                                                abstract: "border-zinc-400 bg-zinc-50/50 text-zinc-800",
+                                                                todo: "border-zinc-500 bg-zinc-50/80 text-zinc-900",
                                                                 quote: "border-zinc-500 bg-zinc-50/50 text-zinc-900"
                                                             };
 

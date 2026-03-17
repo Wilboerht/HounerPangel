@@ -90,7 +90,8 @@ export default function PostsManager({ initialPosts }: PostsManagerProps) {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-zinc-50 bg-zinc-50/20">
-                                <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">文章列表</th>
+                                <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">文章标题</th>
+                                <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">日期</th>
                                 <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">发布状态</th>
                                 <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">热度指标</th>
                                 <th className="px-6 py-4 text-right text-[13px] font-bold text-zinc-400">管理操作</th>
@@ -98,52 +99,56 @@ export default function PostsManager({ initialPosts }: PostsManagerProps) {
                         </thead>
                         <tbody className="divide-y divide-zinc-50">
                             {filteredPosts.map((post) => (
-                                <tr key={post.id} className="group hover:bg-zinc-50/30 transition-colors">
-                                    <td className="px-6 py-5">
+                                <tr key={post.id} className="group hover:bg-zinc-50 transition-colors border-b border-zinc-50/50 last:border-0">
+                                    <td className="px-6 py-5 align-middle">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white transition-all duration-300">
+                                            <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 shrink-0">
                                                 <FileText className="w-4 h-4" />
                                             </div>
-                                            <div className="flex flex-col gap-0.5 min-w-0">
-                                                <span className="text-sm font-bold text-zinc-900 truncate max-w-[280px] leading-tight group-hover:text-indigo-600 transition-colors">{post.title}</span>
-                                                <span className="text-[10px] font-medium text-zinc-400 flex items-center gap-1.5 uppercase tracking-wide">
-                                                    <Calendar className="w-3 h-3" />
-                                                    {new Date(post.created_at).toLocaleDateString('zh-CN')}
-                                                </span>
-                                            </div>
+                                            <span className="text-sm font-bold text-zinc-900 truncate max-w-[280px] transition-colors">{post.title}</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 text-sm">
-                                        {post.published ? (
-                                            <span className="inline-flex items-center gap-1.5 text-emerald-600 font-bold text-xs">
-                                                <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                                                已发布
+                                    <td className="px-6 py-5 align-middle">
+                                        <div className="flex items-center h-full">
+                                            <span className="text-[11px] font-bold text-zinc-400 flex items-center gap-1.5 uppercase tracking-wide">
+                                                <Calendar className="w-3.5 h-3.5 opacity-40" />
+                                                {new Date(post.created_at).toLocaleDateString('zh-CN')}
                                             </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1.5 text-zinc-400 font-bold text-xs">
-                                                <Clock className="w-3 h-3" />
-                                                草稿
-                                            </span>
-                                        )}
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center gap-1.5 text-zinc-600 font-bold text-sm">
+                                    <td className="px-6 py-5 align-middle text-sm">
+                                        <div className="flex items-center h-full">
+                                            {post.published ? (
+                                                <span className="inline-flex items-center gap-1.5 text-emerald-600 font-bold text-xs">
+                                                    <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                                    已发布
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 text-zinc-400 font-bold text-xs">
+                                                    <Clock className="w-3 h-3" />
+                                                    草稿
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-5 align-middle">
+                                        <div className="flex items-center h-full gap-1.5 text-zinc-600 font-bold text-sm">
                                             <Eye className="w-3.5 h-3.5 text-zinc-300" />
                                             {post.views || 0}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 text-right">
-                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <td className="px-6 py-5 align-middle text-right">
+                                        <div className="flex items-center justify-end h-full gap-1 transition-opacity">
                                             <Link 
                                                 href={`/blog/${post.slug}`}
                                                 target="_blank"
-                                                className="p-2 rounded-lg text-zinc-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                                                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-all"
                                             >
                                                 <ArrowUpRight className="w-4 h-4" />
                                             </Link>
                                             <button 
                                                 onClick={() => handleEdit(post)}
-                                                className="p-2 rounded-lg text-zinc-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                                                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-all"
                                             >
                                                 <Edit3 className="w-4 h-4" />
                                             </button>
@@ -154,7 +159,7 @@ export default function PostsManager({ initialPosts }: PostsManagerProps) {
                             ))}
                             {filteredPosts.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-20 text-center">
+                                    <td colSpan={5} className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center justify-center opacity-10">
                                             <FileText className="w-8 h-8 mb-2" />
                                             <p className="text-xs font-bold uppercase tracking-widest">暂无记录</p>
