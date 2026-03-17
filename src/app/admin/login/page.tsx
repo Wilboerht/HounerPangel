@@ -49,7 +49,7 @@ export default function LoginPage() {
                 {/* Logo/Icon Section */}
                 <div className="flex items-center justify-center gap-8 mb-12">
                     <div className="w-14 h-14 rounded-2xl bg-white border border-black/[0.03] flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                        <ShieldCheck className="w-7 h-7 text-black/80" />
+                        <ShieldCheck className="w-7 h-7 text-black" />
                     </div>
                     <div className="w-px h-8 bg-black/[0.05]" />
                     <h1 className="text-2xl font-bold tracking-tight text-black">管理后台登录</h1>
@@ -60,7 +60,7 @@ export default function LoginPage() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-4">
                             <div className="relative group">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black/20 group-focus-within:text-black/40 transition-colors" />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black transition-colors" />
                                 <input
                                     name="email"
                                     type="email"
@@ -70,7 +70,7 @@ export default function LoginPage() {
                                 />
                             </div>
                             <div className="relative group">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black/20 group-focus-within:text-black/40 transition-colors" />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black transition-colors" />
                                 <input
                                     name="password"
                                     type="password"
