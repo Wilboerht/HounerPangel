@@ -31,10 +31,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [systemStatus, setSystemStatus] = useState<"Stable" | "Slow" | "Offline">("Stable");
     const portalRef = useRef<HTMLDivElement>(null);
 
-    if (pathname === "/admin/login") {
-        return <>{children}</>;
-    }
-
     // Update time every second - initialize ONLY on client to avoid hydration mismatch
     useEffect(() => {
         setCurrentTime(new Date()); // set initial value after mount
@@ -86,6 +82,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    if (pathname === "/admin/login") {
+        return <>{children}</>;
+    }
 
     const navGroups = [
         {

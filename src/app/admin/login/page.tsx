@@ -22,12 +22,14 @@ export default function LoginPage() {
                 setError(result.error);
                 setIsLoading(false);
             }
-        } catch (e) {
+        } catch (e: any) {
             // Next.js redirect throws an error, which is expected.
-            // If it's a real error, handled here.
+            // If it's a redirect error, we should let it bubble up.
+            if (e?.message === 'NEXT_REDIRECT' || e?.digest?.includes('NEXT_REDIRECT')) {
+                throw e;
+            }
+            
             console.error("Login redirect/error:", e);
-            // We usually don't need to setIsLoading(false) if it's redirecting,
-            // but if it stays on page, we should.
             setTimeout(() => setIsLoading(false), 3000); 
         }
     }
@@ -61,23 +63,25 @@ export default function LoginPage() {
                         <div className="space-y-4">
                             <div className="relative group">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black transition-colors" />
-                                <input
-                                    name="email"
-                                    type="email"
-                                    required
-                                    placeholder="管理员邮箱"
-                                    className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black text-sm font-sans placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
-                                />
+                                    <input
+                                        name="email"
+                                        type="email"
+                                        required
+                                        autoComplete="email"
+                                        placeholder="管理员邮箱"
+                                        className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black text-sm font-sans placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
+                                    />
                             </div>
                             <div className="relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black transition-colors" />
-                                <input
-                                    name="password"
-                                    type="password"
-                                    required
-                                    placeholder="访问密钥"
-                                    className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black text-sm font-sans placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
-                                />
+                                    <input
+                                        name="password"
+                                        type="password"
+                                        required
+                                        autoComplete="current-password"
+                                        placeholder="访问密钥"
+                                        className="w-full bg-black/[0.01] border border-black/[0.03] rounded-2xl py-4 pl-12 pr-4 text-black text-sm font-sans placeholder:text-black/10 focus:outline-none focus:border-black/10 focus:bg-transparent transition-all duration-300"
+                                    />
                             </div>
                         </div>
 
