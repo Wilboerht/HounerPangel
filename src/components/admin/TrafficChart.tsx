@@ -16,47 +16,66 @@ interface TrafficChartProps {
 }
 
 export default function TrafficChart({ rawData = [] }: TrafficChartProps) {
-    // Process raw logs into 24-hour time slots
-    const chartData = useMemo(() => {
+    // List of colors for dynamic subdomain lines
+    const colors = ['#6366f1', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
+
+    // Identify unique subdomains and process data
+    const { chartData, subdomains } = useMemo(() => {
+        const MAIN_DOMAIN = 'wilboerht.com';
+        
+        // Find all unique subdomains in the raw data (e.g., 'blog', 'docs')
+        const uniqueSubdomains = Array.from(new Set(
+            rawData
+                .map(log => log.host?.toLowerCase())
+                .filter(h => h?.endsWith(`.${MAIN_DOMAIN}`) && h !== `www.${MAIN_DOMAIN}`)
+        )) as string[];
+
         if (!rawData || rawData.length === 0) {
-            // Return empty baseline if no data
-            return Array.from({ length: 7 }).map((_, i) => ({
-                time: `${String(i * 4).padStart(2, '0')}:00`,
-                total: 0,
-                main: 0,
-                research: 0
-            }));
+            return {
+                chartData: Array.from({ length: 7 }).map((_, i) => {
+                    const data: any = {
+                        time: `${String(i * 4).padStart(2, '0')}:00`,
+                        total: 0,
+                        main: 0
+                    };
+                    uniqueSubdomains.forEach(sd => data[sd] = 0);
+                    return data;
+                }),
+                subdomains: uniqueSubdomains
+            };
         }
 
-        // Grouping logic (simplified for 4-hour slots)
         const slots = [0, 4, 8, 12, 16, 20, 24];
-        return slots.map(hour => {
+        const processedData = slots.map(hour => {
             const timeLabel = `${String(hour === 24 ? 23 : hour).padStart(2, '0')}:${hour === 24 ? '59' : '00'}`;
-            const limit = new Date();
-            limit.setHours(hour, 0, 0, 0);
-
-            // In a real app, you'd filter logs that fall into this time bucket
-            // For now, we count logs matching the host
-            const countTotal = rawData.filter(log => {
+            
+            const bucketLogs = rawData.filter(log => {
                 const logDate = new Date(log.created_at);
                 return logDate.getHours() <= hour && logDate.getHours() > (hour - 4);
+            });
+
+            const countTotal = bucketLogs.length;
+
+            const countMain = bucketLogs.filter(log => {
+                const h = log.host?.toLowerCase();
+                return h === MAIN_DOMAIN || h === `www.${MAIN_DOMAIN}` || h?.includes('localhost');
             }).length;
 
-            const countMain = rawData.filter(log => {
-                const logDate = new Date(log.created_at);
-                return (logDate.getHours() <= hour && logDate.getHours() > (hour - 4)) && 
-                       (!log.url.startsWith('/research'));
-            }).length;
-
-            const countResearch = countTotal - countMain;
-
-            return {
+            const data: any = {
                 time: timeLabel,
                 total: countTotal,
                 main: countMain,
-                research: countResearch
             };
+
+            // Calculate hits for each specific subdomain
+            uniqueSubdomains.forEach(sd => {
+                data[sd] = bucketLogs.filter(log => log.host?.toLowerCase() === sd).length;
+            });
+
+            return data;
         });
+
+        return { chartData: processedData, subdomains: uniqueSubdomains };
     }, [rawData]);
 
     return (
@@ -124,15 +143,20 @@ export default function TrafficChart({ rawData = [] }: TrafficChartProps) {
                         fill="url(#colorMain)" 
                         animationDuration={2000}
                     />
-                    <Area 
-                        name="子项目"
-                        type="monotone" 
-                        dataKey="research" 
-                        stroke="#6366f1" 
-                        strokeWidth={2}
-                        fill="none" 
-                        strokeDasharray="5 5"
-                    />
+                    
+                    {/* Render each detected subdomain as a separate line */}
+                    {subdomains.map((sd, index) => (
+                        <Area 
+                            key={sd}
+                            name={`子域名: ${sd}`}
+                            type="monotone" 
+                            dataKey={sd} 
+                            stroke={colors[index % colors.length]} 
+                            strokeWidth={2}
+                            fill="none" 
+                            strokeDasharray="5 5"
+                        />
+                    ))}
                 </AreaChart>
             </ResponsiveContainer>
         </div>

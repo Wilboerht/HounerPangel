@@ -12,14 +12,36 @@ import {
 import Link from "next/link";
 import * as motion from "framer-motion/client";
 import TrafficChart from "@/components/admin/TrafficChart";
+import RealtimeLatency from "@/components/admin/RealtimeLatency";
 import { getVisitorStats } from "@/lib/supabase";
+import { headers } from "next/headers";
 
 export default async function AdminDashboard() {
     // Fetch real stats
-    const [visitorLogs, { data: latestAuditLogs }] = await Promise.all([
+    const [visitorLogs, { data: latestAuditLogs }, headerList] = await Promise.all([
         getVisitorStats(),
-        supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(4)
+        supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(4),
+        headers()
     ]);
+
+    // Detect CDN & Region
+    const vercelId = headerList.get('x-vercel-id');
+    const cfRay = headerList.get('cf-ray');
+    
+    let cdnProvider = "Standard Stack";
+    let activeRegion = "Local Cluster";
+
+    if (vercelId) {
+        cdnProvider = "Vercel Edge";
+        // Extract region from vercel ID (e.g., hnd1::...)
+        activeRegion = vercelId.split(':')[0].toUpperCase() || "Global";
+    } else if (cfRay) {
+        cdnProvider = "Cloudflare";
+        activeRegion = "CF Edge";
+    } else if (headerList.get('host')?.includes('localhost')) {
+        cdnProvider = "Local Dev";
+        activeRegion = "Development";
+    }
 
     // Dynamic greeting
     const hour = new Date().getHours();
@@ -55,7 +77,7 @@ export default async function AdminDashboard() {
                 >
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-4">
-                            <div className="p-2.5 rounded-xl bg-zinc-900 text-white">
+                            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
                                 <Activity className="w-5 h-5" />
                             </div>
                             <div>
@@ -63,16 +85,7 @@ export default async function AdminDashboard() {
                                 <p className="text-xs text-zinc-400 font-medium tracking-tight">集群总域名/子域名 24小时实时波动</p>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-50 border border-zinc-100">
-                                <div className="w-2 h-2 rounded-full bg-zinc-900" />
-                                <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Total</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-100">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Main</span>
-                            </div>
-                        </div>
+
                     </div>
                     
                     <div className="w-full">
@@ -87,26 +100,29 @@ export default async function AdminDashboard() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="p-8 rounded-[38px] bg-zinc-900 text-white relative overflow-hidden group shadow-2xl shadow-zinc-200"
+                        className="p-8 rounded-[38px] bg-zinc-100 border border-zinc-200/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden group cursor-help"
+                        title="分布式节点部署状态与实时网络分发效率"
                     >
-                        <div className="absolute -right-8 -bottom-8 opacity-10 rotate-12 transition-transform group-hover:rotate-0 duration-700">
+                        <div className="absolute -right-8 -bottom-8 opacity-[0.02] rotate-12 transition-transform group-hover:rotate-0 duration-700 text-zinc-900">
                             <Server className="w-48 h-48" />
                         </div>
                         <div className="relative z-10 h-full flex flex-col justify-between">
                             <div>
                                 <div className="flex items-center justify-between mb-6">
-                                    <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
-                                        <Globe className="w-5 h-5" />
+                                    <div className="p-2 bg-zinc-50 rounded-lg border border-zinc-100">
+                                        <Globe className="w-5 h-5 text-zinc-400" />
                                     </div>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Online</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Online</span>
                                 </div>
                                 <h4 className="text-zinc-400 text-[11px] font-bold uppercase tracking-[0.2em] mb-1">节点部署区域</h4>
-                                <p className="text-3xl font-black mb-2 antialiased">Global CDN</p>
-                                <p className="text-xs text-zinc-500 leading-relaxed max-w-[200px]">当前由 12 个边缘节点协同处理全球并发请求</p>
+                                <p className="text-3xl font-black mb-2 antialiased text-zinc-900">{cdnProvider}</p>
+                                <p className="text-xs text-zinc-500 leading-relaxed max-w-[200px]">
+                                    当前请求由 <span className="text-zinc-900 font-bold">{activeRegion}</span> 节点 实时处理并分发
+                                </p>
                             </div>
-                            <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">平均分发时延</span>
-                                <span className="text-sm font-black tabular-nums">14ms</span>
+                            <div className="mt-8 pt-6 border-t border-zinc-100 flex items-center justify-between">
+                                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">探测到节点区域</span>
+                                <span className="text-[10px] font-black bg-zinc-200 px-2 py-0.5 rounded text-zinc-600 uppercase">{activeRegion}</span>
                             </div>
                         </div>
                     </motion.div>
@@ -116,7 +132,8 @@ export default async function AdminDashboard() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="p-8 rounded-[38px] bg-white border border-zinc-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.015)] relative overflow-hidden group"
+                        className="p-8 rounded-[38px] bg-white border border-zinc-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.015)] relative overflow-hidden group cursor-help"
+                        title="集群安全盾：实时监测并拦截异常、恶意请求"
                     >
                         <div className="flex items-center gap-4 mb-6">
                             <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
@@ -161,21 +178,21 @@ export default async function AdminDashboard() {
                     </div>
 
                     <div className="grid gap-2">
-                        {latestAuditLogs && latestAuditLogs.length > 0 ? latestAuditLogs.map((log, i) => (
-                            <div key={log.id} className="p-4 rounded-[24px] bg-white border border-zinc-100 flex items-center justify-between hover:border-zinc-300 transition-all group shadow-sm">
+                        {latestAuditLogs && latestAuditLogs.length > 0 ? latestAuditLogs.map((log) => (
+                            <div key={log.id} className="p-4 rounded-[24px] bg-white border border-zinc-100 flex items-center justify-between hover:border-zinc-300 transition-all group shadow-sm" title={`访问详情: ${log.user_agent || '未知客户端'}`}>
                                 <div className="flex items-center gap-4">
                                     <div className="w-9 h-9 rounded-full bg-zinc-50 flex items-center justify-center border border-zinc-100 group-hover:bg-zinc-100 transition-colors">
                                         <User className="w-4 h-4 text-zinc-400" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-zinc-900">{log.ip}</span>
-                                        <span className="text-[10px] text-zinc-400">GET {log.url}</span>
+                                        <span className="text-xs font-bold text-zinc-900" title="访客来源 IP">{log.ip}</span>
+                                        <span className="text-[10px] text-zinc-400" title="请求资源路径">GET {log.url}</span>
                                     </div>
                                 </div>
-                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">200 OK</span>
+                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md" title="请求状态: 正常">200 OK</span>
                             </div>
                         )) : (
-                            <div className="py-12 text-center border border-dashed border-zinc-200 rounded-[32px] bg-white">
+                            <div className="py-12 text-center border border-dashed border-zinc-200 rounded-[32px] bg-white w-full">
                                 <p className="text-xs font-bold text-zinc-300 uppercase tracking-widest">暂无实时日志</p>
                             </div>
                         )}
@@ -189,7 +206,7 @@ export default async function AdminDashboard() {
                     transition={{ delay: 0.4 }}
                     className="md:col-span-5 p-8 rounded-[40px] bg-gradient-to-br from-zinc-50 to-zinc-100 border border-zinc-200 flex flex-col justify-between group overflow-hidden relative"
                 >
-                    <div className="absolute -top-10 -right-10 opacity-[0.03] group-hover:scale-110 transition-transform duration-[2s]">
+                    <div className="absolute -top-10 -right-10 opacity-[0.02] group-hover:scale-110 transition-transform duration-[2s]">
                         <LayoutGrid className="w-64 h-64" />
                     </div>
                     <div className="relative z-10">

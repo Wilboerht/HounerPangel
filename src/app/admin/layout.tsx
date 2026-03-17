@@ -163,10 +163,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
 
                 {/* Navigation Section */}
-                <nav className="flex-1 overflow-y-auto no-scrollbar">
+                <nav className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar">
                     {navGroups.map((group, groupIdx) => (
                         <div key={group.group} className={groupIdx > 0 ? "mt-8" : ""}>
-                            <div className="h-6 flex items-center mb-2 overflow-hidden px-8">
+                            <div className={`h-6 flex items-center mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? "px-4 justify-center" : "px-8"}`}>
                                 <AnimatePresence mode="wait">
                                     {!isCollapsed && (
                                         <motion.h2 
@@ -301,13 +301,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                         {/* Performance Metrics */}
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-zinc-400">
+                            <div className="flex items-center gap-2 text-zinc-400" title="网络往返延时 (RTT)">
                                 <Zap className="w-3.5 h-3.5" />
                                 <span className="text-[12px] font-medium tabular-nums">
                                     {latency !== null ? `${latency}ms` : "--"}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2 text-zinc-400">
+                            <div className="flex items-center gap-2 text-zinc-400" title="系统健康运行状态">
                                 <Activity className="w-3.5 h-3.5" />
                                 <span className={`text-[12px] font-medium uppercase tracking-tighter ${
                                     systemStatus === "Stable" ? "text-emerald-600/70" :

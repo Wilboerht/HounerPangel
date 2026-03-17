@@ -60,6 +60,15 @@
     text-decoration: none;
     transition: color 0.2s ease;
   }
+
+  /* Custom Utilities */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 /* Handle Browser Autofill Styles */
