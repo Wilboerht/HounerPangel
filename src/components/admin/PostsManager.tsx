@@ -11,13 +11,14 @@ import {
     Calendar, 
     ArrowUpRight, 
     Edit3,
-    Clock,
-    X
+    Clock
 } from "lucide-react";
+import { cleanupOrphanedMedia } from "@/app/actions/maintenance";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { motion, AnimatePresence } from "framer-motion";
 import PostEditor from "@/components/PostEditor";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface PostsManagerProps {
     initialPosts: any[];
@@ -25,6 +26,12 @@ interface PostsManagerProps {
 
 export default function PostsManager({ initialPosts }: PostsManagerProps) {
     const router = useRouter();
+    
+    // Auto-trigger cleanup in background on mount
+    useEffect(() => {
+        cleanupOrphanedMedia().catch(console.error);
+    }, []);
+
     const [searchQuery, setSearchQuery] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPost, setEditingPost] = useState<any>(null);
@@ -56,8 +63,7 @@ export default function PostsManager({ initialPosts }: PostsManagerProps) {
 
     return (
         <div className="space-y-6">
-            {/* Search & Action Bar */}
-            <div className="flex flex-row items-center justify-between gap-4">
+            {/* Search & Action Bar */}            <div className="flex flex-row items-center justify-between gap-4">
                 <div className="relative w-full md:w-80 group">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-zinc-900 transition-colors" />
                     <input 

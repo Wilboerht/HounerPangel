@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 
 export async function savePostAction(postData: any) {
@@ -9,11 +10,11 @@ export async function savePostAction(postData: any) {
     try {
         if (id) {
             // Update
-            const { error } = await supabase.from('posts').update(data).eq('id', id);
+            const { error } = await supabaseAdmin.from('posts').update(data).eq('id', id);
             if (error) throw error;
         } else {
             // Insert
-            const { error } = await supabase.from('posts').insert([data]);
+            const { error } = await supabaseAdmin.from('posts').insert([data]);
             if (error) throw error;
         }
         
@@ -31,11 +32,11 @@ export async function saveResearchAction(researchData: any) {
     try {
         if (id) {
             // Update
-            const { error } = await supabase.from('research').update(data).eq('id', id);
+            const { error } = await supabaseAdmin.from('research').update(data).eq('id', id);
             if (error) throw error;
         } else {
             // Insert
-            const { error } = await supabase.from('research').insert([data]);
+            const { error } = await supabaseAdmin.from('research').insert([data]);
             if (error) throw error;
         }
         
