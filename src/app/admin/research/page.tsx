@@ -36,8 +36,8 @@ export default async function AdminResearchPage() {
                 <div>
                     <h1 className="text-3xl font-black text-zinc-900 tracking-tight mb-2">研究项目管理</h1>
                     <div className="flex items-center gap-2.5">
-                        <div className="w-[3px] h-3.5 bg-indigo-500 rounded-full" />
-                        <p className="text-zinc-500 text-sm font-medium">管理与监控您的所有发布内容</p>
+                        <div className="w-[3px] h-3.5 bg-zinc-900 rounded-full" />
+                        <p className="text-zinc-500 text-sm font-medium">管理与监控您的所有研究项目</p>
                     </div>
                 </div>
 
@@ -104,44 +104,45 @@ export default async function AdminResearchPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-zinc-50 bg-zinc-50/20">
-                                <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">课题详情</th>
+                                <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">项目名称</th>
+                                <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">日期</th>
                                 <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">研究方向</th>
-                                <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">状态指标</th>
+                                <th className="px-6 py-4 text-left text-[13px] font-bold text-zinc-400">状态</th>
                                 <th className="px-6 py-4 text-right text-[13px] font-bold text-zinc-400">管理操作</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-50">
                             {researchItems?.map((item) => (
-                                <tr key={item.id} className="group hover:bg-zinc-50/30 transition-colors">
-                                    <td className="px-6 py-5">
+                                <tr key={item.id} className="group hover:bg-zinc-50 transition-colors">
+                                    <td className="px-6 py-5 align-middle">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white transition-all duration-300">
+                                            <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 shrink-0">
                                                 <BookOpen className="w-4 h-4" />
                                             </div>
-                                            <div className="flex flex-col gap-0.5 min-w-0">
-                                                <span className="text-sm font-bold text-zinc-900 truncate max-w-[280px] leading-snug group-hover:text-indigo-600 transition-colors">{item.title}</span>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-[10px] font-medium text-zinc-400 flex items-center gap-1.5 uppercase">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {item.date}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                            <span className="text-sm font-bold text-zinc-900 truncate max-w-[280px]">{item.title}</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex flex-wrap gap-1.5 max-w-[200px]">
-                                            {item.tags?.map((tag: string) => (
+                                    <td className="px-6 py-5 align-middle">
+                                        <div className="flex items-center">
+                                            <span className="text-[11px] font-bold text-zinc-400 flex items-center gap-1.5 uppercase tracking-wide">
+                                                <Calendar className="w-3.5 h-3.5 opacity-40" />
+                                                {item.date}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-5 align-middle">
+                                        <div className="flex flex-wrap gap-1.5 max-w-[200px] items-center">
+                                            {item.tags?.slice(0, 2).map((tag: string) => (
                                                 <span 
                                                     key={tag} 
-                                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-zinc-50 text-zinc-400 text-[10px] font-bold uppercase tracking-tight"
+                                                    className="inline-flex items-center px-2 py-0.5 rounded-lg bg-zinc-50 text-zinc-400 text-[10px] font-bold uppercase tracking-tight"
                                                 >
                                                     {tag}
                                                 </span>
                                             ))}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 text-sm">
+                                    <td className="px-6 py-5 align-middle text-sm">
                                         {item.published ? (
                                             <span className="inline-flex items-center gap-1.5 text-emerald-600 font-bold text-xs">
                                                 <div className="w-1 h-1 rounded-full bg-emerald-500" />
@@ -154,19 +155,19 @@ export default async function AdminResearchPage() {
                                             </span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-5 text-right">
-                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <td className="px-6 py-5 align-middle text-right">
+                                        <div className="flex items-center justify-end h-full gap-1">
                                             <Link 
                                                 href={`/research/${item.slug}`}
                                                 target="_blank"
-                                                className="p-2 rounded-lg text-zinc-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                                                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-all"
                                                 title="查看全文"
                                             >
                                                 <ArrowUpRight className="w-4 h-4" />
                                             </Link>
                                             <Link 
                                                 href={`/admin/research/edit/${item.id}`}
-                                                className="p-2 rounded-lg text-zinc-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                                                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-all"
                                                 title="编辑项目"
                                             >
                                                 <Edit3 className="w-4 h-4" />
@@ -178,11 +179,8 @@ export default async function AdminResearchPage() {
                             ))}
                             {(!researchItems || researchItems.length === 0) && (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-20 text-center">
-                                        <div className="flex flex-col items-center justify-center opacity-10">
-                                            <BookOpen className="w-8 h-8 mb-2" />
-                                            <p className="text-xs font-bold uppercase tracking-widest">暂无记录</p>
-                                        </div>
+                                    <td colSpan={5} className="px-6 py-16 text-center">
+                                        <p className="text-sm font-medium text-zinc-900">暂无记录</p>
                                     </td>
                                 </tr>
                             )}

@@ -159,11 +159,8 @@ export default function PostsManager({ initialPosts }: PostsManagerProps) {
                             ))}
                             {filteredPosts.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-20 text-center">
-                                        <div className="flex flex-col items-center justify-center opacity-10">
-                                            <FileText className="w-8 h-8 mb-2" />
-                                            <p className="text-xs font-bold uppercase tracking-widest">暂无记录</p>
-                                        </div>
+                                    <td colSpan={5} className="px-6 py-16 text-center">
+                                        <p className="text-sm font-medium text-zinc-900">暂无记录</p>
                                     </td>
                                 </tr>
                             )}
