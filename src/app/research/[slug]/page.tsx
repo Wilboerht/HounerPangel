@@ -1,17 +1,13 @@
 import Link from "next/link";
-import { ArrowLeft, BookOpen, ExternalLink, CalendarDays } from "lucide-react";
+import { ArrowLeft, BookOpen, CalendarDays } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import rehypeRaw from "rehype-raw";
-import { getSingleResearch } from "@/lib/supabase";
+import { getResearchBySlug, getPublishedResearch } from "@/data/research";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ViewTracker } from "@/components/ViewTracker";
-import { FeedbackButton } from "@/components/FeedbackButton";
-import { CommentsSection } from "@/components/CommentsSection";
-import { Eye, Clock, Lock } from "lucide-react";
 
 export async function generateMetadata({
     params,
@@ -19,7 +15,7 @@ export async function generateMetadata({
     params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
     const { slug } = await params;
-    const research = await getSingleResearch(slug);
+    const research = await getResearchBySlug(slug);
 
     const title = research?.title || decodeURIComponent(slug)
         .split("-")
@@ -27,11 +23,18 @@ export async function generateMetadata({
         .join(" ");
 
     return {
-        title,
+        title: `${title} - Hank Wong's Web`,
         description: research?.abstract || "在此阅读这项研究。",
         openGraph: { title, description: research?.abstract || "", type: "article" },
         twitter: { card: "summary_large_image", title, description: research?.abstract || "" },
     };
+}
+
+export async function generateStaticParams() {
+    const items = await getPublishedResearch();
+    return items.map((item) => ({
+        slug: item.slug,
+    }));
 }
 
 export default async function ResearchDetail({
@@ -40,7 +43,7 @@ export default async function ResearchDetail({
     params: Promise<{ slug: string }>;
 }) {
     const { slug } = await params;
-    const research = await getSingleResearch(slug);
+    const research = await getResearchBySlug(slug);
 
     if (!research) {
         notFound();
@@ -48,7 +51,6 @@ export default async function ResearchDetail({
 
     return (
         <main className="min-h-screen flex flex-col items-center px-6 py-12 lg:py-20">
-            <ViewTracker slug={research.slug} type="research" />
             <div className="max-w-2xl w-full flex flex-col gap-10">
                 {/* Navigation */}
                 <nav>
@@ -91,17 +93,15 @@ export default async function ResearchDetail({
                                     {research.date}
                                 </span>
                             )}
-                            <div className="flex gap-4">
-                                {research.tags?.map((tag: string, idx: number) => (
-                                    <span key={idx} className="text-xs px-2 py-1 rounded-md border border-border/50 text-muted">
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-                            <span className="flex items-center gap-1.5 opacity-60">
-                                <Eye className="w-4 h-4" />
-                                阅读 {research.views || 0} 次
-                            </span>
+                            {research.tags && research.tags.length > 0 && (
+                                <div className="flex gap-2">
+                                    {research.tags.map((tag, idx) => (
+                                        <span key={idx} className="text-xs px-2 py-1 rounded-md border border-border/50 text-muted">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <ShareButton title={research.title} text={`阅读这篇研究：${research.title}`} />
                     </div>
@@ -162,21 +162,9 @@ export default async function ResearchDetail({
                     </article>
                 )}
 
-                {/* Feedback and Comments Section */}
-                <div className="mt-12 pt-8 border-t border-border/50 w-full">
-                    <div className="flex items-center justify-between mb-8">
-                        <FeedbackButton articleTitle={research.title} />
-                    </div>
-                    <CommentsSection pageId={research.slug} />
-                </div>
-
                 {/* Footer */}
-                <footer className="pt-12 pb-6 text-sm text-center text-muted border-t border-border/10 mt-8 flex items-center justify-center gap-3">
+                <footer className="pt-12 pb-6 text-sm text-center text-muted border-t border-border/10 mt-8">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
-                    <span className="opacity-20">|</span>
-                    <Link href="/admin" className="hover:text-foreground transition-colors" title="Admin Login">
-                        <Lock className="w-3.5 h-3.5" />
-                    </Link>
                 </footer>
             </div>
         </main>

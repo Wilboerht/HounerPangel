@@ -37,12 +37,8 @@ export default function Home() {
           <ContactMenu />
 
           {/* Footer */}
-          <footer className="pt-12 text-sm text-muted flex items-center gap-3">
+          <footer className="pt-12 text-sm text-muted">
             <p>&copy; {new Date().getFullYear()} wilboerht</p>
-            <span className="opacity-20">|</span>
-            <a href="/admin" className="hover:text-foreground transition-colors" title="Admin Login">
-              <User className="w-3.5 h-3.5" />
-            </a>
           </footer>
         </section>
 

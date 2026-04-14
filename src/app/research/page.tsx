@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { ResearchSearch } from "@/components/ResearchSearch";
-import { ArrowLeft, ExternalLink, BookOpen, ChevronLeft, ChevronRight, Search, Lock } from "lucide-react";
-
-import { getPublishedResearch } from "@/lib/supabase";
+import { ArrowLeft, ExternalLink, BookOpen, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { getPublishedResearch, searchResearch } from "@/data/research";
 import type { Research } from "@/types/content";
 import type { Metadata } from "next";
 
@@ -24,17 +23,11 @@ export default async function ResearchPage({
     const currentPage = Number(resolvedParams.page) || 1;
     const query = typeof resolvedParams.rq === "string" ? resolvedParams.rq.toLowerCase() : "";
 
-    // Fetch from Notion
+    // Fetch from local data
     const allItems = await getPublishedResearch();
 
     // Filter research items based on search query
-    const filteredItems = query
-        ? allItems.filter((item: Research) =>
-            item.title?.toLowerCase().includes(query) ||
-            item.abstract?.toLowerCase().includes(query) ||
-            item.tags?.some((tag: string) => tag.toLowerCase().includes(query))
-        )
-        : allItems;
+    const filteredItems = query ? searchResearch(query) : allItems;
 
     // Pagination logic
     const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
@@ -184,12 +177,8 @@ export default async function ResearchPage({
                 </section>
 
                 {/* Footer */}
-                <footer className="pt-8 text-sm text-muted border-t border-white/10 flex items-center gap-3">
+                <footer className="pt-8 text-sm text-muted border-t border-white/10">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
-                    <span className="opacity-20">|</span>
-                    <Link href="/admin" className="hover:text-foreground transition-colors" title="Admin Login">
-                        <Lock className="w-3.5 h-3.5" />
-                    </Link>
                 </footer>
             </div>
         </main>
