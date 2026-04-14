@@ -11,21 +11,21 @@ export const metadata: Metadata = {
 const MOCK_PROJECTS = [
     {
         id: "1",
-        title: "AI Face Scan",
+        title: "MySkin.Today",
         description: "智能面部护肤顾问。利用 AI 技术进行面部分析，为用户提供个性化护肤建议。",
         url: "https://advisor.nihplod.cn",
         tags: ["AI", "Next.js"]
     },
     {
         id: "2",
-        title: "NIHPLOD China",
-        description: "NIHPLOD 大中华区官方网站，展示品牌形象和最新动态的数字门面。",
+        title: "NIHPLOD",
+        description: "NIHPLOD 中国官方网站及其他配套服务系统",
         url: "https://nihplod.cn",
         tags: ["Next.js", "React"]
     },
     {
         id: "3",
-        title: "LGJH Co., Ltd.",
+        title: "上海临港景鸿安全防范科技发展有限公司",
         description: "上海临港景鸿安全防范科技发展有限公司官方网站，展示企业信息与服务的综合数字平台。",
         url: "https://www.lingangjh.com/",
         tags: ["Enterprise", "Web System"]
@@ -54,7 +54,7 @@ export default async function Projects({
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
-            <div className="max-w-2xl w-full flex flex-col gap-12">
+            <div className="max-w-6xl w-full flex flex-col gap-12">
                 {/* Navigation */}
                 <nav>
                     <Link
@@ -78,7 +78,7 @@ export default async function Projects({
                     </div>
 
                     {/* Projects list */}
-                    <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {currentItems.map((project) => (
                             <a
                                 key={project.id}
@@ -87,9 +87,11 @@ export default async function Projects({
                                 rel="noopener noreferrer"
                                 className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200"
                             >
-                                <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between">
-                                    {project.title}
-                                    <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200" />
+                                <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
+                                    <span className="truncate">
+                                        {project.title}
+                                    </span>
+                                    <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
                                 </h3>
                                 <p className="text-sm text-muted leading-relaxed flex-1 line-clamp-2">
                                     {project.description}

@@ -43,7 +43,7 @@ export default async function Design({
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
-            <div className="max-w-2xl w-full flex flex-col gap-12">
+            <div className="max-w-6xl w-full flex flex-col gap-12">
                 {/* Navigation */}
                 <nav>
                     <Link
@@ -69,7 +69,7 @@ export default async function Design({
                     {/* Design Portfolio grid */}
                     <div className="min-h-[400px]">
                         {currentItems.length > 0 ? (
-                            <div className="grid gap-6 sm:grid-cols-2">
+                            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {currentItems.map((item) => (
                                     <a
                                         key={item.id}

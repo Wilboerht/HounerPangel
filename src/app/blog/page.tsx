@@ -2,11 +2,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "研究 - Hank Wong's Web",
-    description: "研究页面施工中...",
+    title: "博客 - Hank Wong's Web",
+    description: "博客页面施工中...",
 };
 
-export default function Research() {
+export default function Blog() {
     return (
         <main className="min-h-screen flex items-center justify-center px-6">
             <div className="text-center space-y-4">
@@ -17,7 +17,7 @@ export default function Research() {
                     施工中
                 </h2>
                 <p className="text-muted">
-                    研究功能正在开发中，敬请期待...
+                    博客功能正在开发中，敬请期待...
                 </p>
                 <Link
                     href="/"
