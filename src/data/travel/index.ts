@@ -15,6 +15,7 @@ import { tokyoPlan } from "./tokyo";
 import { kyotoPlan } from "./kyoto";
 import { osakaPlan } from "./osaka";
 import { kumamotoPlan } from "./kumamoto";
+import { japanFullPlan } from "./japan-full";
 
 export const cnPlans = [
   nanjingPlan,
@@ -33,8 +34,5 @@ export const cnPlans = [
 ];
 
 export const jpPlans = [
-  tokyoPlan,
-  kyotoPlan,
-  osakaPlan,
-  kumamotoPlan,
+  japanFullPlan,
 ];
