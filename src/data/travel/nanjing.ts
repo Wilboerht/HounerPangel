@@ -140,7 +140,7 @@ export const nanjingPlan: TravelPlan = {
   ],
   summary: {
     total: "3800元",
-    note: "基于最新的混合住宿（酒店/青旅）与老字号餐饮方案核算，包含 450 元购物机动",
+    note: "",
     details: [
       { label: "往返交通", value: "300元", icon: "Train" },
       { label: "市内交通", value: "450元", icon: "MapPin" },
