@@ -17,17 +17,18 @@ export const nanjingPlan: TravelPlan = {
   itinerary: [
     {
       day: 1,
-      title: "珍珠泉 + 老山国家森林公园",
-      tocTitle: "珍珠泉 · 老山",
-      route: "南京站 → 珍珠泉 → 老山",
+      title: "珍珠泉 + 长江大桥 + 阅江楼 + 渡江纪念碑",
+      tocTitle: "珍珠泉 · 长江大桥 · 阅江楼",
+      route: "南京站 → 珍珠泉 → 长江大桥 → 阅江楼 → 渡江纪念碑",
       events: [
-        { time: "10:00 - 10:30", content: "南京站到达（从北广场出站，看玄武湖湖景）", type: "transport" },
-        { time: "10:30 - 11:00", content: "地铁10号线→龙华路站（6元）", type: "transport" },
-        { time: "11:00 - 13:00", content: "珍珠泉（泉水、瀑布、竹林）", type: "location" },
+        { time: "10:00 - 10:30", content: "南京站到达", type: "transport" },
+        { time: "10:30 - 13:00", content: "珍珠泉（泉水、瀑布、竹林）", type: "location" },
         { time: "13:00 - 14:30", content: "午餐：珍珠泉附近农家乐（约50元）", type: "food" },
-        { time: "14:30 - 16:30", content: "老山国家森林公园（森林氧吧）", type: "location" },
-        { time: "17:30 - 18:30", content: "入住江北酒店（200元）", type: "stay" },
-        { time: "18:30 - 19:30", content: "弘阳广场晚餐 - 南京大牌档（约60元）", type: "food" },
+        { time: "14:30 - 16:00", content: "长江大桥（俯瞰长江、步行观光）", type: "location" },
+        { time: "16:00 - 17:30", content: "阅江楼（江南四大名楼，360度长江美景）", type: "location" },
+        { time: "17:30 - 18:30", content: "渡江纪念碑（革命历史纪念地）", type: "location" },
+        { time: "18:30 - 19:30", content: "入住市区酒店（200元）", type: "stay" },
+        { time: "19:30 - 20:30", content: "晚餐：夫子庙附近南京大牌档（约60元）", type: "food" },
       ],
       daySummary: "预计花费：约650元"
     },
