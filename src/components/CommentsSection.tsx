@@ -3,23 +3,15 @@
 import { useState, useEffect } from 'react';
 import { fetchCommentsAction, addCommentAction } from '@/app/actions/supabase';
 import { MessageSquare, User, Mail, Send } from 'lucide-react';
+import type { Comment } from '@/types/content';
 
 export function CommentsSection({ pageId }: { pageId: string }) {
-    const [comments, setComments] = useState<any[]>([]);
+    const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [nickname, setNickname] = useState('');
     const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-
-    // Initialize from localStorage
-    useEffect(() => {
-        const savedNickname = localStorage.getItem('comment_nickname');
-        const savedEmail = localStorage.getItem('comment_email');
-        if (savedNickname) setNickname(savedNickname);
-        if (savedEmail) setEmail(savedEmail);
-        loadComments();
-    }, [pageId]);
 
     const loadComments = async () => {
         setIsLoading(true);
@@ -27,6 +19,16 @@ export function CommentsSection({ pageId }: { pageId: string }) {
         setComments(data);
         setIsLoading(false);
     };
+
+    // Initialize from localStorage
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => {
+        const savedNickname = localStorage.getItem('comment_nickname');
+        const savedEmail = localStorage.getItem('comment_email');
+        setNickname(savedNickname || '');
+        setEmail(savedEmail || '');
+        loadComments();
+    }, [pageId]);
 
     const handleSubmit = async () => {
         if (!newComment.trim()) return;

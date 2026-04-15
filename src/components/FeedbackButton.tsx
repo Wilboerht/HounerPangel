@@ -81,7 +81,7 @@ export function FeedbackButton({ articleTitle }: { articleTitle: string }) {
                                 <div className="space-y-2 mb-8">
                                     <h3 className="text-2xl font-bold text-foreground tracking-tight">发送反馈</h3>
                                     <p className="text-sm text-muted leading-relaxed">
-                                        在 <span className="text-foreground/80 font-medium italic">"{articleTitle}"</span> 中发现了错别字？或者有建议？请直接告诉我。
+                                        在 <span className="text-foreground/80 font-medium italic">&ldquo;{articleTitle}&rdquo;</span> 中发现了错别字？或者有建议？请直接告诉我。
                                     </p>
                                 </div>
                                 

@@ -114,27 +114,35 @@ export default async function ResearchDetail({
                             remarkPlugins={[remarkGfm, remarkBreaks]}
                             rehypePlugins={[rehypeRaw]}
                             components={{
-                                h2: ({ node, ...props }) => <h2 className="text-2xl mt-12 mb-6 pb-2 border-b border-white/10 text-foreground font-semibold" {...props} />,
-                                h3: ({ node, ...props }) => <h3 className="text-xl mt-8 mb-4 text-foreground font-semibold" {...props} />,
-                                p: ({ node, ...props }) => <div className="my-5 text-muted leading-relaxed" {...props} />,
-                                ol: ({ node, ...props }) => <ol className="list-decimal pl-6 space-y-4 my-6 text-muted" {...props} />,
-                                ul: ({ node, ...props }) => <ul className="list-disc pl-6 space-y-4 my-6 text-muted" {...props} />,
-                                li: ({ node, ...props }) => <li className="leading-relaxed text-muted" {...props} />,
-                                pre: ({ node, ...props }) => {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                h2: ({ ...props }: any) => <h2 className="text-2xl mt-12 mb-6 pb-2 border-b border-white/10 text-foreground font-semibold" {...props} />,
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                h3: ({ ...props }: any) => <h3 className="text-xl mt-8 mb-4 text-foreground font-semibold" {...props} />,
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                p: ({ ...props }: any) => <div className="my-5 text-muted leading-relaxed" {...props} />,
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                ol: ({ ...props }: any) => <ol className="list-decimal pl-6 space-y-4 my-6 text-muted" {...props} />,
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                ul: ({ ...props }: any) => <ul className="list-disc pl-6 space-y-4 my-6 text-muted" {...props} />,
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                li: ({ ...props }: any) => <li className="leading-relaxed text-muted" {...props} />,
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                pre: (props: any) => {
                                     const { ref, ...rest } = props as any;
                                     return <div {...rest} />;
                                 },
                                 blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-foreground/30 pl-6 py-2 my-8 text-foreground/80 italic font-medium bg-foreground/5 rounded-r-lg" {...props} />,
                                 strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
                                 em: ({ node, ...props }) => <em className="italic text-foreground/90" {...props} />,
-                                del: ({ node, ...props }) => <del className="line-through opacity-70" {...props} />,
-                                a: ({ node, ...props }) => <a className="text-muted underline underline-offset-4 decoration-border hover:text-foreground hover:decoration-foreground transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
-                                img: ({ node, ...props }) => <img className="rounded-xl my-8 border border-border/50 max-w-full shadow-sm" loading="lazy" {...props} />,
-                                hr: ({ node, ...props }) => <hr className="my-10 border-border/50" {...props} />,
-                                table: ({ node, ...props }) => <div className="overflow-x-auto my-6"><table className="w-full text-left border-collapse" {...props} /></div>,
-                                th: ({ node, ...props }) => <th className="border-b border-border/50 py-3 px-4 font-semibold text-foreground bg-foreground/5 first:rounded-tl-lg last:rounded-tr-lg" {...props} />,
-                                td: ({ node, ...props }) => <td className="border-b border-border/10 py-3 px-4 text-muted" {...props} />,
-                                code: ({ node, inline, className, children, ...props }: any) => {
+                                del: ({ ...props }) => <del className="line-through opacity-70" {...props} />,
+                                a: ({ ...props }) => <a className="text-muted underline underline-offset-4 decoration-border hover:text-foreground hover:decoration-foreground transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+                                img: ({ ...props }) => <img className="rounded-xl my-8 border border-border/50 max-w-full shadow-sm" loading="lazy" {...props} />,
+                                hr: ({ ...props }) => <hr className="my-10 border-border/50" {...props} />,
+                                table: ({ ...props }) => <div className="overflow-x-auto my-6"><table className="w-full text-left border-collapse" {...props} /></div>,
+                                th: ({ ...props }) => <th className="border-b border-border/50 py-3 px-4 font-semibold text-foreground bg-foreground/5 first:rounded-tl-lg last:rounded-tr-lg" {...props} />,
+                                td: ({ ...props }) => <td className="border-b border-border/10 py-3 px-4 text-muted" {...props} />,
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                code: ({ inline, className, children, ...props }: any) => {
                                     return inline ? (
                                         <code className="bg-foreground/10 text-foreground px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
                                             {children}

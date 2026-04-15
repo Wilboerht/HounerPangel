@@ -133,7 +133,7 @@ export function CollectionsDrawer({ seriesList }: { seriesList: Series[] }) {
                                             <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
                                                 <Search className="w-8 h-8" />
                                             </div>
-                                            <p className="text-sm text-muted">没有找到匹配 "{searchQuery}" 的系列</p>
+                                            <p className="text-sm text-muted">没有找到匹配 &ldquo;{searchQuery}&rdquo; 的系列</p>
                                         </div>
                                     )}
                                 </div>

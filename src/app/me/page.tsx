@@ -29,7 +29,7 @@ export default function AboutMe() {
                             About Me
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            Hello, I'm Hank Wong (wilboerht). I'm a developer and super individual, building digital spaces while exploring the world's beauty and embracing every new possibility.
+                            Hello, I&rsquo;m Hank Wong (wilboerht). I&rsquo;m a developer and super individual, building digital spaces while exploring the world&rsquo;s beauty and embracing every new possibility.
                         </p>
                     </div>
 
@@ -47,7 +47,7 @@ export default function AboutMe() {
                             Philosophy
                         </h2>
                         <p className="text-muted leading-relaxed">
-                            As a 'Super Individual', I believe true growth happens at the intersection of technical discipline and the courage to explore the unknown. My goal is to stay curious, distilling complex global experiences and technical problems into simple, elegant, and intuitive digital solutions.
+                            As a &rsquo;Super Individual&rsquo;, I believe true growth happens at the intersection of technical discipline and the courage to explore the unknown. My goal is to stay curious, distilling complex global experiences and technical problems into simple, elegant, and intuitive digital solutions.
                         </p>
                     </div>
                 </section>
