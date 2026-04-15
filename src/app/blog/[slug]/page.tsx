@@ -123,6 +123,7 @@ export default async function BlogPost({
                                 li: ({ ...props }: any) => <li className="text-muted leading-relaxed" {...props} />,
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 pre: (props: any) => {
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     const { ref, ...rest } = props as any;
                                     return <div {...rest} />;
                                 },
