@@ -6,6 +6,8 @@ export interface Post {
     excerpt: string;
     readTime?: string;
     content?: string;
+    views?: number;
+    series?: Series | null;
 }
 
 export interface Research {
@@ -17,4 +19,26 @@ export interface Research {
     tags: string[];
     readTime?: string;
     content?: string;
+    views?: number;
+}
+
+export interface SeriesItem {
+    slug: string;
+    title: string;
+    index: number;
+}
+
+export interface Series {
+    name: string;
+    current: number;
+    total: number;
+    items: SeriesItem[];
+}
+
+export interface Comment {
+    id: string;
+    text: string;
+    created_time: string;
+    author: string;
+    email?: string | null;
 }
