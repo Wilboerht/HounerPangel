@@ -142,21 +142,22 @@ export function ContactMenu() {
                             <div
                                 className={`
                   /* Desktop: Always to the right, relies on hover */
-                  md:absolute md:left-[105%] md:top-1/2 md:-translate-y-1/2 md:ml-2 md:p-2 md:bg-background md:border md:border-border md:rounded-xl md:shadow-xl md:transition-all md:duration-200 md:z-20
+                  md:absolute md:left-[105%] md:top-1/2 md:-translate-y-1/2 md:ml-2 md:p-2 md:bg-background md:border md:border-border md:shadow-xl md:transition-all md:duration-200 md:z-20
                   md:group-hover/item:opacity-100 md:group-hover/item:visible md:group-hover/item:translate-x-0
                   ${!activeQrCode && 'md:opacity-0 md:invisible md:translate-x-[-10px]'}
                   
                   /* Mobile: Inline accordion style below the button */
                   relative w-full overflow-hidden transition-all duration-300 ease-in-out z-20 flex justify-center
-                  ${activeQrCode === link.name ? 'max-h-[400px] opacity-100 mt-2 pb-2' : 'max-h-0 opacity-0 md:max-h-[400px] md:opacity-100'}
+                  ${activeQrCode === link.name ? 'max-h-[400px] opacity-100 mt-2 pb-2 px-4 md:px-0' : 'max-h-0 opacity-0 md:max-h-[400px] md:opacity-100'}
                 `}
                             >
-                                <div className="relative w-full max-w-[260px] aspect-square md:w-36 md:h-36 md:max-w-none bg-foreground/5 rounded-xl md:rounded-md p-4 md:p-0 flex items-center justify-center mx-auto">
+                                <div className="relative w-full max-w-[260px] aspect-square flex items-center justify-center mx-auto">
                                     <Image
                                         src={link.qrCode}
                                         alt={`${link.name} QR Code`}
-                                        fill
-                                        className="object-contain p-2 md:p-0 rounded-xl md:rounded-md"
+                                        width={500}
+                                        height={500}
+                                        className="object-contain w-full h-full rounded-xl md:rounded-none"
                                     />
                                 </div>
                             </div>
