@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Calendar, Tag } from "lucide-react";
+import { ArrowLeft, Calendar, Tag, FileText } from "lucide-react";
 import type { Metadata } from "next";
 import { BLOG_POSTS } from "@/data/blog";
 
@@ -40,49 +40,61 @@ export default function Blog() {
 
                     {/* Blog List */}
                     <div className="flex flex-col gap-6">
-                        {sortedPosts.map((post) => (
-                            <article
-                                key={post.slug}
-                                className="group flex flex-col gap-3 p-4 -mx-4 rounded-xl hover:bg-foreground/[0.02] transition-colors duration-200"
-                            >
-                                <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
-                                    <div className="inline-flex items-center gap-1.5">
-                                        <Calendar className="w-3.5 h-3.5" />
-                                        <time dateTime={post.date}>
-                                            {new Date(post.date).toLocaleDateString("zh-CN", {
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                            })}
-                                        </time>
-                                    </div>
-                                    {post.tags.length > 0 && (
-                                        <div className="flex items-center gap-1.5">
-                                            <Tag className="w-3.5 h-3.5" />
-                                            <div className="flex gap-2">
-                                                {post.tags.map((tag) => (
-                                                    <span
-                                                        key={tag}
-                                                        className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted"
-                                                    >
-                                                        {tag}
-                                                    </span>
-                                                ))}
-                                            </div>
+                        {sortedPosts.length > 0 ? (
+                            sortedPosts.map((post) => (
+                                <article
+                                    key={post.slug}
+                                    className="group flex flex-col gap-3 p-4 -mx-4 rounded-xl hover:bg-foreground/[0.02] transition-colors duration-200"
+                                >
+                                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
+                                        <div className="inline-flex items-center gap-1.5">
+                                            <Calendar className="w-3.5 h-3.5" />
+                                            <time dateTime={post.date}>
+                                                {new Date(post.date).toLocaleDateString("zh-CN", {
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                })}
+                                            </time>
                                         </div>
-                                    )}
-                                </div>
+                                        {post.tags.length > 0 && (
+                                            <div className="flex items-center gap-1.5">
+                                                <Tag className="w-3.5 h-3.5" />
+                                                <div className="flex gap-2">
+                                                    {post.tags.map((tag) => (
+                                                        <span
+                                                            key={tag}
+                                                            className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted"
+                                                        >
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
 
-                                <Link href={`/blog/${post.slug}`} className="block space-y-2">
-                                    <h2 className="text-xl font-semibold tracking-tight text-foreground group-hover:text-accent transition-colors duration-200">
-                                        {post.title}
-                                    </h2>
-                                    <p className="text-muted leading-relaxed">
-                                        {post.excerpt}
-                                    </p>
-                                </Link>
-                            </article>
-                        ))}
+                                    <Link href={`/blog/${post.slug}`} className="block space-y-2">
+                                        <h2 className="text-xl font-semibold tracking-tight text-foreground group-hover:text-accent transition-colors duration-200">
+                                            {post.title}
+                                        </h2>
+                                        <p className="text-muted leading-relaxed">
+                                            {post.excerpt}
+                                        </p>
+                                    </Link>
+                                </article>
+                            ))
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-foreground/[0.01] rounded-3xl border border-dashed border-border/50">
+                                <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
+                                    <FileText className="w-8 h-8" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-lg font-semibold text-foreground/80">暂无文章</p>
+                                    <p className="text-sm text-muted">Nothing here yet.</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </section>
 

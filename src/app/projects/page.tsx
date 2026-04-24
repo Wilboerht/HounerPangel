@@ -40,7 +40,7 @@ const MYSKIN_SUB_PROJECTS = [
     {
         id: "m2",
         title: "服务体验",
-        description: "智能面部护肤顾问体验，使用 MYSKINTODAY 技术支持，由 NIHPLOD SkinAdvisor 代为提供。",
+        description: "智能面部护肤顾问体验，MySkin.Today 提供技术支持，可以访达 NIHPLOD SkinAdvisor 体验使用。",
         url: "https://advisor.nihplod.cn",
         tags: ["AI 护肤顾问"]
     },

@@ -30,17 +30,86 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function renderInline(text: string): React.ReactNode {
-    const parts = text.split(/(\*\*[^*]+\*\*)/g);
-    return parts.map((part, i) => {
-        if (part.startsWith("**") && part.endsWith("**")) {
-            return (
-                <strong key={i} className="font-semibold text-foreground">
-                    {part.slice(2, -2)}
+    const tokens: React.ReactNode[] = [];
+    let remaining = text;
+    let key = 0;
+
+    const push = (node: React.ReactNode) => {
+        tokens.push(<span key={key++}>{node}</span>);
+    };
+
+    while (remaining.length > 0) {
+        // inline code: `code`
+        const codeMatch = remaining.match(/^`([^`]+)`/);
+        if (codeMatch) {
+            push(
+                <code className="px-1.5 py-0.5 rounded-md bg-foreground/10 text-foreground text-sm font-mono">
+                    {codeMatch[1]}
+                </code>
+            );
+            remaining = remaining.slice(codeMatch[0].length);
+            continue;
+        }
+
+        // link: [text](url)
+        const linkMatch = remaining.match(/^\[([^\]]+)\]\(([^)]+)\)/);
+        if (linkMatch) {
+            push(
+                <a
+                    href={linkMatch[2]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent hover:underline underline-offset-2"
+                >
+                    {renderInline(linkMatch[1])}
+                </a>
+            );
+            remaining = remaining.slice(linkMatch[0].length);
+            continue;
+        }
+
+        // bold: **text**
+        const boldMatch = remaining.match(/^\*\*([^*]+)\*\*/);
+        if (boldMatch) {
+            push(
+                <strong className="font-semibold text-foreground">
+                    {renderInline(boldMatch[1])}
                 </strong>
             );
+            remaining = remaining.slice(boldMatch[0].length);
+            continue;
         }
-        return part;
-    });
+
+        // italic: *text* or _text_
+        const italicMatch = remaining.match(/^(?:\*|_)([^*_]+)(?:\*|_)/);
+        if (italicMatch) {
+            push(
+                <em className="italic text-foreground/90">
+                    {renderInline(italicMatch[1])}
+                </em>
+            );
+            remaining = remaining.slice(italicMatch[0].length);
+            continue;
+        }
+
+        // strikethrough: ~~text~~
+        const strikeMatch = remaining.match(/^~~([^~]+)~~/);
+        if (strikeMatch) {
+            push(
+                <del className="line-through text-muted">
+                    {renderInline(strikeMatch[1])}
+                </del>
+            );
+            remaining = remaining.slice(strikeMatch[0].length);
+            continue;
+        }
+
+        // plain char
+        push(remaining[0]);
+        remaining = remaining.slice(1);
+    }
+
+    return tokens;
 }
 
 function renderMarkdown(content: string): React.ReactNode {
@@ -48,8 +117,13 @@ function renderMarkdown(content: string): React.ReactNode {
     const elements: React.ReactNode[] = [];
     let inUnorderedList = false;
     let inOrderedList = false;
+    let inCodeBlock = false;
+    let inQuote = false;
+    let codeLines: string[] = [];
+    let codeLang = "";
     let unorderedItems: React.ReactNode[] = [];
     let orderedItems: React.ReactNode[] = [];
+    let quoteLines: string[] = [];
 
     const flushUnordered = () => {
         if (inUnorderedList && unorderedItems.length > 0) {
@@ -75,66 +149,159 @@ function renderMarkdown(content: string): React.ReactNode {
         }
     };
 
-    lines.forEach((line, index) => {
+    const flushQuote = () => {
+        if (inQuote && quoteLines.length > 0) {
+            elements.push(
+                <blockquote
+                    key={`bq-${elements.length}`}
+                    className="border-l-2 border-accent/40 pl-4 py-1 text-muted italic"
+                >
+                    {quoteLines.map((q, i) => (
+                        <p key={i} className="leading-relaxed">
+                            {renderInline(q)}
+                        </p>
+                    ))}
+                </blockquote>
+            );
+            quoteLines = [];
+            inQuote = false;
+        }
+    };
+
+    const flushCodeBlock = () => {
+        if (inCodeBlock && codeLines.length > 0) {
+            elements.push(
+                <pre
+                    key={`pre-${elements.length}`}
+                    className="rounded-xl bg-foreground/5 p-4 overflow-x-auto"
+                >
+                    <code className="text-sm font-mono text-foreground/80 leading-relaxed">
+                        {codeLines.join("\n")}
+                    </code>
+                </pre>
+            );
+            codeLines = [];
+            codeLang = "";
+            inCodeBlock = false;
+        }
+    };
+
+    for (let index = 0; index < lines.length; index++) {
+        const line = lines[index];
         const trimmed = line.trim();
 
+        // code block
+        if (trimmed.startsWith("```")) {
+            if (!inCodeBlock) {
+                flushUnordered();
+                flushOrdered();
+                flushQuote();
+                inCodeBlock = true;
+                codeLang = trimmed.slice(3).trim();
+            } else {
+                flushCodeBlock();
+            }
+            continue;
+        }
+
+        if (inCodeBlock) {
+            codeLines.push(line);
+            continue;
+        }
+
+        // horizontal rule
+        if (/^(---+|___+|\*\*\*+)$/.test(trimmed)) {
+            flushUnordered();
+            flushOrdered();
+            flushQuote();
+            elements.push(
+                <hr key={`hr-${elements.length}`} className="border-border my-6" />
+            );
+            continue;
+        }
+
+        // h2
         if (trimmed.startsWith("## ")) {
             flushUnordered();
             flushOrdered();
+            flushQuote();
             elements.push(
                 <h2 key={index} className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-3">
                     {renderInline(trimmed.replace("## ", ""))}
                 </h2>
             );
-            return;
+            continue;
         }
 
+        // h3
         if (trimmed.startsWith("### ")) {
             flushUnordered();
             flushOrdered();
+            flushQuote();
             elements.push(
                 <h3 key={index} className="text-lg font-semibold tracking-tight text-foreground mt-8 mb-2">
                     {renderInline(trimmed.replace("### ", ""))}
                 </h3>
             );
-            return;
+            continue;
         }
 
+        // blockquote
+        if (trimmed.startsWith("> ")) {
+            flushUnordered();
+            flushOrdered();
+            if (!inQuote) inQuote = true;
+            quoteLines.push(trimmed.replace("> ", ""));
+            continue;
+        } else if (inQuote && trimmed.length === 0) {
+            flushQuote();
+            continue;
+        }
+
+        // unordered list
         if (trimmed.startsWith("- ")) {
             flushOrdered();
+            flushQuote();
             if (!inUnorderedList) inUnorderedList = true;
             unorderedItems.push(
                 <li key={index}>{renderInline(trimmed.replace("- ", ""))}</li>
             );
-            return;
+            continue;
         }
 
+        // ordered list
         if (trimmed.match(/^\d+\.\s/)) {
             flushUnordered();
+            flushQuote();
             if (!inOrderedList) inOrderedList = true;
             orderedItems.push(
                 <li key={index}>{renderInline(trimmed.replace(/^\d+\.\s/, ""))}</li>
             );
-            return;
+            continue;
         }
 
+        // empty line
         if (trimmed.length === 0) {
             flushUnordered();
             flushOrdered();
-            return;
+            flushQuote();
+            continue;
         }
 
         flushUnordered();
         flushOrdered();
+        flushQuote();
         elements.push(
             <p key={index} className="text-muted leading-relaxed">
                 {renderInline(trimmed)}
             </p>
         );
-    });
+    }
 
     flushUnordered();
     flushOrdered();
+    flushQuote();
+    flushCodeBlock();
     return elements;
 }
 
