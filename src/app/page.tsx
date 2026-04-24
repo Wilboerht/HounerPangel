@@ -10,7 +10,7 @@ const XIcon = ({ className }: { className?: string }) => (
 
 const navLinks = [
   { name: "About", href: "/me", icon: User },
-  { name: "Blog", href: null as string | null, icon: FileText },
+  { name: "Blog", href: "/blog", icon: FileText },
   { name: "Projects", href: "/projects", icon: FolderKanban },
   { name: "Design", href: "/design", icon: Palette },
   { name: "Research", href: null as string | null, icon: Microscope },
