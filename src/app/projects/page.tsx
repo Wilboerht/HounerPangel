@@ -1,13 +1,10 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
-import type { Metadata } from "next";
+import { useState, useEffect } from "react";
+import { ArrowLeft, ExternalLink, ChevronLeft, ChevronRight, X, FolderOpen } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-export const metadata: Metadata = {
-    title: "项目 - Hank Wong's Web",
-    description: "查看 Hank Wong (wilboerht) 开发的有趣项目，涵盖 Web 应用、AI 工具及数字化解决方案。",
-};
-
-// Mock data extending current projects to demonstrate pagination
 const MOCK_PROJECTS = [
     {
         id: "1",
@@ -32,16 +29,44 @@ const MOCK_PROJECTS = [
     }
 ];
 
+const NIHPLOD_SUB_PROJECTS = [
+    {
+        id: "n1",
+        title: "NIHPLOD 中国官网",
+        description: "品牌官方网站，展示品牌故事、产品系列与会员服务体系。",
+        url: "https://nihplod.cn",
+        tags: ["品牌官网"]
+    },
+    {
+        id: "n2",
+        title: "授权核验平台",
+        description: "官方授权店铺与经销商在线核验系统，确保消费者权益。",
+        url: "https://ba.nihplod.cn",
+        tags: ["授权核验"]
+    },
+    {
+        id: "n3",
+        title: "Skin Advisor",
+        description: "智能面部护肤顾问。利用 AI 技术进行面部分析，为用户提供个性化护肤建议。",
+        url: "https://advisor.nihplod.cn",
+        tags: ["AI 护肤顾问"]
+    },
+    {
+        id: "n4",
+        title: "积分商城系统",
+        description: "会员积分兑换与线上商城系统，支持多种支付方式与物流追踪。",
+        url: "https://shop.nihplod.cn",
+        tags: ["电商系统"]
+    }
+];
+
 const ITEMS_PER_PAGE = 4;
 
-export default async function Projects({
-    searchParams,
-}: {
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-    const resolvedParams = await searchParams;
-    const page = typeof resolvedParams.page === 'string' ? parseInt(resolvedParams.page) : 1;
-    const validPage = isNaN(page) || page < 1 ? 1 : page;
+export default function Projects() {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [page, setPage] = useState(1);
+
+    const validPage = page < 1 ? 1 : page;
 
     const totalItems = MOCK_PROJECTS.length;
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
@@ -51,6 +76,19 @@ export default async function Projects({
 
     const currentItems = MOCK_PROJECTS.slice(startIndex, endIndex);
     const pageNumbers = Array.from({ length: totalPages }).map((_, i) => i + 1);
+
+    useEffect(() => {
+        if (modalOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "unset";
+        }
+        return () => {
+            document.body.style.overflow = "unset";
+        };
+    }, [modalOpen]);
+
+    const nihplodProject = MOCK_PROJECTS.find((p) => p.title === "NIHPLOD");
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -79,39 +117,69 @@ export default async function Projects({
 
                     {/* Projects list */}
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {currentItems.map((project) => (
-                            <a
-                                key={project.id}
-                                href={project.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200"
-                            >
-                                <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
-                                    <span className="truncate">
-                                        {project.title}
-                                    </span>
-                                    <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
-                                </h3>
-                                <p className="text-sm text-muted leading-relaxed flex-1 line-clamp-2">
-                                    {project.description}
-                                </p>
-                                <div className="flex gap-2 mt-2">
-                                    {project.tags.map((tag, idx) => (
-                                        <span key={idx} className="text-xs px-2 py-1 rounded-md bg-foreground/5 text-muted">
-                                            {tag}
+                        {currentItems.map((project) => {
+                            if (project.title === "NIHPLOD") {
+                                return (
+                                    <button
+                                        key={project.id}
+                                        onClick={() => setModalOpen(true)}
+                                        className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200 text-left"
+                                    >
+                                        <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
+                                            <span className="truncate">
+                                                {project.title}
+                                            </span>
+                                            <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
+                                        </h3>
+                                        <p className="text-sm text-muted leading-relaxed flex-1 line-clamp-2">
+                                            {project.description}
+                                        </p>
+                                        <div className="flex gap-2 mt-2 items-center flex-wrap">
+                                            <FolderOpen className="w-3.5 h-3.5 text-muted" />
+                                            {project.tags.map((tag, idx) => (
+                                                <span key={idx} className="text-xs px-2 py-1 rounded-md bg-foreground/5 text-muted">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </button>
+                                );
+                            }
+                            return (
+                                <a
+                                    key={project.id}
+                                    href={project.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200"
+                                >
+                                    <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
+                                        <span className="truncate">
+                                            {project.title}
                                         </span>
-                                    ))}
-                                </div>
-                            </a>
-                        ))}
+                                        <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
+                                    </h3>
+                                    <p className="text-sm text-muted leading-relaxed flex-1 line-clamp-2">
+                                        {project.description}
+                                    </p>
+                                    <div className="flex gap-2 mt-2">
+                                        {project.tags.map((tag, idx) => (
+                                            <span key={idx} className="text-xs px-2 py-1 rounded-md bg-foreground/5 text-muted">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </a>
+                            );
+                        })}
                     </div>
 
                     {/* Pagination UI */}
                     {totalPages > 1 && (
                         <div className="flex items-center justify-center gap-2 pt-8">
-                            <Link
-                                href={validPage > 1 ? `?page=${validPage - 1}` : "#"}
+                            <button
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                disabled={validPage <= 1}
                                 className={`p-2 rounded-lg transition-colors duration-200 ${validPage > 1
                                     ? "text-muted hover:text-foreground hover:bg-foreground/5"
                                     : "text-muted/30 pointer-events-none"
@@ -119,25 +187,26 @@ export default async function Projects({
                                 aria-label="Previous page"
                             >
                                 <ChevronLeft className="w-4 h-4" />
-                            </Link>
+                            </button>
 
                             <div className="flex items-center gap-1">
                                 {pageNumbers.map((num) => (
-                                    <Link
+                                    <button
                                         key={num}
-                                        href={`?page=${num}`}
+                                        onClick={() => setPage(num)}
                                         className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors duration-200 ${validPage === num
                                             ? "bg-foreground text-background font-medium"
                                             : "text-muted hover:text-foreground hover:bg-foreground/5"
                                             }`}
                                     >
                                         {num}
-                                    </Link>
+                                    </button>
                                 ))}
                             </div>
 
-                            <Link
-                                href={validPage < totalPages ? `?page=${validPage + 1}` : "#"}
+                            <button
+                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                disabled={validPage >= totalPages}
                                 className={`p-2 rounded-lg transition-colors duration-200 ${validPage < totalPages
                                     ? "text-muted hover:text-foreground hover:bg-foreground/5"
                                     : "text-muted/30 pointer-events-none"
@@ -145,7 +214,7 @@ export default async function Projects({
                                 aria-label="Next page"
                             >
                                 <ChevronRight className="w-4 h-4" />
-                            </Link>
+                            </button>
                         </div>
                     )}
                 </section>
@@ -155,6 +224,77 @@ export default async function Projects({
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
             </div>
+
+            {/* NIHPLOD Modal */}
+            <AnimatePresence>
+                {modalOpen && nihplodProject && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setModalOpen(false)}
+                            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100]"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            className="fixed inset-0 flex items-center justify-center z-[101] p-4"
+                        >
+                            <div className="w-full max-w-2xl bg-card border border-border rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+                                {/* Modal Header */}
+                                <div className="relative flex items-center justify-center p-6 flex-shrink-0">
+                                    <img
+                                        src="/images/NIHPLOD-logo.svg"
+                                        alt="NIHPLOD"
+                                        className="h-8 w-auto dark:invert"
+                                    />
+                                    <button
+                                        onClick={() => setModalOpen(false)}
+                                        className="absolute right-6 p-2 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-colors flex-shrink-0"
+                                    >
+                                        <X className="w-5 h-5 text-muted" />
+                                    </button>
+                                </div>
+
+                                {/* Modal Body - Sub Projects Grid */}
+                                <div className="p-6 overflow-y-auto">
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        {NIHPLOD_SUB_PROJECTS.map((sub) => (
+                                            <a
+                                                key={sub.id}
+                                                href={sub.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-5 rounded-xl border border-border bg-foreground/[0.02] flex flex-col gap-3 group hover:border-foreground/30 hover:bg-foreground/[0.04] transition-all duration-200"
+                                            >
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <h3 className="text-base font-semibold text-foreground truncate">
+                                                        {sub.title}
+                                                    </h3>
+                                                    <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors flex-shrink-0" />
+                                                </div>
+                                                <p className="text-sm text-muted leading-relaxed line-clamp-2 flex-1">
+                                                    {sub.description}
+                                                </p>
+                                                <div className="flex gap-2 mt-1">
+                                                    {sub.tags.map((tag, idx) => (
+                                                        <span key={idx} className="text-[11px] px-2 py-0.5 rounded-md bg-foreground/5 text-muted">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </main>
     );
 }
