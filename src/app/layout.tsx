@@ -24,7 +24,6 @@ export const metadata: Metadata = {
     "wilboerht",
     "developer",
     "personal website",
-    "blog",
     "portfolio"
   ],
   authors: [{ name: "Hank Wong", url: "https://wilboerht.com" }],

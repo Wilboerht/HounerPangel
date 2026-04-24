@@ -10,10 +10,10 @@ const XIcon = ({ className }: { className?: string }) => (
 
 const navLinks = [
   { name: "About", href: "/me", icon: User },
-  { name: "Blog", href: "/blog", icon: FileText },
+  { name: "Blog", href: null as string | null, icon: FileText },
   { name: "Projects", href: "/projects", icon: FolderKanban },
   { name: "Design", href: "/design", icon: Palette },
-  { name: "Research", href: "/research", icon: Microscope },
+  { name: "Research", href: null as string | null, icon: Microscope },
 ];
 
 export default function Home() {
@@ -44,17 +44,28 @@ export default function Home() {
 
         {/* Right: Navigation */}
         <nav className="flex flex-col gap-4">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="flex items-center gap-2 text-lg text-muted hover:text-foreground transition-colors duration-200 relative group"
-            >
-              <link.icon className="w-5 h-5" />
-              {link.name}
-              <span className="absolute left-0 -bottom-1 w-0 h-px bg-foreground group-hover:w-full transition-all duration-200" />
-            </a>
-          ))}
+          {navLinks.map((link) =>
+            link.href ? (
+              <a
+                key={link.name}
+                href={link.href}
+                className="flex items-center gap-2 text-lg text-muted hover:text-foreground transition-colors duration-200 relative group"
+              >
+                <link.icon className="w-5 h-5" />
+                {link.name}
+                <span className="absolute left-0 -bottom-1 w-0 h-px bg-foreground group-hover:w-full transition-all duration-200" />
+              </a>
+            ) : (
+              <span
+                key={link.name}
+                className="flex items-center gap-2 text-lg text-muted/40 cursor-not-allowed"
+                aria-disabled="true"
+              >
+                <link.icon className="w-5 h-5" />
+                {link.name}
+              </span>
+            )
+          )}
         </nav>
       </div>
     </main>
