@@ -9,8 +9,8 @@ const MOCK_PROJECTS = [
     {
         id: "1",
         title: "MySkin.Today",
-        description: "智能面部护肤顾问。利用 AI 技术进行面部分析，为用户提供个性化护肤建议。",
-        url: "https://advisor.nihplod.cn",
+        description: "智能面部护肤顾问平台官方网站与服务体验入口",
+        url: "https://myskin.today",
         tags: ["AI", "Next.js"]
     },
     {
@@ -27,6 +27,23 @@ const MOCK_PROJECTS = [
         url: "https://www.lingangjh.com/",
         tags: ["Enterprise", "Web System"]
     }
+];
+
+const MYSKIN_SUB_PROJECTS = [
+    {
+        id: "m1",
+        title: "MySkin.Today 官网",
+        description: "品牌官方网站，展示护肤理念、产品服务与会员体系。",
+        url: "https://myskin.today",
+        tags: ["品牌官网"]
+    },
+    {
+        id: "m2",
+        title: "服务体验",
+        description: "智能面部护肤顾问体验，使用 MYSKINTODAY 技术支持，由 NIHPLOD SkinAdvisor 代为提供。",
+        url: "https://advisor.nihplod.cn",
+        tags: ["AI 护肤顾问"]
+    },
 ];
 
 const NIHPLOD_SUB_PROJECTS = [
@@ -57,6 +74,7 @@ const ITEMS_PER_PAGE = 4;
 
 export default function Projects() {
     const [modalOpen, setModalOpen] = useState(false);
+    const [mySkinModalOpen, setMySkinModalOpen] = useState(false);
     const [page, setPage] = useState(1);
 
     const validPage = page < 1 ? 1 : page;
@@ -71,7 +89,7 @@ export default function Projects() {
     const pageNumbers = Array.from({ length: totalPages }).map((_, i) => i + 1);
 
     useEffect(() => {
-        if (modalOpen) {
+        if (modalOpen || mySkinModalOpen) {
             document.body.style.overflow = "hidden";
         } else {
             document.body.style.overflow = "unset";
@@ -79,9 +97,10 @@ export default function Projects() {
         return () => {
             document.body.style.overflow = "unset";
         };
-    }, [modalOpen]);
+    }, [modalOpen, mySkinModalOpen]);
 
     const nihplodProject = MOCK_PROJECTS.find((p) => p.title === "NIHPLOD");
+    const mySkinProject = MOCK_PROJECTS.find((p) => p.title === "MySkin.Today");
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -111,6 +130,33 @@ export default function Projects() {
                     {/* Projects list */}
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {currentItems.map((project) => {
+                            if (project.title === "MySkin.Today") {
+                                return (
+                                    <button
+                                        key={project.id}
+                                        onClick={() => setMySkinModalOpen(true)}
+                                        className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200 text-left"
+                                    >
+                                        <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
+                                            <span className="truncate">
+                                                {project.title}
+                                            </span>
+                                            <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
+                                        </h3>
+                                        <p className="text-sm text-muted leading-relaxed flex-1 line-clamp-2">
+                                            {project.description}
+                                        </p>
+                                        <div className="flex gap-2 mt-2 items-center flex-wrap">
+                                            <FolderOpen className="w-3.5 h-3.5 text-muted" />
+                                            {project.tags.map((tag, idx) => (
+                                                <span key={idx} className="text-xs px-2 py-1 rounded-md bg-foreground/5 text-muted">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </button>
+                                );
+                            }
                             if (project.title === "NIHPLOD") {
                                 return (
                                     <button
@@ -282,6 +328,82 @@ export default function Projects() {
                                                 <div className="flex gap-2 mt-1">
                                                     {sub.tags.map((tag, idx) => (
                                                         <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-[#C6A87C]/10 text-[#8B7355] font-medium">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* MySkin.Today Modal */}
+            <AnimatePresence>
+                {mySkinModalOpen && mySkinProject && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setMySkinModalOpen(false)}
+                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100]"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            className="fixed inset-0 flex items-center justify-center z-[101] p-6"
+                        >
+                            <div className="relative w-full max-w-[600px] bg-white rounded-[28px] shadow-[0_45px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden max-h-[85vh] flex flex-col">
+                                {/* Close Button */}
+                                <div className="absolute top-6 right-6 z-10">
+                                    <button
+                                        onClick={() => setMySkinModalOpen(false)}
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                                    >
+                                        <X size={16} strokeWidth={2.5} />
+                                    </button>
+                                </div>
+
+                                {/* Modal Header */}
+                                <div className="flex flex-col items-center pt-14 pb-8 px-10">
+                                    <img
+                                        src="/images/logo-myskin-today.svg"
+                                        alt="MySkin.Today"
+                                        className="h-[34px] w-auto mb-2"
+                                    />
+                                    <p className="text-sm text-slate-500">项目系列</p>
+                                </div>
+
+                                {/* Modal Body - Sub Projects List */}
+                                <div className="px-10 pb-10 overflow-y-auto">
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        {MYSKIN_SUB_PROJECTS.map((sub) => (
+                                            <a
+                                                key={sub.id}
+                                                href={sub.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2 group hover:border-[#556B2F]/40 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
+                                            >
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <h3 className="text-sm font-bold text-slate-900 tracking-wide">
+                                                        {sub.title}
+                                                    </h3>
+                                                    <ExternalLink size={14} className="text-slate-300 group-hover:text-[#556B2F] transition-colors" />
+                                                </div>
+                                                <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2">
+                                                    {sub.description}
+                                                </p>
+                                                <div className="flex gap-2 mt-1">
+                                                    {sub.tags.map((tag, idx) => (
+                                                        <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-[#556B2F]/10 text-[#556B2F] font-medium">
                                                             {tag}
                                                         </span>
                                                     ))}
