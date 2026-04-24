@@ -141,13 +141,12 @@ export default function Projects() {
                                             <span className="truncate">
                                                 {project.title}
                                             </span>
-                                            <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
+                                            <FolderOpen className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
                                         </h3>
                                         <p className="text-sm text-muted leading-relaxed flex-1 line-clamp-2">
                                             {project.description}
                                         </p>
                                         <div className="flex gap-2 mt-2 items-center flex-wrap">
-                                            <FolderOpen className="w-3.5 h-3.5 text-muted" />
                                             {project.tags.map((tag, idx) => (
                                                 <span key={idx} className="text-xs px-2 py-1 rounded-md bg-foreground/5 text-muted">
                                                     {tag}
@@ -168,13 +167,12 @@ export default function Projects() {
                                             <span className="truncate">
                                                 {project.title}
                                             </span>
-                                            <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
+                                            <FolderOpen className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
                                         </h3>
                                         <p className="text-sm text-muted leading-relaxed flex-1 line-clamp-2">
                                             {project.description}
                                         </p>
                                         <div className="flex gap-2 mt-2 items-center flex-wrap">
-                                            <FolderOpen className="w-3.5 h-3.5 text-muted" />
                                             {project.tags.map((tag, idx) => (
                                                 <span key={idx} className="text-xs px-2 py-1 rounded-md bg-foreground/5 text-muted">
                                                     {tag}
@@ -376,9 +374,11 @@ export default function Projects() {
                                     <img
                                         src="/images/logo-myskin-today.svg"
                                         alt="MySkin.Today"
-                                        className="h-[34px] w-auto mb-2"
+                                        className="h-[100px] w-auto mb-4"
                                     />
-                                    <p className="text-sm text-slate-500">项目系列</p>
+                                    <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
+                                        项目系列
+                                    </h2>
                                 </div>
 
                                 {/* Modal Body - Sub Projects List */}
