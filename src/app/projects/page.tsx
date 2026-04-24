@@ -51,13 +51,6 @@ const NIHPLOD_SUB_PROJECTS = [
         url: "https://advisor.nihplod.cn",
         tags: ["AI 护肤顾问"]
     },
-    {
-        id: "n4",
-        title: "积分商城系统",
-        description: "会员积分兑换与线上商城系统，支持多种支付方式与物流追踪。",
-        url: "https://shop.nihplod.cn",
-        tags: ["电商系统"]
-    }
 ];
 
 const ITEMS_PER_PAGE = 4;
@@ -234,33 +227,40 @@ export default function Projects() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setModalOpen(false)}
-                            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100]"
+                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100]"
                         />
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            initial={{ opacity: 0, scale: 0.96, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            exit={{ opacity: 0, scale: 0.96, y: 10 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="fixed inset-0 flex items-center justify-center z-[101] p-4"
+                            className="fixed inset-0 flex items-center justify-center z-[101] p-6"
                         >
-                            <div className="w-full max-w-2xl bg-card border border-border rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
-                                {/* Modal Header */}
-                                <div className="relative flex items-center justify-center p-6 flex-shrink-0">
-                                    <img
-                                        src="/images/NIHPLOD-logo.svg"
-                                        alt="NIHPLOD"
-                                        className="h-8 w-auto dark:invert"
-                                    />
+                            <div className="relative w-full max-w-[600px] bg-white rounded-[28px] shadow-[0_45px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden max-h-[85vh] flex flex-col">
+                                {/* Close Button */}
+                                <div className="absolute top-6 right-6 z-10">
                                     <button
                                         onClick={() => setModalOpen(false)}
-                                        className="absolute right-6 p-2 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-colors flex-shrink-0"
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                                     >
-                                        <X className="w-5 h-5 text-muted" />
+                                        <X size={16} strokeWidth={2.5} />
                                     </button>
                                 </div>
 
-                                {/* Modal Body - Sub Projects Grid */}
-                                <div className="p-6 overflow-y-auto">
+                                {/* Modal Header */}
+                                <div className="flex flex-col items-center pt-14 pb-8 px-10">
+                                    <img
+                                        src="/images/NIHPLOD-logo.svg"
+                                        alt="NIHPLOD"
+                                        className="h-[34px] w-auto mb-7"
+                                    />
+                                    <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
+                                        项目系列
+                                    </h2>
+                                </div>
+
+                                {/* Modal Body - Sub Projects List */}
+                                <div className="px-10 pb-10 overflow-y-auto">
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         {NIHPLOD_SUB_PROJECTS.map((sub) => (
                                             <a
@@ -268,20 +268,20 @@ export default function Projects() {
                                                 href={sub.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="p-5 rounded-xl border border-border bg-foreground/[0.02] flex flex-col gap-3 group hover:border-foreground/30 hover:bg-foreground/[0.04] transition-all duration-200"
+                                                className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2 group hover:border-[#C6A87C]/40 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
                                             >
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <h3 className="text-base font-semibold text-foreground truncate">
+                                                    <h3 className="text-sm font-bold text-slate-900 tracking-wide">
                                                         {sub.title}
                                                     </h3>
-                                                    <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground transition-colors flex-shrink-0" />
+                                                    <ExternalLink size={14} className="text-slate-300 group-hover:text-[#C6A87C] transition-colors" />
                                                 </div>
-                                                <p className="text-sm text-muted leading-relaxed line-clamp-2 flex-1">
+                                                <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2">
                                                     {sub.description}
                                                 </p>
                                                 <div className="flex gap-2 mt-1">
                                                     {sub.tags.map((tag, idx) => (
-                                                        <span key={idx} className="text-[11px] px-2 py-0.5 rounded-md bg-foreground/5 text-muted">
+                                                        <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-[#C6A87C]/10 text-[#8B7355] font-medium">
                                                             {tag}
                                                         </span>
                                                     ))}
