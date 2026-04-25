@@ -29,27 +29,16 @@ export default function AboutMe() {
                             关于我
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            Hello, I&rsquo;m Hank Wong (wilboerht). I&rsquo;m a developer and super individual, building digital spaces while exploring the world&rsquo;s beauty and embracing every new possibility.
+                            我是 Hank Wong（wilboerht），平时喜欢写点代码，研究些新东西。目前就职于某日化品牌，全栈开发。最近在探索用 AI 快速搭网站的同时完成网站样式设计，也在准备我的第一个 App。
+                        </p>
+                        <p className="text-lg text-muted leading-relaxed">
+                            闲下来就在路上 —— 到处走走，拍拍照，或者找个山爬一爬。目标是在 28 岁前登上第一座雪山。
+                        </p>
+                        <p className="text-lg text-muted leading-relaxed">
+                            欢迎联系，也许也能在路上偶遇。
                         </p>
                     </div>
 
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                            What I Do
-                        </h2>
-                        <p className="text-muted leading-relaxed">
-                            I specialize in software development, but my life is fueled by travel and outdoor adventures. I thrive on new things and interesting projects that challenge my boundaries and broaden my horizons.
-                        </p>
-                    </div>
-
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                            Philosophy
-                        </h2>
-                        <p className="text-muted leading-relaxed">
-                            As a &rsquo;Super Individual&rsquo;, I believe true growth happens at the intersection of technical discipline and the courage to explore the unknown. My goal is to stay curious, distilling complex global experiences and technical problems into simple, elegant, and intuitive digital solutions.
-                        </p>
-                    </div>
                 </section>
 
                 {/* Footer */}
