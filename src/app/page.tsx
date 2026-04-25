@@ -27,9 +27,7 @@ export default function Home() {
               Hank Wong
             </h1>
             <p className="text-lg text-muted leading-relaxed">
-              Building things on the internet.
-              <br />
-              Always learning, always creating.
+              与世界连结，<br />无限进步
             </p>
           </div>
 
