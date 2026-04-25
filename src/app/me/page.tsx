@@ -26,7 +26,7 @@ export default function AboutMe() {
                 <section className="space-y-10">
                     <div className="space-y-4">
                         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                            About Me
+                            关于我
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
                             Hello, I&rsquo;m Hank Wong (wilboerht). I&rsquo;m a developer and super individual, building digital spaces while exploring the world&rsquo;s beauty and embracing every new possibility.

@@ -9,11 +9,11 @@ const XIcon = ({ className }: { className?: string }) => (
 
 
 const navLinks = [
-  { name: "About", href: "/me", icon: User },
-  { name: "Blog", href: "/blog", icon: FileText },
-  { name: "Projects", href: "/projects", icon: FolderKanban },
-  { name: "Design", href: "/design", icon: Palette },
-  { name: "Research", href: null as string | null, icon: Microscope },
+  { name: "关于", href: "/me", icon: User },
+  { name: "博客", href: "/blog", icon: FileText },
+  { name: "项目", href: "/projects", icon: FolderKanban },
+  { name: "设计", href: "/design", icon: Palette },
+  { name: "研究", href: null as string | null, icon: Microscope },
 ];
 
 export default function Home() {
