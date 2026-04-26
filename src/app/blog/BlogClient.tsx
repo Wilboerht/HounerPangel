@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Tag, FileText, Lock, X, KeyRound } from "lucide-react";
+import { Calendar, Tag, FileText, Lock, X, KeyRound, UserCheck } from "lucide-react";
 import type { BlogPost } from "@/lib/types/blog";
 
 interface Props {
@@ -17,6 +17,14 @@ export default function BlogClient({ posts }: Props) {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        fetch("/api/admin/check")
+            .then((res) => res.json())
+            .then((data) => setIsLoggedIn(data.authenticated))
+            .catch(() => setIsLoggedIn(false));
+    }, []);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -121,11 +129,21 @@ export default function BlogClient({ posts }: Props) {
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                     <span>·</span>
                     <button
-                        onClick={() => setShowModal(true)}
+                        onClick={() => {
+                            if (isLoggedIn) {
+                                router.push("/admin/blog");
+                            } else {
+                                setShowModal(true);
+                            }
+                        }}
                         className="text-muted hover:text-foreground transition-colors"
-                        title="管理"
+                        title={isLoggedIn ? "进入后台" : "管理"}
                     >
-                        <KeyRound className="w-3.5 h-3.5" />
+                        {isLoggedIn ? (
+                            <UserCheck className="w-3.5 h-3.5" />
+                        ) : (
+                            <KeyRound className="w-3.5 h-3.5" />
+                        )}
                     </button>
                 </div>
             </footer>

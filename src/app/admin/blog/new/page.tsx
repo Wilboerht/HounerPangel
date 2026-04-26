@@ -108,7 +108,7 @@ export default function NewBlogPost() {
                                 required
                                 value={form.date}
                                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                                className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors"
+                                className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors [color-scheme:dark]"
                             />
                         </div>
 

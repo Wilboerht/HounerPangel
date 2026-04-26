@@ -275,6 +275,41 @@ function renderMarkdown(content: string): React.ReactNode {
         flushUnordered();
         flushOrdered();
         flushQuote();
+
+        // standalone link card: [text](url) on its own line
+        const standaloneLinkMatch = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        if (standaloneLinkMatch) {
+            const [, cardText, cardUrl] = standaloneLinkMatch;
+            elements.push(
+                <a
+                    key={`card-${index}`}
+                    href={cardUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-5 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-accent/40 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 group"
+                >
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-slate-900 tracking-wide">
+                            {cardText}
+                        </span>
+                        <svg
+                            className="w-4 h-4 text-slate-300 group-hover:text-accent transition-colors"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M7 17L17 7M17 7H7M17 7V17" />
+                        </svg>
+                    </div>
+                    <p className="text-[13px] text-slate-500 leading-relaxed mt-1 truncate">
+                        {cardUrl}
+                    </p>
+                </a>
+            );
+            continue;
+        }
+
         elements.push(
             <p key={index} className="text-muted leading-relaxed">
                 {renderInline(trimmed)}
