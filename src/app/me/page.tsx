@@ -24,7 +24,7 @@ export default function AboutMe() {
 
                 {/* Content */}
                 <section className="space-y-10">
-                    <div className="space-y-4">
+                    <div className="space-y-8">
                         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                             关于我
                         </h1>

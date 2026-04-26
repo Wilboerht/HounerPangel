@@ -16,7 +16,7 @@ export default async function Blog() {
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
-            <div className="max-w-2xl w-full flex flex-col gap-12">
+            <div className="max-w-6xl w-full flex flex-col gap-12">
                 {/* Navigation */}
                 <nav>
                     <Link
