@@ -374,7 +374,7 @@ export default function Projects() {
                                     <img
                                         src="/images/logo-myskin-today.svg"
                                         alt="MySkin.Today"
-                                        className="h-[100px] w-auto mb-4"
+                                        className="h-[70px] w-auto mb-4"
                                     />
                                     <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
                                         项目系列

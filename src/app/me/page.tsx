@@ -29,18 +29,18 @@ export default function AboutMe() {
                             关于我
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            Hi，我是 Hank Wong（wilboerht）。
+                            Hi，我是 Hank。喜欢科技、旅行或者户外运动的相关话题。
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
-                            喜欢科技、旅行或者户外运动相关的话题。
+                           
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
+                            {/* 就读亚洲大学（Ajou）GLOBAL IT 专业 ，
+                            <br /> */}
                             Genius programmer @ Vanto & @ NIHPLOD
-                            <br />
-                            Student of Ajou
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
-                            欢迎联系，路上见！
+                            欢迎关注 ~
                         </p>
                     </div>
 
