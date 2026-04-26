@@ -2,20 +2,17 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getBlogPostBySlug, getAllBlogSlugs } from "@/data/blog";
+import { getBlogPostBySlug } from "@/data/blog";
 
 interface Props {
     params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-    const slugs = getAllBlogSlugs();
-    return slugs.map((slug) => ({ slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const post = getBlogPostBySlug(slug);
+    const post = await getBlogPostBySlug(slug);
 
     if (!post) {
         return {
@@ -39,7 +36,6 @@ function renderInline(text: string): React.ReactNode {
     };
 
     while (remaining.length > 0) {
-        // inline code: `code`
         const codeMatch = remaining.match(/^`([^`]+)`/);
         if (codeMatch) {
             push(
@@ -51,7 +47,6 @@ function renderInline(text: string): React.ReactNode {
             continue;
         }
 
-        // link: [text](url)
         const linkMatch = remaining.match(/^\[([^\]]+)\]\(([^)]+)\)/);
         if (linkMatch) {
             push(
@@ -68,7 +63,6 @@ function renderInline(text: string): React.ReactNode {
             continue;
         }
 
-        // bold: **text**
         const boldMatch = remaining.match(/^\*\*([^*]+)\*\*/);
         if (boldMatch) {
             push(
@@ -80,7 +74,6 @@ function renderInline(text: string): React.ReactNode {
             continue;
         }
 
-        // italic: *text* or _text_
         const italicMatch = remaining.match(/^(?:\*|_)([^*_]+)(?:\*|_)/);
         if (italicMatch) {
             push(
@@ -92,7 +85,6 @@ function renderInline(text: string): React.ReactNode {
             continue;
         }
 
-        // strikethrough: ~~text~~
         const strikeMatch = remaining.match(/^~~([^~]+)~~/);
         if (strikeMatch) {
             push(
@@ -104,7 +96,6 @@ function renderInline(text: string): React.ReactNode {
             continue;
         }
 
-        // plain char
         push(remaining[0]);
         remaining = remaining.slice(1);
     }
@@ -120,6 +111,7 @@ function renderMarkdown(content: string): React.ReactNode {
     let inCodeBlock = false;
     let inQuote = false;
     let codeLines: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let codeLang = "";
     let unorderedItems: React.ReactNode[] = [];
     let orderedItems: React.ReactNode[] = [];
@@ -190,7 +182,6 @@ function renderMarkdown(content: string): React.ReactNode {
         const line = lines[index];
         const trimmed = line.trim();
 
-        // code block
         if (trimmed.startsWith("```")) {
             if (!inCodeBlock) {
                 flushUnordered();
@@ -209,7 +200,6 @@ function renderMarkdown(content: string): React.ReactNode {
             continue;
         }
 
-        // horizontal rule
         if (/^(---+|___+|\*\*\*+)$/.test(trimmed)) {
             flushUnordered();
             flushOrdered();
@@ -220,7 +210,6 @@ function renderMarkdown(content: string): React.ReactNode {
             continue;
         }
 
-        // h2
         if (trimmed.startsWith("## ")) {
             flushUnordered();
             flushOrdered();
@@ -233,7 +222,6 @@ function renderMarkdown(content: string): React.ReactNode {
             continue;
         }
 
-        // h3
         if (trimmed.startsWith("### ")) {
             flushUnordered();
             flushOrdered();
@@ -246,7 +234,6 @@ function renderMarkdown(content: string): React.ReactNode {
             continue;
         }
 
-        // blockquote
         if (trimmed.startsWith("> ")) {
             flushUnordered();
             flushOrdered();
@@ -258,7 +245,6 @@ function renderMarkdown(content: string): React.ReactNode {
             continue;
         }
 
-        // unordered list
         if (trimmed.startsWith("- ")) {
             flushOrdered();
             flushQuote();
@@ -269,7 +255,6 @@ function renderMarkdown(content: string): React.ReactNode {
             continue;
         }
 
-        // ordered list
         if (trimmed.match(/^\d+\.\s/)) {
             flushUnordered();
             flushQuote();
@@ -280,7 +265,6 @@ function renderMarkdown(content: string): React.ReactNode {
             continue;
         }
 
-        // empty line
         if (trimmed.length === 0) {
             flushUnordered();
             flushOrdered();
@@ -307,7 +291,7 @@ function renderMarkdown(content: string): React.ReactNode {
 
 export default async function BlogPostPage({ params }: Props) {
     const { slug } = await params;
-    const post = getBlogPostBySlug(slug);
+    const post = await getBlogPostBySlug(slug);
 
     if (!post) {
         notFound();
@@ -316,7 +300,6 @@ export default async function BlogPostPage({ params }: Props) {
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
             <div className="max-w-2xl w-full flex flex-col gap-12">
-                {/* Navigation */}
                 <nav>
                     <Link
                         href="/blog"
@@ -327,7 +310,6 @@ export default async function BlogPostPage({ params }: Props) {
                     </Link>
                 </nav>
 
-                {/* Header */}
                 <header className="space-y-4">
                     <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                         <div className="inline-flex items-center gap-1.5">
@@ -366,12 +348,10 @@ export default async function BlogPostPage({ params }: Props) {
                     </p>
                 </header>
 
-                {/* Content */}
                 <article className="space-y-5">
                     {renderMarkdown(post.content)}
                 </article>
 
-                {/* Footer */}
                 <footer className="pt-8 text-sm text-muted border-t border-white/10">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>

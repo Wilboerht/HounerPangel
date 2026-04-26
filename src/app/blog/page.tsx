@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { ArrowLeft, Calendar, Tag, FileText } from "lucide-react";
 import type { Metadata } from "next";
-import { BLOG_POSTS } from "@/data/blog";
+import { getAllBlogPosts } from "@/data/blog";
 
 export const metadata: Metadata = {
     title: "Blog - Hank Wong's Web",
     description: "Hank Wong 的思考、笔记与创作。",
 };
 
-export default function Blog() {
-    const sortedPosts = [...BLOG_POSTS].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+export const dynamic = "force-dynamic";
+
+export default async function Blog() {
+    const posts = await getAllBlogPosts();
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -40,8 +40,8 @@ export default function Blog() {
 
                     {/* Blog List */}
                     <div className="flex flex-col gap-6">
-                        {sortedPosts.length > 0 ? (
-                            sortedPosts.map((post) => (
+                        {posts.length > 0 ? (
+                            posts.map((post) => (
                                 <article
                                     key={post.slug}
                                     className="group flex flex-col gap-3 p-4 -mx-4 rounded-xl hover:bg-foreground/[0.02] transition-colors duration-200"
