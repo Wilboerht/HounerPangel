@@ -110,9 +110,11 @@ function renderMarkdown(content: string): React.ReactNode {
     let inOrderedList = false;
     let inCodeBlock = false;
     let inQuote = false;
+    let inIframe = false;
     let codeLines: string[] = [];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let codeLang = "";
+    let iframeLines: string[] = [];
     let unorderedItems: React.ReactNode[] = [];
     let orderedItems: React.ReactNode[] = [];
     let quoteLines: string[] = [];
@@ -178,6 +180,32 @@ function renderMarkdown(content: string): React.ReactNode {
         }
     };
 
+    const flushIframe = () => {
+        if (inIframe && iframeLines.length > 0) {
+            const iframeHtml = iframeLines.join("\n").trim();
+            // Security: only allow iframe from trusted domains
+            const srcMatch = iframeHtml.match(/src=["']([^"']+)["']/i);
+            const allowedDomains = ["embed.music.apple.com", "open.spotify.com", "bandcamp.com", "www.youtube.com", "youtube.com", "player.bilibili.com", "music.163.com", "y.qq.com", "platform.twitter.com", "twitter.com", "x.com", "www.instagram.com", "instagram.com"];
+            const isAllowed = srcMatch ? allowedDomains.some((d) => srcMatch[1].includes(d)) : false;
+
+            if (isAllowed) {
+                elements.push(
+                    <div key={`iframe-${elements.length}`} className="my-4">
+                        <div dangerouslySetInnerHTML={{ __html: iframeHtml }} />
+                    </div>
+                );
+            } else {
+                elements.push(
+                    <pre key={`iframe-${elements.length}`} className="rounded-xl bg-foreground/5 p-4 overflow-x-auto text-sm text-muted">
+                        <code>{iframeHtml}</code>
+                    </pre>
+                );
+            }
+            iframeLines = [];
+            inIframe = false;
+        }
+    };
+
     for (let index = 0; index < lines.length; index++) {
         const line = lines[index];
         const trimmed = line.trim();
@@ -197,6 +225,23 @@ function renderMarkdown(content: string): React.ReactNode {
 
         if (inCodeBlock) {
             codeLines.push(line);
+            continue;
+        }
+
+        // iframe embed (Apple Music, Spotify, etc.)
+        if (trimmed.toLowerCase().startsWith("<iframe")) {
+            flushUnordered();
+            flushOrdered();
+            flushQuote();
+            inIframe = true;
+            iframeLines.push(line);
+            continue;
+        }
+        if (inIframe) {
+            iframeLines.push(line);
+            if (trimmed.toLowerCase().includes("</iframe>")) {
+                flushIframe();
+            }
             continue;
         }
 
@@ -321,6 +366,7 @@ function renderMarkdown(content: string): React.ReactNode {
     flushOrdered();
     flushQuote();
     flushCodeBlock();
+    flushIframe();
     return elements;
 }
 

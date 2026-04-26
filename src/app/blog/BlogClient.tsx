@@ -179,7 +179,7 @@ export default function BlogClient({ posts }: Props) {
 
                                 {/* Modal Header */}
                                 <div className="flex flex-col items-center pt-14 pb-6 px-10">
-                                    <Lock size={22} className="text-slate-400 mb-5" />
+                                    <img src="/images/Vanto.svg" alt="Vanto" className="h-[28px] w-auto mb-5" />
                                     <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
                                         后台登录
                                     </h2>
@@ -189,7 +189,6 @@ export default function BlogClient({ posts }: Props) {
                                 <div className="px-10 pb-10">
                                     <form onSubmit={handleLogin} className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-2">
-                                            <label className="text-sm font-medium text-slate-700">密码</label>
                                             <input
                                                 type="password"
                                                 required
