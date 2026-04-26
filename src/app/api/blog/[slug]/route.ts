@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBlogPostBySlug, updateBlogPost, deleteBlogPost } from "@/lib/blog-db";
+import { checkAuth } from "@/lib/auth";
 
 interface Params {
     params: Promise<{ slug: string }>;
@@ -20,6 +21,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
 }
 
 export async function PUT(request: NextRequest, { params }: Params) {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
     try {
         const { slug } = await params;
         const body = await request.json();
@@ -45,7 +49,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
     }
 }
 
-export async function DELETE(_request: NextRequest, { params }: Params) {
+export async function DELETE(request: NextRequest, { params }: Params) {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
     try {
         const { slug } = await params;
         await deleteBlogPost(slug);

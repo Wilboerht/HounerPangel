@@ -2,19 +2,29 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, ArrowLeft, FileText, LogOut } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft, FileText, LogOut, Lock } from "lucide-react";
 import type { BlogPost } from "@/lib/types/blog";
 
 export default function AdminBlogList() {
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
+    const [authError, setAuthError] = useState(false);
 
     useEffect(() => {
         fetch("/api/blog")
-            .then((res) => res.json())
+            .then((res) => {
+                if (res.status === 401) {
+                    setAuthError(true);
+                    setLoading(false);
+                    return null;
+                }
+                return res.json();
+            })
             .then((data) => {
-                setPosts(data);
-                setLoading(false);
+                if (data) {
+                    setPosts(data);
+                    setLoading(false);
+                }
             })
             .catch(() => setLoading(false));
     }, []);
@@ -23,6 +33,11 @@ export default function AdminBlogList() {
         if (!confirm("确定要删除这篇文章吗？")) return;
         try {
             const res = await fetch(`/api/blog/${slug}`, { method: "DELETE" });
+            if (res.status === 401) {
+                alert("登录已过期，请重新登录");
+                window.location.href = "/blog";
+                return;
+            }
             if (res.ok) {
                 setPosts((prev) => prev.filter((p) => p.slug !== slug));
             } else {
@@ -32,6 +47,28 @@ export default function AdminBlogList() {
             alert("删除失败");
         }
     };
+
+    if (authError) {
+        return (
+            <main className="min-h-screen flex items-center justify-center px-6">
+                <div className="max-w-sm w-full flex flex-col items-center gap-6 text-center">
+                    <div className="p-4 rounded-full bg-foreground/5">
+                        <Lock className="w-8 h-8 text-muted" />
+                    </div>
+                    <div className="space-y-2">
+                        <h1 className="text-xl font-semibold text-foreground">需要登录</h1>
+                        <p className="text-sm text-muted">请先返回博客页面登录</p>
+                    </div>
+                    <Link
+                        href="/blog"
+                        className="px-6 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+                    >
+                        返回博客
+                    </Link>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -60,7 +97,7 @@ export default function AdminBlogList() {
                             <button
                                 onClick={async () => {
                                     await fetch("/api/admin/logout", { method: "POST" });
-                                    window.location.href = "/admin/login";
+                                    window.location.href = "/blog";
                                 }}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
                             >

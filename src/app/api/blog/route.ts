@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllBlogPosts, createBlogPost } from "@/lib/blog-db";
+import { checkAuth } from "@/lib/auth";
 
 export async function GET() {
     try {
@@ -12,6 +13,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
     try {
         const body = await request.json();
         const { slug, title, excerpt, content, date, tags } = body;
