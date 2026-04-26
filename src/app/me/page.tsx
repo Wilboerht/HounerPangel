@@ -29,13 +29,18 @@ export default function AboutMe() {
                             关于我
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            我是 Hank Wong（wilboerht），平时喜欢写点代码，研究些新东西。目前就职于某日化品牌，全栈开发。最近在探索用 AI 快速搭网站的同时完成网站样式设计，也在准备我的第一个 App。
+                            Hi，我是 Hank Wong（wilboerht）。
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
-                            闲下来就在路上 —— 到处走走，拍拍照，或者找个山爬一爬。目标是在 28 岁前登上第一座雪山。
+                            喜欢科技、旅行或者户外运动相关的话题。
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
-                            欢迎联系，也许也能在路上偶遇。
+                            Genius programmer @ Vanto & @ NIHPLOD
+                            <br />
+                            Student of Ajou
+                        </p>
+                        <p className="text-lg text-muted leading-relaxed">
+                            欢迎联系，路上见！
                         </p>
                     </div>
 
