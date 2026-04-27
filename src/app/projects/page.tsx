@@ -135,7 +135,7 @@ export default function Projects() {
                                     <button
                                         key={project.id}
                                         onClick={() => setMySkinModalOpen(true)}
-                                        className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200 text-left"
+                                        className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200 text-left min-w-0"
                                     >
                                         <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
                                             <span className="truncate">
@@ -161,7 +161,7 @@ export default function Projects() {
                                     <button
                                         key={project.id}
                                         onClick={() => setModalOpen(true)}
-                                        className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200 text-left"
+                                        className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200 text-left min-w-0"
                                     >
                                         <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
                                             <span className="truncate">
@@ -188,7 +188,7 @@ export default function Projects() {
                                     href={project.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200"
+                                    className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200 min-w-0"
                                 >
                                     <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
                                         <span className="truncate">
