@@ -5,7 +5,7 @@ import { getAllBlogPosts } from "@/data/blog";
 import BlogClient from "./BlogClient";
 
 export const metadata: Metadata = {
-    title: "Blog - Hank Wong's Web",
+    title: "博客 - Hank Wong's Web",
     description: "Hank Wong 的思考、笔记与创作。",
 };
 

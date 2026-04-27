@@ -56,7 +56,7 @@ export default function BlogClient({ posts }: Props) {
             <section className="space-y-10">
                 <div className="space-y-4">
                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                        Blog
+                        博客
                     </h1>
                     <p className="text-lg text-muted leading-relaxed">
                         Thoughts, notes, and creations along the way.
