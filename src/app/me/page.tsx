@@ -35,8 +35,8 @@ export default function AboutMe() {
                            
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
-                            {/* 在读「国立江源大学」人工智能计算机专业 ，
-                            <br /> */}
+                            国立江源大学「人工智能计算机」专业在读 ，
+                            <br />
                             Genius programmer @ Vanto & @ NIHPLOD
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
