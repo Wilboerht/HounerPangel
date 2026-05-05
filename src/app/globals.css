@@ -27,6 +27,8 @@
     scroll-behavior: smooth;
     /* 防止垂直方向因动画位移产生的滚动条闪烁 */
     overflow-x: hidden;
+    /* 明确声明页面仅支持浅色模式，阻止移动端浏览器在系统深色模式下自动反色 */
+    color-scheme: light;
   }
 
   body {
