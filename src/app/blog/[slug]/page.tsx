@@ -2,13 +2,23 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getBlogPostBySlug } from "@/data/blog";
+import { getBlogPostBySlug, getAllBlogSlugs } from "@/lib/blog-db";
 
 interface Props {
     params: Promise<{ slug: string }>;
 }
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+    try {
+        const slugs = await getAllBlogSlugs();
+        return slugs.map((slug) => ({ slug }));
+    } catch {
+        // Fallback to empty array if Supabase is unavailable during build
+        return [];
+    }
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
@@ -112,8 +122,6 @@ function renderMarkdown(content: string): React.ReactNode {
     let inQuote = false;
     let inIframe = false;
     let codeLines: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let codeLang = "";
     let iframeLines: string[] = [];
     let unorderedItems: React.ReactNode[] = [];
     let orderedItems: React.ReactNode[] = [];
@@ -175,7 +183,6 @@ function renderMarkdown(content: string): React.ReactNode {
                 </pre>
             );
             codeLines = [];
-            codeLang = "";
             inCodeBlock = false;
         }
     };
@@ -216,7 +223,6 @@ function renderMarkdown(content: string): React.ReactNode {
                 flushOrdered();
                 flushQuote();
                 inCodeBlock = true;
-                codeLang = trimmed.slice(3).trim();
             } else {
                 flushCodeBlock();
             }

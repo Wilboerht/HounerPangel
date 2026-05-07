@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
-import { getAllBlogPosts } from "@/data/blog";
+import { getAllBlogPosts } from "@/lib/blog-db";
 import BlogClient from "./BlogClient";
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: "Hank Wong 的思考、笔记与创作。",
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function Blog() {
     const posts = await getAllBlogPosts();

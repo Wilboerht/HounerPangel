@@ -1,10 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Tag, FileText, Lock, X, KeyRound, UserCheck } from "lucide-react";
+import { Calendar, Tag, FileText, X, KeyRound, UserCheck } from "lucide-react";
 import type { BlogPost } from "@/lib/types/blog";
 
 interface Props {
@@ -179,7 +180,7 @@ export default function BlogClient({ posts }: Props) {
 
                                 {/* Modal Header */}
                                 <div className="flex flex-col items-center pt-14 pb-6 px-10">
-                                    <img src="/images/Vanto.svg" alt="Vanto" className="h-[28px] w-auto mb-5" />
+                                    <Image src="/images/Vanto.svg" alt="Vanto" width={112} height={28} className="h-[28px] w-auto mb-5" />
                                     <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
                                         后台登录
                                     </h2>

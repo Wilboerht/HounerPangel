@@ -6,6 +6,11 @@
   --muted: #737373;
   --border: #e5e5e5;
   --accent: #3b82f6;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --muted-foreground: #737373;
+  --card: #ffffff;
+  --card-foreground: #171717;
 }
 
 @theme inline {
@@ -14,6 +19,11 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-accent: var(--accent);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

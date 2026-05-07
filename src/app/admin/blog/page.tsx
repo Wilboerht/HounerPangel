@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, ArrowLeft, FileText, LogOut, Lock, X, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { BlogPost } from "@/lib/types/blog";
 
 export default function AdminBlogList() {
+    const router = useRouter();
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [authError, setAuthError] = useState(false);
@@ -52,7 +54,7 @@ export default function AdminBlogList() {
             const res = await fetch(`/api/blog/${slug}`, { method: "DELETE" });
             if (res.status === 401) {
                 alert("登录已过期，请重新登录");
-                window.location.href = "/blog";
+                router.push("/blog");
                 return;
             }
             if (res.ok) {
@@ -150,7 +152,7 @@ export default function AdminBlogList() {
                             <button
                                 onClick={async () => {
                                     await fetch("/api/admin/logout", { method: "POST" });
-                                    window.location.href = "/blog";
+                                    router.push("/blog");
                                 }}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
                             >

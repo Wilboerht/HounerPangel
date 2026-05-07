@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ArrowLeft, ExternalLink, ChevronLeft, ChevronRight, X, FolderOpen } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, ExternalLink, ChevronLeft, ChevronRight, FolderOpen } from "lucide-react";
+import { ProjectModal } from "@/components/ProjectModal";
 
 const MOCK_PROJECTS = [
     {
@@ -308,234 +308,113 @@ export default function Projects() {
             </div>
 
             {/* NIHPLOD Modal */}
-            <AnimatePresence>
-                {modalOpen && nihplodProject && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setModalOpen(false)}
-                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100]"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.96, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="fixed inset-0 flex items-center justify-center z-[101] p-6"
+            <ProjectModal
+                isOpen={modalOpen && !!nihplodProject}
+                onClose={() => setModalOpen(false)}
+                logoSrc="/images/NIHPLOD-logo.svg"
+                logoAlt="NIHPLOD"
+            >
+                <div className="grid gap-4 sm:grid-cols-2">
+                    {NIHPLOD_SUB_PROJECTS.map((sub) => (
+                        <a
+                            key={sub.id}
+                            href={sub.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2 group hover:border-[#C6A87C]/40 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
                         >
-                            <div className="relative w-full max-w-[600px] bg-white rounded-[28px] shadow-[0_45px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden max-h-[85vh] flex flex-col">
-                                {/* Close Button */}
-                                <div className="absolute top-6 right-6 z-10">
-                                    <button
-                                        onClick={() => setModalOpen(false)}
-                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                                    >
-                                        <X size={16} strokeWidth={2.5} />
-                                    </button>
-                                </div>
-
-                                {/* Modal Header */}
-                                <div className="flex flex-col items-center pt-14 pb-8 px-10">
-                                    <img
-                                        src="/images/NIHPLOD-logo.svg"
-                                        alt="NIHPLOD"
-                                        className="h-[34px] w-auto mb-7"
-                                    />
-                                    <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
-                                        项目系列
-                                    </h2>
-                                </div>
-
-                                {/* Modal Body - Sub Projects List */}
-                                <div className="px-10 pb-10 overflow-y-auto">
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        {NIHPLOD_SUB_PROJECTS.map((sub) => (
-                                            <a
-                                                key={sub.id}
-                                                href={sub.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2 group hover:border-[#C6A87C]/40 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
-                                            >
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <h3 className="text-sm font-bold text-slate-900 tracking-wide">
-                                                        {sub.title}
-                                                    </h3>
-                                                    <ExternalLink size={14} className="text-slate-300 group-hover:text-[#C6A87C] transition-colors" />
-                                                </div>
-                                                <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2">
-                                                    {sub.description}
-                                                </p>
-                                                <div className="flex gap-2 mt-1">
-                                                    {sub.tags.map((tag, idx) => (
-                                                        <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-[#C6A87C]/10 text-[#8B7355] font-medium">
-                                                            {tag}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </a>
-                                        ))}
-                                    </div>
-                                </div>
+                            <div className="flex items-center justify-between gap-2">
+                                <h3 className="text-sm font-bold text-slate-900 tracking-wide">
+                                    {sub.title}
+                                </h3>
+                                <ExternalLink size={14} className="text-slate-300 group-hover:text-[#C6A87C] transition-colors" />
                             </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                            <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2">
+                                {sub.description}
+                            </p>
+                            <div className="flex gap-2 mt-1">
+                                {sub.tags.map((tag, idx) => (
+                                    <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-[#C6A87C]/10 text-[#8B7355] font-medium">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            </ProjectModal>
 
             {/* MySkin.Today Modal */}
-            <AnimatePresence>
-                {mySkinModalOpen && mySkinProject && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setMySkinModalOpen(false)}
-                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100]"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.96, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="fixed inset-0 flex items-center justify-center z-[101] p-6"
+            <ProjectModal
+                isOpen={mySkinModalOpen && !!mySkinProject}
+                onClose={() => setMySkinModalOpen(false)}
+                logoSrc="/images/logo-myskin-today.svg"
+                logoAlt="MySkin.Today"
+                logoHeight={70}
+                logoMb={4}
+            >
+                <div className="grid gap-4 sm:grid-cols-2">
+                    {MYSKIN_SUB_PROJECTS.map((sub) => (
+                        <a
+                            key={sub.id}
+                            href={sub.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2 group hover:border-[#556B2F]/40 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
                         >
-                            <div className="relative w-full max-w-[600px] bg-white rounded-[28px] shadow-[0_45px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden max-h-[85vh] flex flex-col">
-                                {/* Close Button */}
-                                <div className="absolute top-6 right-6 z-10">
-                                    <button
-                                        onClick={() => setMySkinModalOpen(false)}
-                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                                    >
-                                        <X size={16} strokeWidth={2.5} />
-                                    </button>
-                                </div>
-
-                                {/* Modal Header */}
-                                <div className="flex flex-col items-center pt-14 pb-8 px-10">
-                                    <img
-                                        src="/images/logo-myskin-today.svg"
-                                        alt="MySkin.Today"
-                                        className="h-[70px] w-auto mb-4"
-                                    />
-                                    <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
-                                        项目系列
-                                    </h2>
-                                </div>
-
-                                {/* Modal Body - Sub Projects List */}
-                                <div className="px-10 pb-10 overflow-y-auto">
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        {MYSKIN_SUB_PROJECTS.map((sub) => (
-                                            <a
-                                                key={sub.id}
-                                                href={sub.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2 group hover:border-[#556B2F]/40 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
-                                            >
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <h3 className="text-sm font-bold text-slate-900 tracking-wide">
-                                                        {sub.title}
-                                                    </h3>
-                                                    <ExternalLink size={14} className="text-slate-300 group-hover:text-[#556B2F] transition-colors" />
-                                                </div>
-                                                <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2">
-                                                    {sub.description}
-                                                </p>
-                                                <div className="flex gap-2 mt-1">
-                                                    {sub.tags.map((tag, idx) => (
-                                                        <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-[#556B2F]/10 text-[#556B2F] font-medium">
-                                                            {tag}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </a>
-                                        ))}
-                                    </div>
-                                </div>
+                            <div className="flex items-center justify-between gap-2">
+                                <h3 className="text-sm font-bold text-slate-900 tracking-wide">
+                                    {sub.title}
+                                </h3>
+                                <ExternalLink size={14} className="text-slate-300 group-hover:text-[#556B2F] transition-colors" />
                             </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                            <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2">
+                                {sub.description}
+                            </p>
+                            <div className="flex gap-2 mt-1">
+                                {sub.tags.map((tag, idx) => (
+                                    <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-[#556B2F]/10 text-[#556B2F] font-medium">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            </ProjectModal>
 
             {/* Vanto Modal */}
-            <AnimatePresence>
-                {vantoModalOpen && vantoProject && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setVantoModalOpen(false)}
-                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100]"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.96, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="fixed inset-0 flex items-center justify-center z-[101] p-6"
+            <ProjectModal
+                isOpen={vantoModalOpen && !!vantoProject}
+                onClose={() => setVantoModalOpen(false)}
+                logoSrc="/images/Vanto-name.svg"
+                logoAlt="Vanto"
+            >
+                <div className="grid gap-4 sm:grid-cols-2">
+                    {VANTO_SUB_PROJECTS.map((sub) => (
+                        <div
+                            key={sub.id}
+                            className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2 group hover:border-slate-300 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
                         >
-                            <div className="relative w-full max-w-[600px] bg-white rounded-[28px] shadow-[0_45px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden max-h-[85vh] flex flex-col">
-                                {/* Close Button */}
-                                <div className="absolute top-6 right-6 z-10">
-                                    <button
-                                        onClick={() => setVantoModalOpen(false)}
-                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                                    >
-                                        <X size={16} strokeWidth={2.5} />
-                                    </button>
-                                </div>
-
-                                {/* Modal Header */}
-                                <div className="flex flex-col items-center pt-14 pb-8 px-10">
-                                    <img
-                                        src="/images/Vanto-name.svg"
-                                        alt="Vanto"
-                                        className="h-[34px] w-auto mb-7"
-                                    />
-                                    <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
-                                        项目系列
-                                    </h2>
-                                </div>
-
-                                {/* Modal Body - Sub Projects List */}
-                                <div className="px-10 pb-10 overflow-y-auto">
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        {VANTO_SUB_PROJECTS.map((sub) => (
-                                            <div
-                                                key={sub.id}
-                                                className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2 group hover:border-slate-300 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
-                                            >
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <h3 className="text-sm font-bold text-slate-900 tracking-wide">
-                                                        {sub.title}
-                                                    </h3>
-                                                </div>
-                                                <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2">
-                                                    {sub.description}
-                                                </p>
-                                                <div className="flex gap-2 mt-1">
-                                                    {sub.tags.map((tag, idx) => (
-                                                        <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-200/50 text-slate-500 font-medium">
-                                                            {tag}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                            <div className="flex items-center justify-between gap-2">
+                                <h3 className="text-sm font-bold text-slate-900 tracking-wide">
+                                    {sub.title}
+                                </h3>
                             </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                            <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2">
+                                {sub.description}
+                            </p>
+                            <div className="flex gap-2 mt-1">
+                                {sub.tags.map((tag, idx) => (
+                                    <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-200/50 text-slate-500 font-medium">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </ProjectModal>
         </main>
     );
 }

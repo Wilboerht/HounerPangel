@@ -32,9 +32,6 @@ export default function AboutMe() {
                             Hi，我是 Hank。喜欢科技、旅行或者户外运动的相关话题。
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
-                           
-                        </p>
-                        <p className="text-lg text-muted leading-relaxed">
                             {/* 国立江源大学「人工智能计算机」专业在读 ，
                             <br /> */}
                             Genius programmer @ Vanto & @ NIHPLOD

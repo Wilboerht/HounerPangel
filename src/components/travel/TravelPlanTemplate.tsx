@@ -2,7 +2,8 @@
 
 import { MapPin, Calendar, Wallet, Train, Utensils, Ticket, Check, ArrowLeft, LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { TravelPlan } from "@/types/travel";
+import { useMemo } from "react";
+import { TravelPlan, FoodItem } from "@/types/travel";
 
 const IconMap: Record<string, LucideIcon> = {
   Train,
@@ -17,13 +18,32 @@ interface Props {
   data: TravelPlan;
 }
 
+function groupFoods(foods: FoodItem[]) {
+  const result: { food: FoodItem; rowSpan: number; showType: boolean }[] = [];
+  let i = 0;
+  while (i < foods.length) {
+    const type = foods[i].type;
+    let count = 1;
+    while (i + count < foods.length && foods[i + count].type === type) {
+      count++;
+    }
+    for (let j = 0; j < count; j++) {
+      result.push({ food: foods[i + j], rowSpan: count, showType: j === 0 });
+    }
+    i += count;
+  }
+  return result;
+}
+
 export default function TravelPlanTemplate({ data }: Props) {
+  const foodRows = useMemo(() => groupFoods(data.foods), [data.foods]);
+
   return (
     <main className="min-h-screen px-6 py-12 max-w-4xl mx-auto">
       {/* Header with Back Link */}
       <header className="mb-12">
         <Link 
-          href={`/travel/plan/${data.countryCode || 'CN'}`}
+          href="/travel/plan"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mb-6 group"
         >
           <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
@@ -147,15 +167,10 @@ export default function TravelPlanTemplate({ data }: Props) {
               </tr>
             </thead>
             <tbody className="text-muted">
-              {data.foods.map((food, idx) => (
+              {foodRows.map(({ food, rowSpan, showType }, idx) => (
                 <tr key={idx} className="border-b border-border/50 last:border-0">
-                  {food.rowSpan ? (
-                    <td className="py-3 px-4" rowSpan={food.rowSpan}>{food.type}</td>
-                  ) : (
-                    /* Check if previous item had rowSpan to decide whether to render this cell */
-                    !data.foods.slice(0, idx).reverse().find(f => f.rowSpan && data.foods.indexOf(f) + f.rowSpan > idx) && (
-                      <td className="py-3 px-4">{food.type}</td>
-                    )
+                  {showType && (
+                    <td className="py-3 px-4" rowSpan={rowSpan}>{food.type}</td>
                   )}
                   <td className="py-3 px-4">{food.name}</td>
                   <td className="py-3 px-4">{food.location}</td>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createSessionToken } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
     try {
@@ -16,8 +17,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "密码错误" }, { status: 401 });
         }
 
+        const token = createSessionToken();
         const response = NextResponse.json({ success: true });
-        response.cookies.set("admin-session", "authenticated", {
+        response.cookies.set("admin-session", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",

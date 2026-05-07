@@ -11,6 +11,8 @@ export default function EditBlogPost() {
     const slug = params.slug as string;
 
     const [loading, setLoading] = useState(true);
+    const [authChecking, setAuthChecking] = useState(true);
+    const [isAuth, setIsAuth] = useState(false);
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState({
         title: "",
@@ -21,6 +23,23 @@ export default function EditBlogPost() {
     });
 
     useEffect(() => {
+        fetch("/api/admin/check")
+            .then((res) => res.json())
+            .then((data) => {
+                if (!data.authenticated) {
+                    router.push("/blog");
+                    return;
+                }
+                setIsAuth(true);
+                setAuthChecking(false);
+            })
+            .catch(() => {
+                router.push("/blog");
+            });
+    }, [router]);
+
+    useEffect(() => {
+        if (!isAuth) return;
         fetch(`/api/blog/${slug}`)
             .then((res) => res.json())
             .then((data) => {
@@ -42,7 +61,7 @@ export default function EditBlogPost() {
                 alert("加载失败");
                 router.push("/admin/blog");
             });
-    }, [slug, router]);
+    }, [slug, router, isAuth]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -70,6 +89,14 @@ export default function EditBlogPost() {
             setSaving(false);
         }
     };
+
+    if (authChecking) {
+        return (
+            <main className="min-h-screen flex items-center justify-center">
+                <p className="text-muted">检查权限中...</p>
+            </main>
+        );
+    }
 
     if (loading) {
         return (
