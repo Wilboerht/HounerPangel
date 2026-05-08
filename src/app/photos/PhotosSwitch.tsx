@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { LayoutGrid, Map } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Props {
   active: "gallery" | "map";
+  onChange?: (view: "gallery" | "map") => void;
 }
 
-export default function PhotosSwitch({ active }: Props) {
+export default function PhotosSwitch({ active, onChange }: Props) {
   return (
     <div className="relative flex items-center rounded-full bg-neutral-100 p-1 w-[156px]">
       {/* Sliding background */}
@@ -20,8 +20,8 @@ export default function PhotosSwitch({ active }: Props) {
         transition={{ type: "spring", stiffness: 500, damping: 35 }}
       />
 
-      <Link
-        href="/photos"
+      <button
+        onClick={() => onChange?.("gallery")}
         className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 text-sm py-1.5 transition-colors duration-200 ${
           active === "gallery"
             ? "text-foreground"
@@ -30,9 +30,9 @@ export default function PhotosSwitch({ active }: Props) {
       >
         <LayoutGrid className="w-3.5 h-3.5" />
         图库
-      </Link>
-      <Link
-        href="/photos/map"
+      </button>
+      <button
+        onClick={() => onChange?.("map")}
         className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 text-sm py-1.5 transition-colors duration-200 ${
           active === "map"
             ? "text-foreground"
@@ -41,7 +41,7 @@ export default function PhotosSwitch({ active }: Props) {
       >
         <Map className="w-3.5 h-3.5" />
         地图
-      </Link>
+      </button>
     </div>
   );
 }

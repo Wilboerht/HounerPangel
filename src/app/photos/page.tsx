@@ -1,8 +1,6 @@
-import Link from "next/link";
-import { Aperture } from "lucide-react";
 import type { Metadata } from "next";
-import PhotosClient from "./PhotosClient";
-import PhotosSwitch from "./PhotosSwitch";
+import { env } from "@/lib/env";
+import PhotosContainer from "./PhotosContainer";
 import { PHOTOS } from "./data";
 
 export const metadata: Metadata = {
@@ -11,52 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default function PhotosPage() {
-  return (
-    <main className="min-h-screen px-6 py-12">
-      <div className="max-w-6xl mx-auto flex flex-col gap-11">
-        {/* Header — Camarts style */}
-        <header className="flex items-center justify-between">
-          {/* Left: Logo */}
-          <div className="flex items-center gap-5 select-none">
-            <Aperture className="w-14 h-14 text-foreground stroke-[1.5]" />
-            <div className="flex flex-col">
-              <span className="text-[26px] font-semibold tracking-wide leading-none text-foreground">
-                HANK WONG
-              </span>
-              <span className="text-xs tracking-[0.25em] text-muted uppercase leading-none mt-2">
-                Photos
-              </span>
-            </div>
-          </div>
+  const token = env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
-          {/* Right: Nav */}
-          <nav className="hidden sm:flex items-center gap-4">
-            <PhotosSwitch active="gallery" />
-            <Link
-              href="/me"
-              className="text-sm py-2.5 px-3.5 text-[#505050] hover:text-foreground transition-colors duration-200"
-            >
-              关于
-            </Link>
-            <Link
-              href="/"
-              className="text-sm py-2.5 px-3.5 text-[#505050] hover:text-foreground transition-colors duration-200"
-            >
-              主页
-            </Link>
-          </nav>
-        </header>
-
-        {/* Content */}
-        <section>
-          <PhotosClient photos={PHOTOS} />
-        </section>
-
-        {/* Footer */}
-        <footer className="pt-6 text-sm text-muted">
-          <p>&copy; {new Date().getFullYear()} wilboerht</p>
-        </footer>
-      </div>
-    </main>
-  );
+  return <PhotosContainer photos={PHOTOS} mapboxToken={token} />;
 }

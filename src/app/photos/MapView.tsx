@@ -5,7 +5,7 @@ import { X, ChevronLeft, ChevronRight, Camera, ChevronUp, ChevronDown } from "lu
 import Image from "next/image";
 import Map, { Marker } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Photo } from "../data";
+import { Photo } from "./data";
 
 interface Props {
   photos: Photo[];
@@ -66,7 +66,7 @@ function SafeImage({
   );
 }
 
-export default function MapClient({ photos, mapboxToken }: Props) {
+export default function MapView({ photos, mapboxToken }: Props) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -104,7 +104,7 @@ export default function MapClient({ photos, mapboxToken }: Props) {
     lightboxIndex !== null ? displayPhotos[lightboxIndex] : null;
 
   return (
-    <div className="relative w-full h-[calc(100vh-160px)] min-h-[500px] rounded-xl overflow-hidden border border-neutral-200">
+    <div className="relative w-full h-full">
       {!mapboxToken ? (
         <div className="flex flex-col items-center justify-center h-full gap-4 text-muted">
           <Camera className="w-10 h-10" />
