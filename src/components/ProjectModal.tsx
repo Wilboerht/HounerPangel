@@ -12,7 +12,6 @@ interface ProjectModalProps {
     logoAlt: string;
     logoHeight?: number;
     logoMb?: number;
-    title?: string;
     children: ReactNode;
 }
 
@@ -23,7 +22,6 @@ export function ProjectModal({
     logoAlt,
     logoHeight = 34,
     logoMb = 7,
-    title = "项目系列",
     children,
 }: ProjectModalProps) {
     return (
@@ -65,9 +63,6 @@ export function ProjectModal({
                                     className="w-auto mb-7"
                                     style={{ height: logoHeight, marginBottom: logoMb * 4 }}
                                 />
-                                <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
-                                    {title}
-                                </h2>
                             </div>
 
                             {/* Modal Body */}

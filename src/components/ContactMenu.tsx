@@ -44,7 +44,7 @@ const socialLinks = [
     {
         name: "WeChat",
         href: "#",
-        qrCode: "/qrcode_wechat.jpg",
+        qrCode: "/images/qrcode_wechat.jpg",
         icon: MessageCircle,
     },
 ];
@@ -85,7 +85,8 @@ export function ContactMenu() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 aria-expanded={isOpen}
-                aria-label="Contact options"
+                aria-haspopup="menu"
+                aria-label="联系选项"
                 className="group flex items-center gap-2 px-4 py-2 border border-border rounded-full text-sm font-medium text-muted hover:text-foreground hover:border-muted focus:text-foreground focus:border-muted transition-colors duration-200 cursor-pointer outline-none"
             >
                 <span>联系我</span>
@@ -94,6 +95,8 @@ export function ContactMenu() {
 
             {/* Main Menu Dropdown */}
             <div
+                role="menu"
+                aria-label="联系方式"
                 className={`fixed inset-x-4 bottom-4 md:absolute md:inset-auto md:top-full md:left-0 md:mt-3 p-2 bg-background border border-border rounded-2xl md:rounded-xl shadow-2xl md:shadow-lg transition-all duration-200 flex flex-col gap-1 md:min-w-[160px] z-50 ${isOpen ? 'opacity-100 translate-y-0 visible' : 'opacity-0 translate-y-8 md:translate-y-2 invisible pointer-events-none'
                     }`}
             >

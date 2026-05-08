@@ -128,8 +128,9 @@ export default function EditBlogPost() {
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-foreground">Slug</label>
+                            <label htmlFor="edit-slug" className="text-sm font-medium text-foreground">Slug</label>
                             <input
+                                id="edit-slug"
                                 type="text"
                                 disabled
                                 value={slug}
@@ -138,8 +139,9 @@ export default function EditBlogPost() {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-foreground">标题</label>
+                            <label htmlFor="edit-title" className="text-sm font-medium text-foreground">标题</label>
                             <input
+                                id="edit-title"
                                 type="text"
                                 required
                                 value={form.title}
@@ -150,8 +152,9 @@ export default function EditBlogPost() {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-foreground">摘要</label>
+                            <label htmlFor="edit-excerpt" className="text-sm font-medium text-foreground">摘要</label>
                             <input
+                                id="edit-excerpt"
                                 type="text"
                                 required
                                 value={form.excerpt}
@@ -162,8 +165,9 @@ export default function EditBlogPost() {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-foreground">日期</label>
+                            <label htmlFor="edit-date" className="text-sm font-medium text-foreground">日期</label>
                             <input
+                                id="edit-date"
                                 type="date"
                                 required
                                 value={form.date}
@@ -173,8 +177,9 @@ export default function EditBlogPost() {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-foreground">标签（用逗号分隔）</label>
+                            <label htmlFor="edit-tags" className="text-sm font-medium text-foreground">标签（用逗号分隔）</label>
                             <input
+                                id="edit-tags"
                                 type="text"
                                 value={form.tags}
                                 onChange={(e) => setForm({ ...form, tags: e.target.value })}
@@ -184,8 +189,9 @@ export default function EditBlogPost() {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-foreground">正文（Markdown）</label>
+                            <label htmlFor="edit-content" className="text-sm font-medium text-foreground">正文（Markdown）</label>
                             <textarea
+                                id="edit-content"
                                 required
                                 rows={20}
                                 value={form.content}

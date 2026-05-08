@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 import { getAllBlogPosts } from "@/lib/blog-db";
 import { cnPlans, jpPlans } from "@/data/travel";
+import { env } from "@/lib/env";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
+const siteUrl = env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let posts: Awaited<ReturnType<typeof getAllBlogPosts>> = [];

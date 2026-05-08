@@ -167,11 +167,17 @@ export default function BlogClient({ posts }: Props) {
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             className="fixed inset-0 flex items-center justify-center z-[101] p-6"
                         >
-                            <div className="relative w-full max-w-[420px] bg-white rounded-[28px] shadow-[0_45px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden">
+                            <div
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="login-title"
+                                className="relative w-full max-w-[420px] bg-white rounded-[28px] shadow-[0_45px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden"
+                            >
                                 {/* Close Button */}
                                 <div className="absolute top-6 right-6 z-10">
                                     <button
                                         onClick={() => setShowModal(false)}
+                                        aria-label="关闭登录窗口"
                                         className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                                     >
                                         <X size={16} strokeWidth={2.5} />
@@ -181,7 +187,7 @@ export default function BlogClient({ posts }: Props) {
                                 {/* Modal Header */}
                                 <div className="flex flex-col items-center pt-14 pb-6 px-10">
                                     <Image src="/images/Vanto.svg" alt="Vanto" width={112} height={28} className="h-[28px] w-auto mb-5" />
-                                    <h2 className="text-xl font-bold text-slate-900 tracking-[0.14em]">
+                                    <h2 id="login-title" className="text-xl font-bold text-slate-900 tracking-[0.14em]">
                                         后台登录
                                     </h2>
                                 </div>
@@ -190,7 +196,9 @@ export default function BlogClient({ posts }: Props) {
                                 <div className="px-10 pb-10">
                                     <form onSubmit={handleLogin} className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-2">
+                                            <label htmlFor="login-password" className="sr-only">密码</label>
                                             <input
+                                                id="login-password"
                                                 type="password"
                                                 required
                                                 value={password}

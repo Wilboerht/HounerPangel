@@ -1,18 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import type { BlogPost } from "./types/blog";
+import { env } from "./env";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!url || !key) {
-    throw new Error(
-        "Supabase URL or service role key is not set. Please add them to your .env.local file.\n" +
-        "NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co\n" +
-        "SUPABASE_SERVICE_ROLE_KEY=your_service_role_key"
-    );
-}
-
-export const supabase = createClient(url, key, {
+export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
         autoRefreshToken: false,
         persistSession: false,

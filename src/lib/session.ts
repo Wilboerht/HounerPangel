@@ -1,12 +1,8 @@
 import { createHmac, timingSafeEqual } from "crypto";
-
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+import { env } from "./env";
 
 function getSecret(): string {
-    if (!ADMIN_PASSWORD) {
-        throw new Error("ADMIN_PASSWORD is not configured");
-    }
-    return ADMIN_PASSWORD;
+    return env.ADMIN_PASSWORD;
 }
 
 function sign(data: string, secret: string): string {

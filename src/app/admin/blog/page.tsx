@@ -244,11 +244,17 @@ export default function AdminBlogList() {
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             className="fixed inset-0 flex items-center justify-center z-[101] p-6"
                         >
-                            <div className="relative w-full max-w-2xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
+                            <div
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="new-post-title"
+                                className="relative w-full max-w-2xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+                            >
                                 {/* Close Button */}
                                 <div className="absolute top-4 right-4 z-10">
                                     <button
                                         onClick={() => setShowNewModal(false)}
+                                        aria-label="关闭新建窗口"
                                         className="p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
                                     >
                                         <X className="w-4 h-4" />
@@ -257,7 +263,7 @@ export default function AdminBlogList() {
 
                                 {/* Modal Header */}
                                 <div className="px-8 pt-8 pb-4">
-                                    <h2 className="text-xl font-bold text-foreground">
+                                    <h2 id="new-post-title" className="text-xl font-bold text-foreground">
                                         新建文章
                                     </h2>
                                 </div>
@@ -266,8 +272,9 @@ export default function AdminBlogList() {
                                 <div className="px-8 pb-8 overflow-y-auto">
                                     <form onSubmit={handleCreate} className="flex flex-col gap-5">
                                         <div className="flex flex-col gap-2">
-                                            <label className="text-sm font-medium text-foreground">Slug（URL 标识）</label>
+                                            <label htmlFor="new-slug" className="text-sm font-medium text-foreground">Slug（URL 标识）</label>
                                             <input
+                                                id="new-slug"
                                                 type="text"
                                                 required
                                                 value={newForm.slug}
@@ -278,8 +285,9 @@ export default function AdminBlogList() {
                                         </div>
 
                                         <div className="flex flex-col gap-2">
-                                            <label className="text-sm font-medium text-foreground">标题</label>
+                                            <label htmlFor="new-title" className="text-sm font-medium text-foreground">标题</label>
                                             <input
+                                                id="new-title"
                                                 type="text"
                                                 required
                                                 value={newForm.title}
@@ -290,8 +298,9 @@ export default function AdminBlogList() {
                                         </div>
 
                                         <div className="flex flex-col gap-2">
-                                            <label className="text-sm font-medium text-foreground">摘要</label>
+                                            <label htmlFor="new-excerpt" className="text-sm font-medium text-foreground">摘要</label>
                                             <input
+                                                id="new-excerpt"
                                                 type="text"
                                                 required
                                                 value={newForm.excerpt}
@@ -302,8 +311,9 @@ export default function AdminBlogList() {
                                         </div>
 
                                         <div className="flex flex-col gap-2">
-                                            <label className="text-sm font-medium text-foreground">日期</label>
+                                            <label htmlFor="new-date" className="text-sm font-medium text-foreground">日期</label>
                                             <input
+                                                id="new-date"
                                                 type="date"
                                                 required
                                                 value={newForm.date}
@@ -313,8 +323,9 @@ export default function AdminBlogList() {
                                         </div>
 
                                         <div className="flex flex-col gap-2">
-                                            <label className="text-sm font-medium text-foreground">标签（用逗号分隔）</label>
+                                            <label htmlFor="new-tags" className="text-sm font-medium text-foreground">标签（用逗号分隔）</label>
                                             <input
+                                                id="new-tags"
                                                 type="text"
                                                 value={newForm.tags}
                                                 onChange={(e) => setNewForm({ ...newForm, tags: e.target.value })}
@@ -324,8 +335,9 @@ export default function AdminBlogList() {
                                         </div>
 
                                         <div className="flex flex-col gap-2">
-                                            <label className="text-sm font-medium text-foreground">正文（Markdown）</label>
+                                            <label htmlFor="new-content" className="text-sm font-medium text-foreground">正文（Markdown）</label>
                                             <textarea
+                                                id="new-content"
                                                 required
                                                 rows={12}
                                                 value={newForm.content}

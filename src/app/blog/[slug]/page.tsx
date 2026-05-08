@@ -192,8 +192,31 @@ function renderMarkdown(content: string): React.ReactNode {
             const iframeHtml = iframeLines.join("\n").trim();
             // Security: only allow iframe from trusted domains
             const srcMatch = iframeHtml.match(/src=["']([^"']+)["']/i);
-            const allowedDomains = ["embed.music.apple.com", "open.spotify.com", "bandcamp.com", "www.youtube.com", "youtube.com", "player.bilibili.com", "music.163.com", "y.qq.com", "platform.twitter.com", "twitter.com", "x.com", "www.instagram.com", "instagram.com"];
-            const isAllowed = srcMatch ? allowedDomains.some((d) => srcMatch[1].includes(d)) : false;
+            const allowedDomains = [
+                "embed.music.apple.com",
+                "open.spotify.com",
+                "bandcamp.com",
+                "www.youtube.com",
+                "youtube.com",
+                "player.bilibili.com",
+                "music.163.com",
+                "y.qq.com",
+                "platform.twitter.com",
+                "twitter.com",
+                "x.com",
+                "www.instagram.com",
+                "instagram.com",
+            ];
+            const isAllowed = srcMatch
+                ? allowedDomains.some((d) => {
+                      try {
+                          const url = new URL(srcMatch[1]);
+                          return url.hostname === d;
+                      } catch {
+                          return false;
+                      }
+                  })
+                : false;
 
             if (isAllowed) {
                 elements.push(
@@ -384,8 +407,32 @@ export default async function BlogPostPage({ params }: Props) {
         notFound();
     }
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.excerpt,
+        datePublished: post.date,
+        dateModified: post.date,
+        author: {
+            "@type": "Person",
+            name: "Hank Wong",
+            url: "https://wilboerht.com",
+        },
+        publisher: {
+            "@type": "Person",
+            name: "Hank Wong",
+        },
+        keywords: post.tags.join(", "),
+        url: `https://wilboerht.com/blog/${post.slug}`,
+    };
+
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             <div className="max-w-2xl w-full flex flex-col gap-12">
                 <nav>
                     <Link

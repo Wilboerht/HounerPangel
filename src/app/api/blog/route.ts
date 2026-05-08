@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllBlogPosts, createBlogPost } from "@/lib/blog-db";
 import { checkAuth } from "@/lib/auth";
+import { blogPostSchema } from "@/lib/validation";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 export async function GET() {
     try {
@@ -16,13 +18,23 @@ export async function POST(request: NextRequest) {
     const authError = checkAuth(request);
     if (authError) return authError;
 
+    const limit = rateLimit(getRateLimitKey(request) + ":blog:create");
+    if (!limit.success) {
+        return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     try {
         const body = await request.json();
-        const { slug, title, excerpt, content, date, tags } = body;
+        const parseResult = blogPostSchema.safeParse(body);
 
-        if (!slug || !title || !excerpt || !content || !date) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        if (!parseResult.success) {
+            return NextResponse.json(
+                { error: "Invalid input", details: parseResult.error.issues },
+                { status: 400 }
+            );
         }
+
+        const { slug, title, excerpt, content, date, tags } = parseResult.data;
 
         await createBlogPost({
             slug,
@@ -30,7 +42,7 @@ export async function POST(request: NextRequest) {
             excerpt,
             content,
             date,
-            tags: tags || [],
+            tags,
         });
 
         return NextResponse.json({ success: true }, { status: 201 });

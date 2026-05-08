@@ -1,17 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSessionToken } from "@/lib/session";
+import { loginSchema } from "@/lib/validation";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { env } from "@/lib/env";
 
 export async function POST(request: NextRequest) {
-    try {
-        const { password } = await request.json();
-        const adminPassword = process.env.ADMIN_PASSWORD;
+    const limit = rateLimit(getRateLimitKey(request) + ":login");
+    if (!limit.success) {
+        return NextResponse.json({ error: "Too many attempts, please try again later" }, { status: 429 });
+    }
 
-        if (!adminPassword) {
+    try {
+        const body = await request.json();
+        const parseResult = loginSchema.safeParse(body);
+
+        if (!parseResult.success) {
             return NextResponse.json(
-                { error: "Admin password not configured" },
-                { status: 500 }
+                { error: "Invalid input", details: parseResult.error.issues },
+                { status: 400 }
             );
         }
+
+        const { password } = parseResult.data;
+        const adminPassword = env.ADMIN_PASSWORD;
 
         if (password !== adminPassword) {
             return NextResponse.json({ error: "密码错误" }, { status: 401 });

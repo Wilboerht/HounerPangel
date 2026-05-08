@@ -15,7 +15,7 @@ const MOCK_DESIGNS = [
         title: "WeChat Stickers",
         description: "个人微信表情包设计，趣味可爱的原创角色。",
         url: "https://sticker.weixin.qq.com/cgi-bin/mmemoticon-bin/emoticonview?oper=single&t=shop/detail&productid=aL2PCfwK/89qO7sF6/+I+UDhfwEjhec2ZNvdnLLJRd/NQ8y6uTqmMKp4kEOtVxLHQjd1wD/oukTEAZSt+BWpZfgTX21d3mGccVpqAg3nC1mw=",
-        image: "/wechat-stickers.png",
+        image: "/images/wechat-stickers.png",
         icon: "smile", // using to determine placeholder rendering vs real image
         linkText: "在微信中打开"
     }
