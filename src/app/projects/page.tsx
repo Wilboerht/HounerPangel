@@ -22,13 +22,6 @@ const MOCK_PROJECTS = [
     },
     {
         id: "3",
-        title: "Vanto",
-        description: "Vanto 项目系列，全新体验敬请期待。",
-        url: "#",
-        tags: ["Coming Soon"]
-    },
-    {
-        id: "4",
         title: "上海临港景鸿安全防范科技发展有限公司",
         description: "上海临港景鸿安全防范科技发展有限公司官方网站，展示企业信息与服务的综合数字平台。",
         url: "https://www.lingangjh.com/",
@@ -77,22 +70,11 @@ const NIHPLOD_SUB_PROJECTS = [
     },
 ];
 
-const VANTO_SUB_PROJECTS = [
-    {
-        id: "v1",
-        title: "敬请期待",
-        description: "Vanto 项目系列正在筹备中，更多精彩即将呈现。",
-        url: "#",
-        tags: ["Coming Soon"]
-    },
-];
-
 const ITEMS_PER_PAGE = 4;
 
 export default function Projects() {
     const [modalOpen, setModalOpen] = useState(false);
     const [mySkinModalOpen, setMySkinModalOpen] = useState(false);
-    const [vantoModalOpen, setVantoModalOpen] = useState(false);
     const [page, setPage] = useState(1);
 
     const validPage = page < 1 ? 1 : page;
@@ -107,7 +89,7 @@ export default function Projects() {
     const pageNumbers = Array.from({ length: totalPages }).map((_, i) => i + 1);
 
     useEffect(() => {
-        if (modalOpen || mySkinModalOpen || vantoModalOpen) {
+        if (modalOpen || mySkinModalOpen) {
             document.body.style.overflow = "hidden";
         } else {
             document.body.style.overflow = "unset";
@@ -115,11 +97,10 @@ export default function Projects() {
         return () => {
             document.body.style.overflow = "unset";
         };
-    }, [modalOpen, mySkinModalOpen, vantoModalOpen]);
+    }, [modalOpen, mySkinModalOpen]);
 
     const nihplodProject = MOCK_PROJECTS.find((p) => p.title === "NIHPLOD");
     const mySkinProject = MOCK_PROJECTS.find((p) => p.title === "MySkin.Today");
-    const vantoProject = MOCK_PROJECTS.find((p) => p.title === "Vanto");
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -180,32 +161,6 @@ export default function Projects() {
                                     <button
                                         key={project.id}
                                         onClick={() => setModalOpen(true)}
-                                        className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200 text-left min-w-0"
-                                    >
-                                        <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
-                                            <span className="truncate">
-                                                {project.title}
-                                            </span>
-                                            <FolderOpen className="w-4 h-4 text-muted group-hover:text-foreground transition-colors duration-200 flex-shrink-0" />
-                                        </h3>
-                                        <p className="text-sm text-muted leading-relaxed flex-1 line-clamp-2">
-                                            {project.description}
-                                        </p>
-                                        <div className="flex gap-2 mt-2 items-center flex-wrap">
-                                            {project.tags.map((tag, idx) => (
-                                                <span key={idx} className="text-xs px-2 py-1 rounded-md bg-foreground/5 text-muted">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </button>
-                                );
-                            }
-                            if (project.title === "Vanto") {
-                                return (
-                                    <button
-                                        key={project.id}
-                                        onClick={() => setVantoModalOpen(true)}
                                         className="p-6 rounded-2xl border border-border bg-card flex flex-col gap-4 group cursor-pointer hover:border-foreground/50 transition-colors duration-200 text-left min-w-0"
                                     >
                                         <h3 className="text-xl font-semibold tracking-tight text-foreground flex items-center justify-between gap-2">
@@ -383,38 +338,6 @@ export default function Projects() {
                 </div>
             </ProjectModal>
 
-            {/* Vanto Modal */}
-            <ProjectModal
-                isOpen={vantoModalOpen && !!vantoProject}
-                onClose={() => setVantoModalOpen(false)}
-                logoSrc="/images/Vanto-name.svg"
-                logoAlt="Vanto"
-            >
-                <div className="grid gap-4 sm:grid-cols-2">
-                    {VANTO_SUB_PROJECTS.map((sub) => (
-                        <div
-                            key={sub.id}
-                            className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2 group hover:border-slate-300 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
-                        >
-                            <div className="flex items-center justify-between gap-2">
-                                <h3 className="text-sm font-bold text-slate-900 tracking-wide">
-                                    {sub.title}
-                                </h3>
-                            </div>
-                            <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2">
-                                {sub.description}
-                            </p>
-                            <div className="flex gap-2 mt-1">
-                                {sub.tags.map((tag, idx) => (
-                                    <span key={idx} className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-200/50 text-slate-500 font-medium">
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </ProjectModal>
         </main>
     );
 }
