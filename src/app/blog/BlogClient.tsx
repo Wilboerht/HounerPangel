@@ -112,7 +112,7 @@ export default function BlogClient({ posts }: Props) {
                         ))
                     ) : (
                         <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-foreground/[0.01] rounded-3xl border border-dashed border-border/50">
-                            <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
+                            <div className="p-4 rounded-full bg-foreground/5 text-muted">
                                 <FileText className="w-8 h-8" />
                             </div>
                             <div className="space-y-1">
