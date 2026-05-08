@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import BackButton from "@/components/BackButton";
 import { cnPlans, jpPlans } from "@/data/travel";
 
 export const metadata: Metadata = {
@@ -11,6 +12,10 @@ export default function PlanIndexPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-6xl w-full space-y-8">
+        <nav>
+          <BackButton />
+        </nav>
+
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
             旅行计划

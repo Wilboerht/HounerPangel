@@ -125,7 +125,16 @@ export default function BlogClient({ posts }: Props) {
             </section>
 
             {/* Footer */}
-            <footer className="pt-8 text-sm text-muted border-t border-white/10">
+            <footer className="pt-8 text-sm text-muted border-t border-white/10 space-y-2">
+                <div className="flex items-center gap-2">
+                    <Link href="/travel/plan" className="text-muted hover:text-foreground transition-colors">
+                        旅行计划
+                    </Link>
+                    <span>|</span>
+                    <Link href="/photos" className="text-muted hover:text-foreground transition-colors">
+                        摄影集
+                    </Link>
+                </div>
                 <div className="flex items-center gap-2">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                     <span>·</span>
