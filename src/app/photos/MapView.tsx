@@ -108,19 +108,7 @@ export default function MapView({ photos, mapboxToken }: Props) {
       {!mapboxToken ? (
         <div className="flex flex-col items-center justify-center h-full gap-4 text-muted">
           <Camera className="w-10 h-10" />
-          <p>请在 .env.local 中配置 NEXT_PUBLIC_MAPBOX_TOKEN</p>
-          <p className="text-sm">
-            前往{" "}
-            <a
-              href="https://account.mapbox.com/access-tokens/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              mapbox.com
-            </a>{" "}
-            获取免费 Token
-          </p>
+          <p>地图暂不可用</p>
         </div>
       ) : photos.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-full gap-4 text-muted">

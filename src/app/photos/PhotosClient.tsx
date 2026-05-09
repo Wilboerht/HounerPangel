@@ -182,17 +182,6 @@ export default function PhotosClient({ photos }: { photos: Photo[] }) {
               </div>
               <div className="space-y-1">
                 <p className="text-muted">相册为空</p>
-                <p className="text-sm text-muted/70">
-                  将照片放入{" "}
-                  <code className="px-1.5 py-0.5 rounded bg-foreground/5 text-foreground/70 text-xs">
-                    public/images/photos/
-                  </code>{" "}
-                  并在{" "}
-                  <code className="px-1.5 py-0.5 rounded bg-foreground/5 text-foreground/70 text-xs">
-                    src/app/photos/data.ts
-                  </code>{" "}
-                  中添加数据即可展示。
-                </p>
               </div>
             </div>
           )}
