@@ -196,9 +196,6 @@ export default function BlogClient({ posts }: Props) {
                                 {/* Modal Header */}
                                 <div className="flex flex-col items-center pt-14 pb-6 px-10">
                                     <Image src="/images/Vanto.svg" alt="Vanto" width={112} height={28} className="h-[28px] w-auto mb-5" />
-                                    <h2 id="login-title" className="text-xl font-bold text-slate-900 tracking-[0.14em]">
-                                        后台登录
-                                    </h2>
                                 </div>
 
                                 {/* Modal Body */}
