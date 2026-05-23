@@ -127,8 +127,8 @@ export default function BlogClient({ posts }: Props) {
             {/* Footer */}
             <footer className="pt-8 text-sm text-muted border-t border-white/10 space-y-2">
                 <div className="flex items-center gap-2">
-                    <Link href="/travel/plan" className="text-muted hover:text-foreground transition-colors">
-                        旅行计划
+                    <Link href="/travel" className="text-muted hover:text-foreground transition-colors">
+                        旅行
                     </Link>
                     <span>|</span>
                     <Link href="/photos" className="text-muted hover:text-foreground transition-colors">
