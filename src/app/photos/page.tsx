@@ -31,10 +31,10 @@ function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
         scrolled
-          ? "bg-white border-b border-black/5"
-          : "bg-transparent"
+          ? "bg-white border-black/5"
+          : "bg-transparent border-transparent"
       }`}
     >
       <div className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16">
