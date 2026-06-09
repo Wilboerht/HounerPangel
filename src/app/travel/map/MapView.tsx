@@ -228,8 +228,7 @@ export default function MapView({ photos, mapboxToken }: Props) {
           {/* Lightbox */}
           {currentPhoto && lightboxIndex !== null && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
-              onClick={closeLightbox}
+              className="fixed inset-0 z-50 flex flex-col bg-black"
             >
               <button
                 onClick={closeLightbox}
@@ -264,29 +263,37 @@ export default function MapView({ photos, mapboxToken }: Props) {
                 </>
               )}
 
-              <div
-                className="relative max-w-[90vw] max-h-[80vh] flex flex-col items-center gap-3"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <SafeImage
-                  src={currentPhoto.src}
-                  alt={currentPhoto.title}
-                  className="max-w-full max-h-[75vh] w-auto h-auto object-contain"
-                  priority
-                />
-                <div className="text-center text-white/70 text-sm">
-                  <span>{currentPhoto.title}</span>
-                  {currentPhoto.location && (
-                    <span className="text-white/40">
-                      {" "}
-                      · {currentPhoto.location}
-                    </span>
-                  )}
+              {/* Image area */}
+              <div className="flex-1 flex items-center justify-center w-full min-h-0 px-4 md:px-8 pt-16 pb-2">
+                <div
+                  className="relative max-w-full h-full"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <SafeImage
+                    src={currentPhoto.src}
+                    alt={currentPhoto.title}
+                    fill
+                    className="object-contain"
+                    sizes="90vw"
+                    priority
+                  />
                 </div>
               </div>
 
-              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/30 text-xs tracking-wider">
-                {lightboxIndex + 1} / {displayPhotos.length}
+              {/* Bottom Info Bar */}
+              <div className="shrink-0 bg-black/80 backdrop-blur-sm px-4 py-3 md:py-4">
+                <div className="mx-auto max-w-5xl flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <span className="text-white text-sm font-medium truncate block">
+                      {currentPhoto.title}
+                    </span>
+                    {currentPhoto.location && (
+                      <span className="text-white/50 text-xs truncate block">
+                        {currentPhoto.location}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}

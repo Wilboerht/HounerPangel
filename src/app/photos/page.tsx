@@ -217,8 +217,7 @@ export default function PhotographyPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center"
-            onClick={closeLightbox}
+            className="fixed inset-0 z-[100] bg-black flex flex-col"
           >
             {/* Close */}
             <button
@@ -235,7 +234,7 @@ export default function PhotographyPage() {
                 e.stopPropagation();
                 prevImage();
               }}
-              className="absolute left-3 md:left-8 z-10 p-2 text-[#888888] hover:text-white transition-colors"
+              className="absolute left-3 md:left-8 top-1/2 -translate-y-1/2 z-10 p-2 text-[#888888] hover:text-white transition-colors"
               aria-label="上一张"
             >
               <ChevronLeft size={36} />
@@ -247,47 +246,47 @@ export default function PhotographyPage() {
                 e.stopPropagation();
                 nextImage();
               }}
-              className="absolute right-3 md:right-8 z-10 p-2 text-[#888888] hover:text-white transition-colors"
+              className="absolute right-3 md:right-8 top-1/2 -translate-y-1/2 z-10 p-2 text-[#888888] hover:text-white transition-colors"
               aria-label="下一张"
             >
               <ChevronRight size={36} />
             </button>
 
-            {/* Image + Info */}
-            <motion.div
-              key={lightboxIndex}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col items-center max-w-[90vw] max-h-[90vh]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative w-auto max-w-full max-h-[75vh]">
+            {/* Image area */}
+            <div className="flex-1 flex items-center justify-center w-full min-h-0 px-4 md:px-8 pt-16 pb-2">
+              <motion.div
+                key={lightboxIndex}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.3 }}
+                className="relative max-w-full h-full"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Image
                   src={PHOTOS[lightboxIndex].src}
                   alt={PHOTOS[lightboxIndex].title}
-                  width={1400}
-                  height={1000}
-                  className="max-w-full max-h-[75vh] w-auto h-auto object-contain rounded"
+                  fill
+                  className="object-contain rounded"
+                  sizes="90vw"
                   priority
                 />
-              </div>
+              </motion.div>
+            </div>
 
-              <div className="mt-6 text-center max-w-2xl px-4">
-                <h3 className="text-xl md:text-2xl font-semibold text-white">
-                  {PHOTOS[lightboxIndex].title}
-                </h3>
-                <p className="text-[#888888] mt-1">
-                  {PHOTOS[lightboxIndex].location}
-                </p>
-                {PHOTOS[lightboxIndex].description && (
-                  <p className="text-[#aaaaaa] mt-3 text-sm md:text-base">
-                    {PHOTOS[lightboxIndex].description}
+            {/* Bottom Info Bar */}
+            <div className="shrink-0 bg-black/80 backdrop-blur-sm px-4 py-4 md:py-5">
+              <div className="mx-auto max-w-5xl flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base md:text-lg font-semibold text-white truncate">
+                    {PHOTOS[lightboxIndex].title}
+                  </h3>
+                  <p className="text-[#888888] text-sm truncate">
+                    {PHOTOS[lightboxIndex].location}
                   </p>
-                )}
+                </div>
                 {PHOTOS[lightboxIndex].exif && (
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-[#666666]">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-[#666666]">
                     {PHOTOS[lightboxIndex].exif.camera && (
                       <span className="flex items-center gap-1">
                         <Camera size={12} />
@@ -311,11 +310,13 @@ export default function PhotographyPage() {
                     )}
                   </div>
                 )}
-                <p className="text-[#555555] text-xs mt-4">
-                  {lightboxIndex + 1} / {PHOTOS.length}
-                </p>
               </div>
-            </motion.div>
+              {PHOTOS[lightboxIndex].description && (
+                <p className="mx-auto max-w-5xl text-[#aaaaaa] mt-2 text-sm md:text-base">
+                  {PHOTOS[lightboxIndex].description}
+                </p>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
