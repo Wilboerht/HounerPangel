@@ -27,6 +27,7 @@ function Navbar() {
   const navLinks = [
     { href: "/", label: "首页" },
     { href: "/photos", label: "摄影" },
+    { href: "/travel", label: "旅行" },
   ];
 
   return (
