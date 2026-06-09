@@ -235,16 +235,13 @@ export default function PhotographyPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3 }}
-                className="relative max-w-full h-full flex items-center justify-center"
+                className="max-w-full h-full flex items-center justify-center"
               >
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={PHOTOS[lightboxIndex].src}
                   alt={PHOTOS[lightboxIndex].title}
-                  width={1400}
-                  height={1000}
                   className="max-w-full max-h-full w-auto h-auto object-contain shadow-[0_12px_48px_rgba(0,0,0,0.15)]"
-                  sizes="(max-width: 1024px) 100vw, 1024px"
-                  priority
                 />
               </motion.div>
             </div>
