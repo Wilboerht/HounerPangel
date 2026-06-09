@@ -39,8 +39,8 @@ function Navbar() {
         <nav className="flex h-[120px] items-center justify-between">
           <Link href="/" className="flex items-center">
             <Image
-              src="/images/Photography.svg"
-              alt="Photography"
+              src="/images/Portfolio.svg"
+              alt="Portfolio"
               width={120}
               height={36}
               className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity"
