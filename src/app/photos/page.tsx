@@ -232,14 +232,14 @@ export default function PhotographyPage() {
             </div>
 
             {/* Image */}
-            <div className="flex-1 flex items-start justify-center w-full min-h-0 px-5 md:px-8 lg:px-16 py-8 md:py-12">
+            <div className="flex-1 flex items-center justify-center w-full min-h-0 px-5 md:px-8 lg:px-16 py-8 md:py-12">
               <motion.div
                 key={lightboxIndex}
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3 }}
-                className="relative w-full max-w-5xl aspect-[16/10] md:aspect-[16/9] bg-neutral-50 rounded-sm overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
+                className="relative w-full h-full"
               >
                 <Image
                   src={PHOTOS[lightboxIndex].src}
