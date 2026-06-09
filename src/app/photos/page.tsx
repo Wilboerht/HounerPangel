@@ -36,14 +36,14 @@ function Navbar() {
       }`}
     >
       <div className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16">
-        <nav className="flex h-[96px] items-center justify-between">
+        <nav className="flex h-[120px] items-center justify-between">
           <Link href="/" className="flex items-center">
             <Image
               src="/images/Vanto.svg"
               alt="Vanto"
               width={120}
               height={36}
-              className="h-7 w-auto opacity-90 hover:opacity-100 transition-opacity"
+              className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity"
               priority
             />
           </Link>
