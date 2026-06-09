@@ -31,10 +31,8 @@ function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b shadow-[0_12px_30px_rgba(0,0,0,0.05)] ${
-        scrolled
-          ? "bg-white border-black/5"
-          : "bg-transparent border-transparent"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 shadow-[0_12px_30px_rgba(0,0,0,0.05)] ${
+        scrolled ? "bg-white" : "bg-transparent"
       }`}
     >
       <div className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16">
@@ -148,11 +146,14 @@ export default function PhotographyPage() {
   useEffect(() => {
     if (lightboxIndex !== null) {
       document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     }
     return () => {
       document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     };
   }, [lightboxIndex]);
 
@@ -197,10 +198,10 @@ export default function PhotographyPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] bg-white flex flex-col overflow-y-auto"
+            className="fixed inset-0 z-[100] bg-white flex flex-col"
           >
             {/* Top bar */}
-            <div className="shrink-0 flex items-center justify-between px-5 md:px-8 lg:px-16 h-[72px] md:h-[96px] border-b border-[#e5e5e5]">
+            <div className="shrink-0 flex items-center justify-between px-5 md:px-8 lg:px-16 h-[72px] md:h-[96px]">
               <Link
                 href="/photos"
                 onClick={(e) => {
