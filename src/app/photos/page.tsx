@@ -35,7 +35,7 @@ function Navbar() {
         scrolled ? "bg-white" : "bg-transparent"
       }`}
     >
-      <div className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16">
+      <div className="mx-auto max-w-6xl px-5 md:px-8 lg:px-12">
         <nav className="flex h-[120px] items-center justify-between">
           <Link href="/" className="flex items-center">
             <Image
