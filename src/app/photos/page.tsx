@@ -162,7 +162,7 @@ export default function PhotographyPage() {
       <Navbar />
 
       {/* Gallery */}
-      <section className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16 pt-[140px] md:pt-[180px] pb-24 md:pb-40">
+      <section className="mx-auto max-w-6xl px-5 md:px-8 lg:px-12 pt-[140px] md:pt-[180px] pb-24 md:pb-40">
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
           {PHOTOS.map((photo, i) => (
             <ScrollReveal key={photo.title + i} delay={i * 0.05}>
