@@ -108,8 +108,8 @@ function Navbar() {
 
 function Footer() {
   return (
-    <footer className="border-t border-[#e5e5e5]">
-      <div className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
+    <footer>
+      <div className="mx-auto max-w-6xl px-5 md:px-8 lg:px-12 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
         <p className="text-sm text-[#888888]">
           © {new Date().getFullYear()} Hank Wong. All rights reserved.
         </p>
