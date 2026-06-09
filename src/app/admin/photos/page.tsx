@@ -40,6 +40,7 @@ export default function AdminPhotosPage() {
   const [form, setForm] = useState<Photo>(emptyForm);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [keepOriginal, setKeepOriginal] = useState(false);
 
   const loadPhotos = () => {
     fetch("/api/photos")
@@ -67,12 +68,14 @@ export default function AdminPhotosPage() {
   const openNew = () => {
     setEditingIndex(null);
     setForm(emptyForm);
+    setKeepOriginal(false);
     setShowModal(true);
   };
 
   const openEdit = (index: number) => {
     setEditingIndex(index);
     setForm(photos[index]);
+    setKeepOriginal(false);
     setShowModal(true);
   };
 
@@ -140,9 +143,9 @@ export default function AdminPhotosPage() {
   const uploadFile = async (file: File) => {
     setUploading(true);
     try {
-      const compressed = await compressImage(file);
+      const toUpload = keepOriginal ? file : await compressImage(file);
       const data = new FormData();
-      data.append("file", compressed);
+      data.append("file", toUpload);
       const res = await fetch("/api/photos/upload", {
         method: "POST",
         body: data,
@@ -464,10 +467,33 @@ export default function AdminPhotosPage() {
                             <p className="text-sm text-foreground font-medium">
                               {uploading ? "上传中..." : "点击或拖拽上传图片"}
                             </p>
-                            <p className="text-xs text-muted">自动压缩为 WebP，长边最大 2048px，质量 85%</p>
+                            <p className="text-xs text-muted">
+                              {keepOriginal
+                                ? "保留原图上传（最大 10MB）"
+                                : "自动压缩为 WebP，长边最大 2048px，质量 85%"}
+                            </p>
                           </div>
                         )}
                       </div>
+
+                      <label className="flex items-center justify-between gap-3 px-1">
+                        <span className="text-sm text-foreground">保留原图</span>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={keepOriginal}
+                          onClick={() => setKeepOriginal((v) => !v)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            keepOriginal ? "bg-foreground" : "bg-muted/40"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                              keepOriginal ? "translate-x-6" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </label>
 
                       <div className="flex items-center gap-2">
                         <div className="h-px flex-1 bg-border/50" />
