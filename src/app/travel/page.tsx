@@ -45,7 +45,7 @@ export default function TravelPage() {
             <Link
               key={link.href}
               href={link.href}
-              className="group flex items-center gap-5 p-5 border border-border bg-card hover:border-foreground/30 transition-colors duration-200"
+              className="group flex items-center gap-5 p-5 bg-card hover:bg-card/80 transition-colors duration-200"
             >
               <div className="flex-shrink-0 p-3 bg-foreground/5 text-muted group-hover:text-foreground transition-colors duration-200">
                 <link.icon className="w-6 h-6" />
