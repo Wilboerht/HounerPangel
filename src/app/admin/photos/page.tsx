@@ -98,11 +98,51 @@ export default function AdminPhotosPage() {
     }
   };
 
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 2048;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas not supported"));
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const tryBlob = (type: string, quality: number) =>
+          new Promise<Blob | null>((res) => canvas.toBlob((b) => res(b), type, quality));
+
+        (async () => {
+          const webp = await tryBlob("image/webp", 0.85);
+          const blob = webp || (await tryBlob("image/jpeg", 0.85));
+          if (!blob) return reject(new Error("Image compression failed"));
+          const name = file.name.replace(/\.[^/.]+$/, "") + (webp ? ".webp" : ".jpg");
+          resolve(new File([blob], name, { type: blob.type }));
+        })();
+      };
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const uploadFile = async (file: File) => {
     setUploading(true);
     try {
+      const compressed = await compressImage(file);
       const data = new FormData();
-      data.append("file", file);
+      data.append("file", compressed);
       const res = await fetch("/api/photos/upload", {
         method: "POST",
         body: data,
@@ -424,7 +464,7 @@ export default function AdminPhotosPage() {
                             <p className="text-sm text-foreground font-medium">
                               {uploading ? "上传中..." : "点击或拖拽上传图片"}
                             </p>
-                            <p className="text-xs text-muted">支持 JPG、PNG、WebP，最大 10MB</p>
+                            <p className="text-xs text-muted">自动压缩为 WebP，长边最大 2048px，质量 85%</p>
                           </div>
                         )}
                       </div>
