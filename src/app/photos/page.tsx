@@ -33,7 +33,7 @@ function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-black/80 backdrop-blur-xl border-b border-white/5"
+          ? "bg-white border-b border-black/5"
           : "bg-transparent"
       }`}
     >
@@ -41,7 +41,7 @@ function Navbar() {
         <nav className="flex h-[72px] items-center justify-between">
           <Link
             href="/"
-            className="text-sm font-semibold tracking-[0.1em] text-white uppercase"
+            className="text-sm font-semibold tracking-[0.1em] text-black uppercase"
           >
             HANK WONG
           </Link>
@@ -53,12 +53,12 @@ function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`relative text-sm font-medium tracking-wide transition-colors duration-300 ${
-                  pathname === link.href ? "text-white" : "text-[#888888]"
-                } hover:text-white group`}
+                  pathname === link.href ? "text-black" : "text-[#888888]"
+                } hover:text-black group`}
               >
                 {link.label}
                 <span
-                  className={`absolute -bottom-1 left-0 h-[1px] bg-white transition-all duration-300 ${
+                  className={`absolute -bottom-1 left-0 h-[1px] bg-black transition-all duration-300 ${
                     pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
                   }`}
                 />
@@ -68,7 +68,7 @@ function Navbar() {
 
           {/* Mobile toggle */}
           <button
-            className="md:hidden text-white"
+            className="md:hidden text-black"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
           >
@@ -84,7 +84,7 @@ function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-black/95 backdrop-blur-xl border-b border-white/5 overflow-hidden"
+            className="md:hidden bg-white/95 backdrop-blur-xl border-b border-black/5 overflow-hidden"
           >
             <div className="px-5 py-6 flex flex-col gap-4">
               {navLinks.map((link) => (
@@ -92,7 +92,7 @@ function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`text-lg font-medium ${
-                    pathname === link.href ? "text-white" : "text-[#888888]"
+                    pathname === link.href ? "text-black" : "text-[#888888]"
                   }`}
                 >
                   {link.label}
@@ -108,7 +108,7 @@ function Navbar() {
 
 function Footer() {
   return (
-    <footer className="border-t border-[#333333]">
+    <footer className="border-t border-[#e5e5e5]">
       <div className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
         <p className="text-sm text-[#888888]">
           © {new Date().getFullYear()} Hank Wong. All rights reserved.
@@ -166,7 +166,7 @@ export default function PhotographyPage() {
             <p className="text-xs tracking-[0.15em] text-[#888888] uppercase mb-4">
               Photography
             </p>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-black">
               光影集
             </h1>
             <p className="text-lg text-[#888888] max-w-xl">

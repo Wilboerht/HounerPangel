@@ -11,7 +11,7 @@ export default function PhotosLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-[100dvh] bg-white text-black">
       {children}
     </div>
   );
