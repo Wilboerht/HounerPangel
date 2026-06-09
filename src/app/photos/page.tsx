@@ -198,55 +198,51 @@ export default function PhotographyPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] bg-white flex flex-col"
+            className="fixed inset-0 z-[100] bg-[#f5f5f5] flex flex-col"
           >
-            {/* Top bar */}
-            <div className="shrink-0 flex items-center justify-between px-5 md:px-8 lg:px-16 h-[72px] md:h-[96px]">
-              <Link
-                href="/photos"
-                onClick={(e) => {
-                  e.preventDefault();
-                  closeLightbox();
-                }}
-                className="flex items-center gap-1 text-sm text-[#888888] hover:text-black transition-colors"
-              >
-                <ArrowLeft size={18} />
-                <span className="hidden sm:inline">关闭</span>
-              </Link>
+            {/* Close */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-5 right-5 md:top-8 md:right-8 z-10 p-2 text-[#888888] hover:text-black transition-colors"
+              aria-label="关闭"
+            >
+              <X size={24} />
+            </button>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={prevImage}
-                  className="p-2 text-[#888888] hover:text-black transition-colors"
-                  aria-label="上一张"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-                <button
-                  onClick={nextImage}
-                  className="p-2 text-[#888888] hover:text-black transition-colors"
-                  aria-label="下一张"
-                >
-                  <ChevronRight size={24} />
-                </button>
-              </div>
-            </div>
+            {/* Prev */}
+            <button
+              onClick={prevImage}
+              className="absolute left-3 md:left-8 top-1/2 -translate-y-1/2 z-10 p-2 text-[#888888] hover:text-black transition-colors"
+              aria-label="上一张"
+            >
+              <ChevronLeft size={32} />
+            </button>
+
+            {/* Next */}
+            <button
+              onClick={nextImage}
+              className="absolute right-3 md:right-8 top-1/2 -translate-y-1/2 z-10 p-2 text-[#888888] hover:text-black transition-colors"
+              aria-label="下一张"
+            >
+              <ChevronRight size={32} />
+            </button>
 
             {/* Image */}
-            <div className="flex-1 flex items-center justify-center w-full min-h-0 px-5 md:px-8 lg:px-16 py-8 md:py-12">
+            <div className="flex-1 flex items-center justify-center w-full min-h-0 px-4 md:px-8 pt-8 pb-4">
               <motion.div
                 key={lightboxIndex}
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3 }}
-                className="relative w-full h-full"
+                className="relative max-w-full h-full flex items-center justify-center"
               >
                 <Image
                   src={PHOTOS[lightboxIndex].src}
                   alt={PHOTOS[lightboxIndex].title}
-                  fill
-                  className="object-contain"
+                  width={1400}
+                  height={1000}
+                  className="max-w-full max-h-full w-auto h-auto object-contain shadow-[0_12px_48px_rgba(0,0,0,0.15)]"
                   sizes="(max-width: 1024px) 100vw, 1024px"
                   priority
                 />
@@ -254,37 +250,26 @@ export default function PhotographyPage() {
             </div>
 
             {/* Info Bar */}
-            <div className="shrink-0 bg-white/90 backdrop-blur-sm border-t border-black/5 px-5 md:px-8 lg:px-16 py-3 md:py-4">
-              <div className="mx-auto max-w-5xl flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-medium text-black truncate">
-                    {PHOTOS[lightboxIndex].title}
-                  </p>
-                  <p className="text-[12px] text-[#888888] truncate">
-                    {PHOTOS[lightboxIndex].location}
-                    {PHOTOS[lightboxIndex].description && (
-                      <span className="text-[#aaaaaa]"> · {PHOTOS[lightboxIndex].description}</span>
-                    )}
-                  </p>
-                </div>
-                {PHOTOS[lightboxIndex].exif && (
-                  <div className="hidden md:flex items-center gap-3 text-[11px] text-[#aaaaaa] shrink-0">
-                    {PHOTOS[lightboxIndex].exif.camera && (
-                      <span className="flex items-center gap-1">
-                        <Camera size={11} />
-                        {PHOTOS[lightboxIndex].exif.camera}
-                      </span>
-                    )}
-                    {PHOTOS[lightboxIndex].exif.aperture && (
-                      <span className="flex items-center gap-1">
-                        <Aperture size={11} />
-                        {PHOTOS[lightboxIndex].exif.aperture}
-                      </span>
-                    )}
-                    {PHOTOS[lightboxIndex].exif.iso && (
-                      <span>ISO {PHOTOS[lightboxIndex].exif.iso}</span>
-                    )}
-                  </div>
+            <div className="shrink-0 px-5 md:px-8 lg:px-16 py-3 md:py-4">
+              <div className="mx-auto max-w-5xl flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[13px] text-[#666666]">
+                {PHOTOS[lightboxIndex].exif?.aperture && (
+                  <span>{PHOTOS[lightboxIndex].exif.aperture}</span>
+                )}
+                {PHOTOS[lightboxIndex].exif?.shutter && (
+                  <span>{PHOTOS[lightboxIndex].exif.shutter}</span>
+                )}
+                {PHOTOS[lightboxIndex].exif?.iso && (
+                  <span>ISO {PHOTOS[lightboxIndex].exif.iso}</span>
+                )}
+                <span>{PHOTOS[lightboxIndex].location}</span>
+                {PHOTOS[lightboxIndex].exif?.camera && (
+                  <span className="flex items-center gap-1">
+                    <Camera size={11} />
+                    {PHOTOS[lightboxIndex].exif.camera}
+                  </span>
+                )}
+                {PHOTOS[lightboxIndex].exif?.lens && (
+                  <span>{PHOTOS[lightboxIndex].exif.lens}</span>
                 )}
               </div>
             </div>
