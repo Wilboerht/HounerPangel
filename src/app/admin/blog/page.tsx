@@ -149,6 +149,12 @@ export default function AdminBlogList() {
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
+                            <Link
+                                href="/admin/photos"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+                            >
+                                摄影管理
+                            </Link>
                             <button
                                 onClick={async () => {
                                     await fetch("/api/admin/logout", { method: "POST" });
