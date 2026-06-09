@@ -2,16 +2,14 @@
 
 import { useCallback, useMemo } from "react";
 import Map, { Marker } from "react-map-gl/mapbox";
-import "mapbox-gl/dist/mapbox-gl.css";
 import type { Attraction } from "@/types/travel";
-import { env } from "@/lib/env";
 
 interface Props {
   attractions: Attraction[];
 }
 
 export default function PlanMap({ attractions }: Props) {
-  const mapboxToken = env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ""
 
   const points = useMemo(
     () =>
