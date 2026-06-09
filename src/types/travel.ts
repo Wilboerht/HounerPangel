@@ -24,6 +24,8 @@ export interface Attraction {
   name: string;
   location: string;
   description: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface FoodItem {

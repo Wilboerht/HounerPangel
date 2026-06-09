@@ -4,6 +4,7 @@ import { MapPin, Calendar, Wallet, Train, Utensils, Ticket, Check, ArrowLeft, Lu
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { TravelPlan, FoodItem } from "@/types/travel";
+import PlanMap from "./PlanMap";
 
 const IconMap: Record<string, LucideIcon> = {
   Train,
@@ -89,10 +90,11 @@ export default function TravelPlanTemplate({ data }: Props) {
         </div>
       </section>
 
-      {/* Route Map - Simplified */}
+      {/* Route Map */}
       <section id="route" className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">🗺️ 行程路线</h2>
-        <div className="text-center text-sm text-muted space-y-1">
+        <PlanMap attractions={data.attractions} />
+        <div className="mt-4 text-center text-sm text-muted space-y-1">
           {data.itinerary.map((day, idx) => (
             <div key={day.day}>
               <span className="inline-block bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium">Line {day.day}</span>
