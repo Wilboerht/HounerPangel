@@ -254,40 +254,32 @@ export default function PhotographyPage() {
             </div>
 
             {/* Info Bar */}
-            <div className="shrink-0 bg-white border-t border-[#e5e5e5] px-5 md:px-8 lg:px-16 py-6 md:py-8">
-              <div className="mx-auto max-w-5xl flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
-                <div>
-                  <h3 className="text-xl md:text-2xl font-semibold text-black">
+            <div className="shrink-0 bg-white/90 backdrop-blur-sm border-t border-black/5 px-5 md:px-8 lg:px-16 py-3 md:py-4">
+              <div className="mx-auto max-w-5xl flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-medium text-black truncate">
                     {PHOTOS[lightboxIndex].title}
-                  </h3>
-                  <p className="text-[#888888] mt-1">
-                    {PHOTOS[lightboxIndex].location}
                   </p>
-                  {PHOTOS[lightboxIndex].description && (
-                    <p className="text-[#666666] mt-3 text-sm md:text-base max-w-2xl leading-relaxed">
-                      {PHOTOS[lightboxIndex].description}
-                    </p>
-                  )}
+                  <p className="text-[12px] text-[#888888] truncate">
+                    {PHOTOS[lightboxIndex].location}
+                    {PHOTOS[lightboxIndex].description && (
+                      <span className="text-[#aaaaaa]"> · {PHOTOS[lightboxIndex].description}</span>
+                    )}
+                  </p>
                 </div>
                 {PHOTOS[lightboxIndex].exif && (
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[#888888]">
+                  <div className="hidden md:flex items-center gap-3 text-[11px] text-[#aaaaaa] shrink-0">
                     {PHOTOS[lightboxIndex].exif.camera && (
                       <span className="flex items-center gap-1">
-                        <Camera size={14} />
+                        <Camera size={11} />
                         {PHOTOS[lightboxIndex].exif.camera}
                       </span>
                     )}
-                    {PHOTOS[lightboxIndex].exif.lens && (
-                      <span>{PHOTOS[lightboxIndex].exif.lens}</span>
-                    )}
                     {PHOTOS[lightboxIndex].exif.aperture && (
                       <span className="flex items-center gap-1">
-                        <Aperture size={14} />
+                        <Aperture size={11} />
                         {PHOTOS[lightboxIndex].exif.aperture}
                       </span>
-                    )}
-                    {PHOTOS[lightboxIndex].exif.shutter && (
-                      <span>{PHOTOS[lightboxIndex].exif.shutter}</span>
                     )}
                     {PHOTOS[lightboxIndex].exif.iso && (
                       <span>ISO {PHOTOS[lightboxIndex].exif.iso}</span>
