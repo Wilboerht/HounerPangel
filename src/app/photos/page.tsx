@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Camera, Aperture, Menu } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Camera, Aperture, Menu, ArrowLeft } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { PHOTOS } from "./data";
 
@@ -50,7 +50,6 @@ function Navbar() {
             />
           </Link>
 
-          {/* Desktop links */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
@@ -70,7 +69,6 @@ function Navbar() {
             ))}
           </div>
 
-          {/* Mobile toggle */}
           <button
             className="md:hidden text-black"
             onClick={() => setMobileOpen((v) => !v)}
@@ -81,7 +79,6 @@ function Navbar() {
         </nav>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -192,7 +189,7 @@ export default function PhotographyPage() {
 
       <Footer />
 
-      {/* Lightbox */}
+      {/* Lightbox - white background style like camarts.cn/c9a */}
       <AnimatePresence>
         {lightboxIndex !== null && (
           <motion.div
@@ -200,79 +197,82 @@ export default function PhotographyPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] bg-black flex flex-col"
+            className="fixed inset-0 z-[100] bg-white flex flex-col overflow-y-auto"
           >
-            {/* Close */}
-            <button
-              onClick={closeLightbox}
-              className="absolute top-5 right-5 md:top-8 md:right-8 z-10 p-2 text-[#888888] hover:text-white transition-colors"
-              aria-label="关闭"
-            >
-              <X size={28} />
-            </button>
+            {/* Top bar */}
+            <div className="shrink-0 flex items-center justify-between px-5 md:px-8 lg:px-16 h-[72px] md:h-[96px] border-b border-[#e5e5e5]">
+              <Link
+                href="/photos"
+                onClick={(e) => {
+                  e.preventDefault();
+                  closeLightbox();
+                }}
+                className="flex items-center gap-1 text-sm text-[#888888] hover:text-black transition-colors"
+              >
+                <ArrowLeft size={18} />
+                <span className="hidden sm:inline">关闭</span>
+              </Link>
 
-            {/* Prev */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                prevImage();
-              }}
-              className="absolute left-3 md:left-8 top-1/2 -translate-y-1/2 z-10 p-2 text-[#888888] hover:text-white transition-colors"
-              aria-label="上一张"
-            >
-              <ChevronLeft size={36} />
-            </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={prevImage}
+                  className="p-2 text-[#888888] hover:text-black transition-colors"
+                  aria-label="上一张"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="p-2 text-[#888888] hover:text-black transition-colors"
+                  aria-label="下一张"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </div>
+            </div>
 
-            {/* Next */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                nextImage();
-              }}
-              className="absolute right-3 md:right-8 top-1/2 -translate-y-1/2 z-10 p-2 text-[#888888] hover:text-white transition-colors"
-              aria-label="下一张"
-            >
-              <ChevronRight size={36} />
-            </button>
-
-            {/* Image area */}
-            <div className="flex-1 flex items-center justify-center w-full min-h-0 px-4 md:px-8 pt-16 pb-2">
+            {/* Image */}
+            <div className="flex-1 flex items-start justify-center w-full min-h-0 px-5 md:px-8 lg:px-16 py-8 md:py-12">
               <motion.div
                 key={lightboxIndex}
-                initial={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
+                exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3 }}
-                className="relative max-w-full h-full"
-                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-5xl aspect-[16/10] md:aspect-[16/9] bg-neutral-50 rounded-sm overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
               >
                 <Image
                   src={PHOTOS[lightboxIndex].src}
                   alt={PHOTOS[lightboxIndex].title}
                   fill
-                  className="object-contain rounded"
-                  sizes="90vw"
+                  className="object-contain"
+                  sizes="(max-width: 1024px) 100vw, 1024px"
                   priority
                 />
               </motion.div>
             </div>
 
-            {/* Bottom Info Bar */}
-            <div className="shrink-0 bg-black/80 backdrop-blur-sm px-4 py-4 md:py-5">
-              <div className="mx-auto max-w-5xl flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base md:text-lg font-semibold text-white truncate">
+            {/* Info Bar */}
+            <div className="shrink-0 bg-white border-t border-[#e5e5e5] px-5 md:px-8 lg:px-16 py-6 md:py-8">
+              <div className="mx-auto max-w-5xl flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
+                <div>
+                  <h3 className="text-xl md:text-2xl font-semibold text-black">
                     {PHOTOS[lightboxIndex].title}
                   </h3>
-                  <p className="text-[#888888] text-sm truncate">
+                  <p className="text-[#888888] mt-1">
                     {PHOTOS[lightboxIndex].location}
                   </p>
+                  {PHOTOS[lightboxIndex].description && (
+                    <p className="text-[#666666] mt-3 text-sm md:text-base max-w-2xl leading-relaxed">
+                      {PHOTOS[lightboxIndex].description}
+                    </p>
+                  )}
                 </div>
                 {PHOTOS[lightboxIndex].exif && (
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-[#666666]">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[#888888]">
                     {PHOTOS[lightboxIndex].exif.camera && (
                       <span className="flex items-center gap-1">
-                        <Camera size={12} />
+                        <Camera size={14} />
                         {PHOTOS[lightboxIndex].exif.camera}
                       </span>
                     )}
@@ -281,7 +281,7 @@ export default function PhotographyPage() {
                     )}
                     {PHOTOS[lightboxIndex].exif.aperture && (
                       <span className="flex items-center gap-1">
-                        <Aperture size={12} />
+                        <Aperture size={14} />
                         {PHOTOS[lightboxIndex].exif.aperture}
                       </span>
                     )}
@@ -294,11 +294,6 @@ export default function PhotographyPage() {
                   </div>
                 )}
               </div>
-              {PHOTOS[lightboxIndex].description && (
-                <p className="mx-auto max-w-5xl text-[#aaaaaa] mt-2 text-sm md:text-base">
-                  {PHOTOS[lightboxIndex].description}
-                </p>
-              )}
             </div>
           </motion.div>
         )}
