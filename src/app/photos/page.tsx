@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, Camera, Aperture, Menu, Clock } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { PHOTOS } from "./data";
+import type { Photo } from "./data";
 
 function Navbar() {
   const pathname = usePathname();
@@ -119,19 +119,31 @@ function Footer() {
 }
 
 export default function PhotographyPage() {
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/photos")
+      .then((res) => res.json())
+      .then((data: Photo[]) => {
+        setPhotos(data || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
   const prevImage = useCallback(() => {
     setLightboxIndex((i) =>
-      i === null ? null : i === 0 ? PHOTOS.length - 1 : i - 1
+      i === null ? null : i === 0 ? photos.length - 1 : i - 1
     );
-  }, []);
+  }, [photos.length]);
   const nextImage = useCallback(() => {
     setLightboxIndex((i) =>
-      i === null ? null : i === PHOTOS.length - 1 ? 0 : i + 1
+      i === null ? null : i === photos.length - 1 ? 0 : i + 1
     );
-  }, []);
+  }, [photos.length]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -168,9 +180,14 @@ export default function PhotographyPage() {
 
       {/* Gallery */}
       <section className="mx-auto max-w-6xl px-5 md:px-8 lg:px-12 pt-[140px] md:pt-[180px] pb-24 md:pb-40">
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-          {PHOTOS.map((photo, i) => (
-            <ScrollReveal key={photo.title + i} delay={i * 0.05}>
+        {loading ? (
+          <p className="text-center text-[#888888] py-20">加载中...</p>
+        ) : photos.length === 0 ? (
+          <p className="text-center text-[#888888] py-20">暂无照片</p>
+        ) : (
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+            {photos.map((photo, i) => (
+              <ScrollReveal key={photo.id || photo.src} delay={i * 0.05}>
               <button
                 onClick={() => setLightboxIndex(i)}
                 className="group relative block w-full overflow-hidden rounded text-left"
@@ -190,7 +207,8 @@ export default function PhotographyPage() {
               </button>
             </ScrollReveal>
           ))}
-        </div>
+          </div>
+        )}
       </section>
 
       <Footer />
@@ -244,8 +262,8 @@ export default function PhotographyPage() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={PHOTOS[lightboxIndex].src}
-                  alt={PHOTOS[lightboxIndex].title}
+                  src={photos[lightboxIndex].src}
+                  alt={photos[lightboxIndex].title}
                   className="max-w-full max-h-full w-auto h-auto object-contain shadow-[0_12px_48px_rgba(0,0,0,0.15)]"
                 />
               </motion.div>
@@ -258,22 +276,22 @@ export default function PhotographyPage() {
                 <div>
                   <p className="text-xs text-[#aaaaaa] mb-1.5">参数</p>
                   <div className="flex items-center gap-2.5 text-[12px] text-[#555555]">
-                    {PHOTOS[lightboxIndex].exif?.aperture && (
+                    {photos[lightboxIndex].exif?.aperture && (
                       <span className="flex items-center gap-1">
                         <Aperture size={12} />
-                        {PHOTOS[lightboxIndex].exif.aperture}
+                        {photos[lightboxIndex].exif.aperture}
                       </span>
                     )}
-                    {PHOTOS[lightboxIndex].exif?.shutter && (
+                    {photos[lightboxIndex].exif?.shutter && (
                       <span className="flex items-center gap-1">
                         <Clock size={12} />
-                        {PHOTOS[lightboxIndex].exif.shutter}
+                        {photos[lightboxIndex].exif.shutter}
                       </span>
                     )}
-                    {PHOTOS[lightboxIndex].exif?.iso && (
+                    {photos[lightboxIndex].exif?.iso && (
                       <span className="flex items-center gap-1">
                         <span className="text-[9px] font-semibold border border-current rounded px-0.5 leading-none py-[1px]">ISO</span>
-                        {PHOTOS[lightboxIndex].exif.iso}
+                        {photos[lightboxIndex].exif.iso}
                       </span>
                     )}
                   </div>
@@ -282,22 +300,22 @@ export default function PhotographyPage() {
                 {/* 地点 */}
                 <div>
                   <p className="text-xs text-[#aaaaaa] mb-1.5">地点</p>
-                  <p className="text-[12px] text-[#555555]">{PHOTOS[lightboxIndex].location}</p>
+                  <p className="text-[12px] text-[#555555]">{photos[lightboxIndex].location}</p>
                 </div>
 
                 {/* 相机 */}
-                {PHOTOS[lightboxIndex].exif?.camera && (
+                {photos[lightboxIndex].exif?.camera && (
                   <div>
                     <p className="text-xs text-[#aaaaaa] mb-1.5">相机</p>
-                    <p className="text-[12px] text-[#555555]">{PHOTOS[lightboxIndex].exif.camera}</p>
+                    <p className="text-[12px] text-[#555555]">{photos[lightboxIndex].exif.camera}</p>
                   </div>
                 )}
 
                 {/* 镜头 */}
-                {PHOTOS[lightboxIndex].exif?.lens && (
+                {photos[lightboxIndex].exif?.lens && (
                   <div>
                     <p className="text-xs text-[#aaaaaa] mb-1.5">镜头</p>
-                    <p className="text-[12px] text-[#555555]">{PHOTOS[lightboxIndex].exif.lens}</p>
+                    <p className="text-[12px] text-[#555555]">{photos[lightboxIndex].exif.lens}</p>
                   </div>
                 )}
               </div>

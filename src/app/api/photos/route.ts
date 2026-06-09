@@ -1,22 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile, writeFile } from "fs/promises";
-import { join } from "path";
 import { checkAuth } from "@/lib/auth";
-
-const photosPath = join(process.cwd(), "src", "data", "photos.json");
-
-async function readPhotos(): Promise<unknown[]> {
-  const data = await readFile(photosPath, "utf-8");
-  return JSON.parse(data);
-}
-
-async function writePhotos(photos: unknown[]): Promise<void> {
-  await writeFile(photosPath, JSON.stringify(photos, null, 2) + "\n", "utf-8");
-}
+import { getAllPhotos, createPhoto, updatePhoto, deletePhoto } from "@/lib/supabase";
+import { photoSchema, photoUpdateSchema } from "@/lib/validation";
 
 export async function GET() {
   try {
-    const photos = await readPhotos();
+    const photos = await getAllPhotos();
     return NextResponse.json(photos);
   } catch (error) {
     console.error("Failed to fetch photos:", error);
@@ -30,10 +19,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const photos = await readPhotos();
-    photos.push(body);
-    await writePhotos(photos);
-    return NextResponse.json({ success: true }, { status: 201 });
+    const parsed = photoSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
+    }
+
+    const { id, created_at, updated_at, ...rest } = parsed.data;
+    const photo = await createPhoto(rest);
+    return NextResponse.json(photo, { status: 201 });
   } catch (error) {
     console.error("Failed to create photo:", error);
     return NextResponse.json({ error: "Failed to create photo" }, { status: 500 });
@@ -45,14 +38,19 @@ export async function PUT(request: NextRequest) {
   if (authError) return authError;
 
   try {
-    const { index, data } = await request.json();
-    const photos = await readPhotos();
-    if (typeof index !== "number" || index < 0 || index >= photos.length) {
-      return NextResponse.json({ error: "Invalid index" }, { status: 400 });
+    const body = await request.json();
+    const parsed = photoUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
     }
-    photos[index] = data;
-    await writePhotos(photos);
-    return NextResponse.json({ success: true });
+
+    const { id, ...data } = parsed.data;
+    if (!id) {
+      return NextResponse.json({ error: "id is required" }, { status: 400 });
+    }
+
+    const photo = await updatePhoto(id, data);
+    return NextResponse.json(photo);
   } catch (error) {
     console.error("Failed to update photo:", error);
     return NextResponse.json({ error: "Failed to update photo" }, { status: 500 });
@@ -64,13 +62,11 @@ export async function DELETE(request: NextRequest) {
   if (authError) return authError;
 
   try {
-    const { index } = await request.json();
-    const photos = await readPhotos();
-    if (typeof index !== "number" || index < 0 || index >= photos.length) {
-      return NextResponse.json({ error: "Invalid index" }, { status: 400 });
+    const { id } = await request.json();
+    if (!id || typeof id !== "string") {
+      return NextResponse.json({ error: "id is required" }, { status: 400 });
     }
-    photos.splice(index, 1);
-    await writePhotos(photos);
+    await deletePhoto(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete photo:", error);

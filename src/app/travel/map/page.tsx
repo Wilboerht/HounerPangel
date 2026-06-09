@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import BackButton from "@/components/BackButton";
 import MapView from "./MapView";
-import { PHOTOS } from "@/app/photos/data";
+import { getAllPhotos } from "@/lib/supabase";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
@@ -9,15 +9,18 @@ export const metadata: Metadata = {
   description: "探索去过的和想去的地方",
 };
 
-export default function TravelMapPage() {
+export const dynamic = "force-dynamic";
+
+export default async function TravelMapPage() {
   const mapboxToken = env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+  const photos = await getAllPhotos();
 
   return (
     <div className="relative h-screen w-full">
       <div className="absolute top-6 left-6 z-20">
         <BackButton />
       </div>
-      <MapView photos={PHOTOS} mapboxToken={mapboxToken} />
+      <MapView photos={photos} mapboxToken={mapboxToken} />
     </div>
   );
 }

@@ -3,10 +3,23 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, ArrowLeft, Image as ImageIcon, LogOut, Lock, X, Save, Camera, Upload } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  ArrowLeft,
+  Image as ImageIcon,
+  LogOut,
+  Lock,
+  X,
+  Save,
+  Camera,
+  Upload,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Photo {
+  id?: string;
   src: string;
   title: string;
   location: string;
@@ -35,7 +48,7 @@ export default function AdminPhotosPage() {
   const [authError, setAuthError] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Photo>(emptyForm);
   const [uploading, setUploading] = useState(false);
@@ -52,7 +65,7 @@ export default function AdminPhotosPage() {
         }
         return res.json();
       })
-      .then((data) => {
+      .then((data: Photo[]) => {
         if (data) {
           setPhotos(data);
           setLoading(false);
@@ -66,35 +79,37 @@ export default function AdminPhotosPage() {
   }, []);
 
   const openNew = () => {
-    setEditingIndex(null);
+    setEditingPhoto(null);
     setForm(emptyForm);
     setKeepOriginal(false);
     setShowModal(true);
   };
 
-  const openEdit = (index: number) => {
-    setEditingIndex(index);
-    setForm(photos[index]);
+  const openEdit = (photo: Photo) => {
+    setEditingPhoto(photo);
+    setForm(photo);
     setKeepOriginal(false);
     setShowModal(true);
   };
 
-  const handleDelete = async (index: number) => {
+  const handleDelete = async (photo: Photo) => {
+    if (!photo.id) return;
     if (!confirm("确定要删除这张照片吗？")) return;
     try {
       const res = await fetch("/api/photos", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ index }),
+        body: JSON.stringify({ id: photo.id }),
       });
       if (res.status === 401) {
         alert("登录已过期，请重新登录");
         return;
       }
       if (res.ok) {
-        setPhotos((prev) => prev.filter((_, i) => i !== index));
+        setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
       } else {
-        alert("删除失败");
+        const json = await res.json().catch(() => ({}));
+        alert(json.error || "删除失败");
       }
     } catch {
       alert("删除失败");
@@ -187,23 +202,30 @@ export default function AdminPhotosPage() {
     setSaving(true);
 
     try {
-      const cleaned = {
+      const cleaned: Photo = {
         ...form,
-        exif: form.exif && Object.values(form.exif).some(Boolean) ? form.exif : undefined,
+        exif:
+          form.exif && Object.values(form.exif).some(Boolean)
+            ? form.exif
+            : undefined,
         description: form.description?.trim() || undefined,
       };
 
-      if (editingIndex !== null) {
+      if (editingPhoto?.id) {
         const res = await fetch("/api/photos", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ index: editingIndex, data: cleaned }),
+          body: JSON.stringify({ id: editingPhoto.id, ...cleaned }),
         });
         if (res.ok) {
-          setPhotos((prev) => prev.map((p, i) => (i === editingIndex ? cleaned : p)));
+          const updated: Photo = await res.json();
+          setPhotos((prev) =>
+            prev.map((p) => (p.id === editingPhoto.id ? updated : p))
+          );
           setShowModal(false);
         } else {
-          alert("保存失败");
+          const json = await res.json().catch(() => ({}));
+          alert(json.error || "保存失败");
         }
       } else {
         const res = await fetch("/api/photos", {
@@ -212,10 +234,12 @@ export default function AdminPhotosPage() {
           body: JSON.stringify(cleaned),
         });
         if (res.ok) {
-          setPhotos((prev) => [...prev, cleaned]);
+          const created: Photo = await res.json();
+          setPhotos((prev) => [created, ...prev]);
           setShowModal(false);
         } else {
-          alert("保存失败");
+          const json = await res.json().catch(() => ({}));
+          alert(json.error || "保存失败");
         }
       }
     } catch {
@@ -301,9 +325,9 @@ export default function AdminPhotosPage() {
             <p className="text-muted text-center py-20">加载中...</p>
           ) : photos.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {photos.map((photo, index) => (
+              {photos.map((photo) => (
                 <div
-                  key={index}
+                  key={photo.id}
                   className="group relative rounded-xl border border-border/50 overflow-hidden hover:border-foreground/20 transition-colors"
                 >
                   <div className="aspect-[4/3] bg-muted/20 relative">
@@ -321,7 +345,9 @@ export default function AdminPhotosPage() {
                     )}
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-foreground truncate">{photo.title}</h3>
+                    <h3 className="font-semibold text-foreground truncate">
+                      {photo.title}
+                    </h3>
                     <p className="text-sm text-muted truncate">{photo.location}</p>
                     {photo.exif?.camera && (
                       <p className="text-xs text-muted/70 mt-1 flex items-center gap-1">
@@ -332,14 +358,14 @@ export default function AdminPhotosPage() {
                   </div>
                   <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => openEdit(index)}
+                      onClick={() => openEdit(photo)}
                       className="p-2 rounded-lg bg-background/90 backdrop-blur-sm hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
                       title="编辑"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(index)}
+                      onClick={() => handleDelete(photo)}
                       className="p-2 rounded-lg bg-background/90 backdrop-blur-sm hover:bg-red-500/10 text-muted hover:text-red-500 transition-colors"
                       title="删除"
                     >
@@ -402,7 +428,7 @@ export default function AdminPhotosPage() {
 
                 <div className="px-8 pt-8 pb-4">
                   <h2 className="text-xl font-bold text-foreground">
-                    {editingIndex !== null ? "编辑照片" : "添加照片"}
+                    {editingPhoto ? "编辑照片" : "添加照片"}
                   </h2>
                 </div>
 

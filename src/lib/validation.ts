@@ -21,3 +21,24 @@ export const loginSchema = z.object({
 export const slugParamSchema = z.object({
     slug: z.string().min(1).max(255),
 });
+
+const exifSchema = z.object({
+    camera: z.string().max(200).optional(),
+    lens: z.string().max(200).optional(),
+    aperture: z.string().max(50).optional(),
+    shutter: z.string().max(50).optional(),
+    iso: z.string().max(50).optional(),
+}).optional();
+
+export const photoSchema = z.object({
+    id: z.string().uuid().optional(),
+    src: z.string().url("图片 URL 格式不正确").min(1, "图片 URL 不能为空"),
+    title: z.string().min(1, "标题不能为空").max(500, "标题过长"),
+    location: z.string().min(1, "地点不能为空").max(500, "地点过长"),
+    description: z.string().max(2000, "描述过长").optional(),
+    exif: exifSchema,
+    created_at: z.string().optional(),
+    updated_at: z.string().optional(),
+});
+
+export const photoUpdateSchema = photoSchema;
