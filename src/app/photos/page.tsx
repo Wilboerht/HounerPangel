@@ -38,12 +38,16 @@ function Navbar() {
       }`}
     >
       <div className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16">
-        <nav className="flex h-[72px] items-center justify-between">
-          <Link
-            href="/"
-            className="text-sm font-semibold tracking-[0.1em] text-black uppercase"
-          >
-            HANK WONG
+        <nav className="flex h-[96px] items-center justify-between">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/images/photo-logo.svg"
+              alt="Hank Wong Photography"
+              width={120}
+              height={36}
+              className="h-7 w-auto opacity-90 hover:opacity-100 transition-opacity"
+              priority
+            />
           </Link>
 
           {/* Desktop links */}
@@ -160,7 +164,7 @@ export default function PhotographyPage() {
       <Navbar />
 
       {/* Header */}
-      <section className="pt-[72px]">
+      <section className="pt-[96px]">
         <div className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16 py-16 md:py-24">
           <ScrollReveal>
             <p className="text-xs tracking-[0.15em] text-[#888888] uppercase mb-4">
