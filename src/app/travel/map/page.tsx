@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import BackButton from "@/components/BackButton";
-import MapView from "@/app/photos/MapView";
+import MapView from "./MapView";
 import { PHOTOS } from "@/app/photos/data";
 import { env } from "@/lib/env";
 

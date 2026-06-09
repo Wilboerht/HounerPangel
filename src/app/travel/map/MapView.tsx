@@ -5,7 +5,17 @@ import { X, ChevronLeft, ChevronRight, Camera, ChevronUp, ChevronDown } from "lu
 import Image from "next/image";
 import Map, { Marker } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Photo } from "./data";
+
+interface Photo {
+  src: string;
+  title: string;
+  location: string;
+  date?: string;
+  lat?: number;
+  lng?: number;
+  aspectRatio?: string;
+  category?: string;
+}
 
 interface Props {
   photos: Photo[];
@@ -134,30 +144,32 @@ export default function MapView({ photos, mapboxToken }: Props) {
             style={{ width: "100%", height: "100%" }}
             mapStyle="mapbox://styles/mapbox/light-v11"
           >
-            {photos.map((photo, idx) => (
-              <Marker
-                key={idx}
-                longitude={photo.lng}
-                latitude={photo.lat}
-                anchor="center"
-              >
-                <button
-                  onClick={() => handleMarkerClick(idx)}
-                  className="relative flex items-center justify-center"
+            {photos.map((photo, idx) =>
+              photo.lng !== undefined && photo.lat !== undefined ? (
+                <Marker
+                  key={idx}
+                  longitude={photo.lng}
+                  latitude={photo.lat}
+                  anchor="center"
                 >
-                  <span
-                    className={`block rounded-full border-2 border-white shadow-sm transition-all duration-200 ${
-                      selectedId === idx
-                        ? "w-4 h-4 scale-125"
-                        : "w-2.5 h-2.5 hover:scale-125"
-                    }`}
-                    style={{
-                      backgroundColor: markerColor(photo.category),
-                    }}
-                  />
-                </button>
-              </Marker>
-            ))}
+                  <button
+                    onClick={() => handleMarkerClick(idx)}
+                    className="relative flex items-center justify-center"
+                  >
+                    <span
+                      className={`block rounded-full border-2 border-white shadow-sm transition-all duration-200 ${
+                        selectedId === idx
+                          ? "w-4 h-4 scale-125"
+                          : "w-2.5 h-2.5 hover:scale-125"
+                      }`}
+                      style={{
+                        backgroundColor: markerColor(photo.category),
+                      }}
+                    />
+                  </button>
+                </Marker>
+              ) : null
+            )}
           </Map>
 
           {/* Bottom Panel */}
