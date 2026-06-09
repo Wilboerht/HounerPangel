@@ -31,7 +31,7 @@ function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b shadow-[0_12px_30px_rgba(0,0,0,0.05)] ${
         scrolled
           ? "bg-white border-black/5"
           : "bg-transparent border-transparent"
@@ -163,25 +163,8 @@ export default function PhotographyPage() {
     <>
       <Navbar />
 
-      {/* Header */}
-      <section className="pt-[96px]">
-        <div className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16 py-16 md:py-24">
-          <ScrollReveal>
-            <p className="text-xs tracking-[0.15em] text-[#888888] uppercase mb-4">
-              Photography
-            </p>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-black">
-              光影集
-            </h1>
-            <p className="text-lg text-[#888888] max-w-xl">
-              记录那些稍纵即逝的瞬间
-            </p>
-          </ScrollReveal>
-        </div>
-      </section>
-
       {/* Gallery */}
-      <section className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16 pb-24 md:pb-40">
+      <section className="mx-auto max-w-[1440px] px-5 md:px-8 lg:px-16 pt-[140px] md:pt-[180px] pb-24 md:pb-40">
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
           {PHOTOS.map((photo, i) => (
             <ScrollReveal key={photo.title + i} delay={i * 0.05}>
