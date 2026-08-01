@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: "Hank Wong 的思考、笔记与创作。",
 };
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function Blog() {
     const posts = await getAllBlogPosts();
