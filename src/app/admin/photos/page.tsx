@@ -15,10 +15,13 @@ import {
   Save,
   Camera,
   Upload,
+  Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
+import { useToast } from "@/components/toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { Photo } from "@/lib/types/photo";
 
 const emptyForm: Photo = {
@@ -31,9 +34,11 @@ const emptyForm: Photo = {
 
 export default function AdminPhotosPage() {
   const router = useRouter();
+  const toast = useToast();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
+  const [search, setSearch] = useState("");
 
   const [showModal, setShowModal] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
@@ -42,8 +47,20 @@ export default function AdminPhotosPage() {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [keepOriginal, setKeepOriginal] = useState(false);
+
+  const [deleteTarget, setDeleteTarget] = useState<Photo | null>(null);
+
   const reduce = useSafeMotion();
   const photoModalTrapRef = useFocusTrap(showModal);
+
+  const filteredPhotos = search
+    ? photos.filter(
+        (p) =>
+          p.title.toLowerCase().includes(search.toLowerCase()) ||
+          p.location.toLowerCase().includes(search.toLowerCase()) ||
+          (p.exif?.camera || "").toLowerCase().includes(search.toLowerCase())
+      )
+    : photos;
 
   const loadPhotos = () => {
     fetch("/api/photos")
@@ -89,28 +106,29 @@ export default function AdminPhotosPage() {
     setShowModal(true);
   };
 
-  const handleDelete = async (photo: Photo) => {
-    if (!photo.id) return;
-    if (!confirm("确定要删除这张照片吗？")) return;
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget?.id) return;
     try {
       const res = await fetch("/api/photos", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: photo.id }),
+        body: JSON.stringify({ id: deleteTarget.id }),
       });
       if (res.status === 401) {
-        alert("登录已过期，请重新登录");
+        toast.error("登录已过期，请重新登录");
         return;
       }
       if (res.ok) {
-        setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+        setPhotos((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+        toast.success("照片已删除");
       } else {
         const json = await res.json().catch(() => ({}));
-        alert(json.error || "删除失败");
+        toast.error(json.error || "删除失败");
       }
     } catch {
-      alert("删除失败");
+      toast.error("删除失败");
     }
+    setDeleteTarget(null);
   };
 
   const compressImage = async (file: File): Promise<File> => {
@@ -164,12 +182,13 @@ export default function AdminPhotosPage() {
       });
       const json = await res.json();
       if (!res.ok) {
-        alert(json.error || "上传失败");
+        toast.error(json.error || "上传失败");
         return;
       }
       setForm((prev) => ({ ...prev, src: json.url }));
+      toast.success("图片上传成功");
     } catch {
-      alert("上传失败");
+      toast.error("上传失败");
     } finally {
       setUploading(false);
     }
@@ -220,9 +239,10 @@ export default function AdminPhotosPage() {
             prev.map((p) => (p.id === editingPhoto.id ? updated : p))
           );
           setShowModal(false);
+          toast.success("照片已更新");
         } else {
           const json = await res.json().catch(() => ({}));
-          alert(json.error || "保存失败");
+          toast.error(json.error || "保存失败");
         }
       } else {
         const res = await fetch("/api/photos", {
@@ -234,13 +254,14 @@ export default function AdminPhotosPage() {
           const created: Photo = await res.json();
           setPhotos((prev) => [created, ...prev]);
           setShowModal(false);
+          toast.success("照片已添加");
         } else {
           const json = await res.json().catch(() => ({}));
-          alert(json.error || "保存失败");
+          toast.error(json.error || "保存失败");
         }
       }
     } catch {
-      alert("保存失败");
+      toast.error("保存失败");
     } finally {
       setSaving(false);
     }
@@ -255,7 +276,7 @@ export default function AdminPhotosPage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-xl font-semibold text-foreground">需要登录</h1>
-            <p className="text-sm text-muted">请先返回博客页面登录</p>
+            <p className="text-sm text-muted">请先登录后访问管理页面</p>
           </div>
           <div className="flex items-center gap-3">
             <Link
@@ -282,7 +303,7 @@ export default function AdminPhotosPage() {
         <nav className="flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
+            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
             <span>返回主页</span>
@@ -308,7 +329,7 @@ export default function AdminPhotosPage() {
         </nav>
 
         <section className="space-y-10">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                 摄影集管理
@@ -328,68 +349,97 @@ export default function AdminPhotosPage() {
 
           {loading ? (
             <p className="text-muted text-center py-20">加载中...</p>
-          ) : photos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {photos.map((photo) => (
-                <div
-                  key={photo.id}
-                  className="group relative rounded-xl border border-border/50 overflow-hidden hover:border-foreground/20 transition-colors"
-                >
-                  <div className="aspect-[4/3] bg-muted/20 relative">
-                    {photo.src ? (
-                      <img
-                        src={photo.src}
-                        alt={photo.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted">
-                        <ImageIcon className="w-8 h-8" />
+          ) : (
+            <>
+              {photos.length > 0 && (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                  <input
+                    type="text"
+                    placeholder="搜索照片标题、地点或相机..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                  />
+                </div>
+              )}
+              {filteredPhotos.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredPhotos.map((photo) => (
+                    <div
+                      key={photo.id}
+                      className="relative rounded-xl border border-border/50 overflow-hidden hover:border-foreground/20 transition-colors"
+                    >
+                      <div className="aspect-[4/3] bg-muted/20 relative">
+                        {photo.src ? (
+                          <img
+                            src={photo.src}
+                            alt={photo.title}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted">
+                            <ImageIcon className="w-8 h-8" />
+                          </div>
+                        )}
                       </div>
-                    )}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-foreground truncate">
+                          {photo.title}
+                        </h3>
+                        <p className="text-sm text-muted truncate">{photo.location}</p>
+                        {photo.exif?.camera && (
+                          <p className="text-xs text-muted/70 mt-1 flex items-center gap-1">
+                            <Camera className="w-3 h-3" />
+                            {photo.exif.camera}
+                          </p>
+                        )}
+                      </div>
+                      <div className="absolute top-2 right-2 flex items-center gap-1">
+                        <button
+                          onClick={() => openEdit(photo)}
+                          className="p-2 rounded-lg bg-background/90 backdrop-blur-sm hover:bg-foreground/5 text-muted hover:text-foreground transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+                          title="编辑"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(photo)}
+                          className="p-2 rounded-lg bg-background/90 backdrop-blur-sm hover:bg-red-500/10 text-muted hover:text-red-500 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+                          title="删除"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : search ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-foreground/[0.01] rounded-3xl border border-dashed border-border/50">
+                  <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
+                    <Search className="w-8 h-8" />
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-foreground truncate">
-                      {photo.title}
-                    </h3>
-                    <p className="text-sm text-muted truncate">{photo.location}</p>
-                    {photo.exif?.camera && (
-                      <p className="text-xs text-muted/70 mt-1 flex items-center gap-1">
-                        <Camera className="w-3 h-3" />
-                        {photo.exif.camera}
-                      </p>
-                    )}
+                  <div className="space-y-1">
+                    <p className="text-lg font-semibold text-foreground/80">无匹配结果</p>
+                    <p className="text-sm text-muted">尝试其他关键词</p>
                   </div>
-                  <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => openEdit(photo)}
-                      className="p-2 rounded-lg bg-background/90 backdrop-blur-sm hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
-                      title="编辑"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(photo)}
-                      className="p-2 rounded-lg bg-background/90 backdrop-blur-sm hover:bg-red-500/10 text-muted hover:text-red-500 transition-colors"
-                      title="删除"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <button onClick={() => setSearch("")} className="text-sm text-accent hover:underline">
+                    清除搜索
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-foreground/[0.01] rounded-3xl border border-dashed border-border/50">
+                  <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
+                    <ImageIcon className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-lg font-semibold text-foreground/80">暂无照片</p>
+                    <p className="text-sm text-muted">点击右上角添加照片</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-foreground/[0.01] rounded-3xl border border-dashed border-border/50">
-              <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
-                <ImageIcon className="w-8 h-8" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-lg font-semibold text-foreground/80">暂无照片</p>
-                <p className="text-sm text-muted">点击右上角添加照片</p>
-              </div>
-            </div>
+              )}
+            </>
           )}
         </section>
 
@@ -398,7 +448,6 @@ export default function AdminPhotosPage() {
         </footer>
       </div>
 
-      {/* Modal */}
       <AnimatePresence>
         {showModal && (
           <>
@@ -420,7 +469,7 @@ export default function AdminPhotosPage() {
                 ref={photoModalTrapRef}
                 role="dialog"
                 aria-modal="true"
-                className="relative w-full max-w-2xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+                className="relative w-full max-w-2xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
               >
                 <div className="absolute top-4 right-4 z-10">
                   <button
@@ -432,7 +481,7 @@ export default function AdminPhotosPage() {
                   </button>
                 </div>
 
-                <div className="px-8 pt-8 pb-4">
+                <div className="px-8 pt-8 pb-4 flex-shrink-0">
                   <h2 className="text-xl font-bold text-foreground">
                     {editingPhoto ? "编辑照片" : "添加照片"}
                   </h2>
@@ -545,10 +594,13 @@ export default function AdminPhotosPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-foreground">标题</label>
+                        <label className="text-sm font-medium text-foreground">
+                          标题 <span className="text-muted">({form.title.length}/500)</span>
+                        </label>
                         <input
                           type="text"
                           required
+                          maxLength={500}
                           value={form.title}
                           onChange={(e) => setForm({ ...form, title: e.target.value })}
                           placeholder="照片标题"
@@ -556,10 +608,13 @@ export default function AdminPhotosPage() {
                         />
                       </div>
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-foreground">地点</label>
+                        <label className="text-sm font-medium text-foreground">
+                          地点 <span className="text-muted">({form.location.length}/500)</span>
+                        </label>
                         <input
                           type="text"
                           required
+                          maxLength={500}
                           value={form.location}
                           onChange={(e) => setForm({ ...form, location: e.target.value })}
                           placeholder="拍摄地点"
@@ -569,9 +624,12 @@ export default function AdminPhotosPage() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-foreground">描述</label>
+                      <label className="text-sm font-medium text-foreground">
+                        描述 <span className="text-muted">({(form.description || "").length}/2000)</span>
+                      </label>
                       <textarea
                         rows={3}
+                        maxLength={2000}
                         value={form.description || ""}
                         onChange={(e) => setForm({ ...form, description: e.target.value })}
                         placeholder="简短描述..."
@@ -666,6 +724,16 @@ export default function AdminPhotosPage() {
           </>
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        title="删除照片"
+        message={`确定要删除「${deleteTarget?.title || ""}」吗？此操作不可撤销。`}
+        confirmLabel="确认删除"
+        danger={true}
+      />
     </main>
   );
 }

@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
     }
 
-    const { id, created_at, updated_at, ...rest } = parsed.data;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id: _id, created_at: _ca, updated_at: _ua, ...rest } = parsed.data;
     const photo = await createPhoto(rest);
     return NextResponse.json(photo, { status: 201 });
   } catch (error) {

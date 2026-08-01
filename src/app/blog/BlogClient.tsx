@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Tag, FileText, X, KeyRound, UserCheck } from "lucide-react";
+import { useToast } from "@/components/toast";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 import type { BlogPost } from "@/lib/types/blog";
@@ -18,9 +19,10 @@ export default function BlogClient({ posts }: Props) {
     const router = useRouter();
     const [showModal, setShowModal] = useState(false);
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    const toast = useToast();
     const reduce = useSafeMotion();
     const loginTrapRef = useFocusTrap(showModal);
 
@@ -33,7 +35,6 @@ export default function BlogClient({ posts }: Props) {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
         setLoading(true);
 
         try {
@@ -47,11 +48,11 @@ export default function BlogClient({ posts }: Props) {
                 router.push("/admin/blog");
             } else {
                 const data = await res.json();
-                setError(data.error || "密码错误");
+                toast.error(data.error || "密码错误");
                 setLoading(false);
             }
         } catch {
-            setError("登录失败");
+            toast.error("登录失败");
             setLoading(false);
         }
     };
@@ -150,7 +151,7 @@ export default function BlogClient({ posts }: Props) {
                                 setShowModal(true);
                             }
                         }}
-                        className="text-muted hover:text-foreground transition-colors"
+                        className="inline-flex items-center gap-1.5 text-muted hover:text-foreground transition-colors"
                         title={isLoggedIn ? "进入后台" : "管理"}
                     >
                         {isLoggedIn ? (
@@ -158,6 +159,7 @@ export default function BlogClient({ posts }: Props) {
                         ) : (
                             <KeyRound className="w-3.5 h-3.5" />
                         )}
+                        <span className="text-xs">管理后台</span>
                     </button>
                 </div>
             </footer>
@@ -171,7 +173,7 @@ export default function BlogClient({ posts }: Props) {
                             animate={{ opacity: 1 }}
                             exit={safeAnimate(reduce, { opacity: 0 })}
                             onClick={() => setShowModal(false)}
-                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100]"
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
                         />
                         <motion.div
                             initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
@@ -185,14 +187,14 @@ export default function BlogClient({ posts }: Props) {
                                 role="dialog"
                                 aria-modal="true"
                                 aria-labelledby="login-title"
-                                className="relative w-full max-w-[420px] bg-white rounded-[28px] shadow-[0_45px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden"
+                                className="relative w-full max-w-[420px] bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden"
                             >
                                 {/* Close Button */}
                                 <div className="absolute top-6 right-6 z-10">
                                     <button
                                         onClick={() => setShowModal(false)}
                                         aria-label="关闭登录窗口"
-                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                                        className="p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
                                     >
                                         <X size={16} strokeWidth={2.5} />
                                     </button>
@@ -216,22 +218,17 @@ export default function BlogClient({ posts }: Props) {
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 placeholder="请输入密码"
                                                 autoFocus
-                                                className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 transition-colors"
+                                                className="px-4 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
                                             />
                                         </div>
-
-                                        {error && (
-                                            <p className="text-sm text-red-500">{error}</p>
-                                        )}
 
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            className="w-full px-4 py-3 rounded-2xl text-sm font-semibold text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 relative group disabled:opacity-50 transition-colors duration-200"
+                                            className="w-full px-4 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
                                         >
                                             <span className="relative">
                                                 {loading ? "登录中..." : "登录"}
-                                                <span className="absolute left-0 -bottom-1 w-0 h-px bg-slate-900 group-hover:w-full transition-all duration-200" />
                                             </span>
                                         </button>
                                     </form>
