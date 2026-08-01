@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkAuth } from "@/lib/auth";
 import { getAllPhotos, createPhoto, updatePhoto, deletePhoto } from "@/lib/supabase";
-import { photoSchema, photoUpdateSchema } from "@/lib/validation";
+import { photoSchema, photoUpdateSchema, photoDeleteSchema } from "@/lib/validation";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 export async function GET() {
   try {
@@ -16,6 +17,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const authError = checkAuth(request);
   if (authError) return authError;
+
+  const limit = rateLimit(getRateLimitKey(request) + ":photos:create");
+  if (!limit.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
 
   try {
     const body = await request.json();
@@ -36,6 +42,11 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const authError = checkAuth(request);
   if (authError) return authError;
+
+  const limit = rateLimit(getRateLimitKey(request) + ":photos:update");
+  if (!limit.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
 
   try {
     const body = await request.json();
@@ -61,12 +72,18 @@ export async function DELETE(request: NextRequest) {
   const authError = checkAuth(request);
   if (authError) return authError;
 
+  const limit = rateLimit(getRateLimitKey(request) + ":photos:delete");
+  if (!limit.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
   try {
-    const { id } = await request.json();
-    if (!id || typeof id !== "string") {
+    const body = await request.json();
+    const parsed = photoDeleteSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json({ error: "id is required" }, { status: 400 });
     }
-    await deletePhoto(id);
+    await deletePhoto(parsed.data.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete photo:", error);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { rateLimit, getRateLimitKey, UPLOAD_RATE_LIMIT } from "@/lib/rate-limit";
 
 function sanitizeFileName(name: string): string {
   return name
@@ -14,6 +15,11 @@ function sanitizeFileName(name: string): string {
 export async function POST(request: NextRequest) {
   const authError = checkAuth(request);
   if (authError) return authError;
+
+  const limit = rateLimit(getRateLimitKey(request) + ":photos:upload", UPLOAD_RATE_LIMIT);
+  if (!limit.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
 
   try {
     const formData = await request.formData();

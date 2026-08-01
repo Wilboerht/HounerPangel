@@ -15,7 +15,7 @@ export default function BackButton() {
           router.push("/");
         }
       }}
-      className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
+      className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
     >
       <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
       <span>返回</span>

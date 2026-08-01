@@ -92,7 +92,7 @@ export default function EditBlogPost() {
 
     if (authChecking) {
         return (
-            <main className="min-h-screen flex items-center justify-center">
+            <main className="min-h-dvh flex items-center justify-center">
                 <p className="text-muted">检查权限中...</p>
             </main>
         );
@@ -100,14 +100,14 @@ export default function EditBlogPost() {
 
     if (loading) {
         return (
-            <main className="min-h-screen flex items-center justify-center">
+            <main className="min-h-dvh flex items-center justify-center">
                 <p className="text-muted">加载中...</p>
             </main>
         );
     }
 
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+        <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
             <div className="max-w-3xl w-full flex flex-col gap-12">
                 <nav>
                     <Link
@@ -197,7 +197,7 @@ export default function EditBlogPost() {
                                 value={form.content}
                                 onChange={(e) => setForm({ ...form, content: e.target.value })}
                                 placeholder="## 开头\n\n写点什么..."
-                                className="px-4 py-3 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors resize-y font-mono text-sm leading-relaxed"
+                                className="px-4 py-3 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors resize-y font-mono text-base leading-relaxed"
                             />
                         </div>
 

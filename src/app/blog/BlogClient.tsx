@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Tag, FileText, X, KeyRound, UserCheck } from "lucide-react";
+import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
+import { useFocusTrap } from "@/lib/focus-trap";
 import type { BlogPost } from "@/lib/types/blog";
 
 interface Props {
@@ -19,6 +21,8 @@ export default function BlogClient({ posts }: Props) {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const reduce = useSafeMotion();
+    const loginTrapRef = useFocusTrap(showModal);
 
     useEffect(() => {
         fetch("/api/admin/check")
@@ -163,20 +167,21 @@ export default function BlogClient({ posts }: Props) {
                 {showModal && (
                     <>
                         <motion.div
-                            initial={{ opacity: 0 }}
+                            initial={safeAnimate(reduce, { opacity: 0 })}
                             animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            exit={safeAnimate(reduce, { opacity: 0 })}
                             onClick={() => setShowModal(false)}
                             className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100]"
                         />
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+                            initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
+                            transition={springModal}
                             className="fixed inset-0 flex items-center justify-center z-[101] p-6"
                         >
                             <div
+                                ref={loginTrapRef}
                                 role="dialog"
                                 aria-modal="true"
                                 aria-labelledby="login-title"

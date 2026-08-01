@@ -5,8 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Camera, Aperture, Menu, Clock } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Aperture, Menu, Clock } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
+import { useSafeMotion, safeAnimate } from "@/lib/animation";
 import type { Photo } from "./data";
 
 function Navbar() {
@@ -21,6 +22,7 @@ function Navbar() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
   }, [pathname]);
 
@@ -32,7 +34,7 @@ function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 shadow-[0_12px_30px_rgba(0,0,0,0.05)] ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 shadow-[0_12px_30px_rgba(0,0,0,0.05)] pt-safe ${
         scrolled ? "bg-white" : "bg-transparent"
       }`}
     >
@@ -81,9 +83,11 @@ function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, scaleY: 0 }}
+            animate={{ opacity: 1, scaleY: 1 }}
+            exit={{ opacity: 0, scaleY: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            style={{ originY: 0 }}
             className="md:hidden bg-white/95 backdrop-blur-xl border-b border-black/5 overflow-hidden"
           >
             <div className="px-5 py-6 flex flex-col gap-4">
@@ -121,7 +125,9 @@ function Footer() {
 export default function PhotographyPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const reduce = useSafeMotion();
 
   useEffect(() => {
     fetch("/api/photos")
@@ -130,7 +136,10 @@ export default function PhotographyPage() {
         setPhotos(data || []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
   }, []);
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
@@ -180,7 +189,17 @@ export default function PhotographyPage() {
 
       {/* Gallery */}
       <section className="mx-auto max-w-6xl px-5 md:px-8 lg:px-12 pt-[140px] md:pt-[180px] pb-24 md:pb-40">
-        {loading ? (
+        {error ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
+            <p className="text-[#888888]">加载失败</p>
+            <button
+              onClick={() => { setError(false); setLoading(true); fetch("/api/photos").then(res => res.json()).then(data => { setPhotos(data || []); setLoading(false); }).catch(() => { setError(true); setLoading(false); }); }}
+              className="text-sm text-[#888888] hover:text-black transition-colors"
+            >
+              重试
+            </button>
+          </div>
+        ) : loading ? (
           <p className="text-center text-[#888888] py-20">加载中...</p>
         ) : photos.length === 0 ? (
           <p className="text-center text-[#888888] py-20">暂无照片</p>
@@ -217,16 +236,17 @@ export default function PhotographyPage() {
       <AnimatePresence>
         {lightboxIndex !== null && (
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={safeAnimate(reduce, { opacity: 0 })}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={safeAnimate(reduce, { opacity: 0 })}
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[100] bg-[#f5f5f5] flex flex-col"
           >
             {/* Close */}
             <button
               onClick={closeLightbox}
-              className="absolute top-5 right-5 md:top-8 md:right-8 z-10 p-2 text-[#888888] hover:text-black transition-colors"
+              className="absolute right-5 md:right-8 z-10 p-2 text-[#888888] hover:text-black transition-colors"
+              style={{ top: `calc(1.25rem + env(safe-area-inset-top, 0px))` }}
               aria-label="关闭"
             >
               <X size={24} />
@@ -254,9 +274,9 @@ export default function PhotographyPage() {
             <div className="flex-1 flex items-center justify-center w-full min-h-0 px-4 md:px-8 pt-8 pb-4">
               <motion.div
                 key={lightboxIndex}
-                initial={{ opacity: 0, scale: 0.98 }}
+                initial={safeAnimate(reduce, { opacity: 0, scale: 0.98 })}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
+                exit={safeAnimate(reduce, { opacity: 0, scale: 0.98 })}
                 transition={{ duration: 0.3 }}
                 className="max-w-full h-full flex items-center justify-center"
               >
@@ -270,7 +290,7 @@ export default function PhotographyPage() {
             </div>
 
             {/* Info Bar */}
-            <div className="shrink-0 px-5 md:px-8 lg:px-16 py-4 md:py-6">
+            <div className="shrink-0 px-5 md:px-8 lg:px-16 py-4 md:py-6 pb-safe">
               <div className="mx-auto max-w-5xl flex flex-wrap items-start justify-center gap-x-6 md:gap-x-10 gap-y-4 text-center">
                 {/* 参数 */}
                 <div>

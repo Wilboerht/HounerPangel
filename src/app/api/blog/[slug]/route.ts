@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBlogPostBySlug, updateBlogPost, deleteBlogPost } from "@/lib/blog-db";
 import { checkAuth } from "@/lib/auth";
-import { blogPostUpdateSchema } from "@/lib/validation";
+import { blogPostUpdateSchema, slugParamSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 interface Params {
@@ -65,8 +65,17 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     const authError = checkAuth(request);
     if (authError) return authError;
 
+    const limit = rateLimit(getRateLimitKey(request) + ":blog:delete");
+    if (!limit.success) {
+        return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     try {
         const { slug } = await params;
+        const parseResult = slugParamSchema.safeParse({ slug });
+        if (!parseResult.success) {
+            return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
+        }
         await deleteBlogPost(slug);
         return NextResponse.json({ success: true });
     } catch (error) {

@@ -42,7 +42,7 @@ export default async function Design({
     const pageNumbers = Array.from({ length: totalPages }).map((_, i) => i + 1);
 
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+        <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
             <div className="max-w-6xl w-full flex flex-col gap-12">
                 {/* Navigation */}
                 <nav>

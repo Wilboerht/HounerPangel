@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AboutMe() {
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+        <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
             <div className="max-w-2xl w-full flex flex-col gap-12">
                 {/* Navigation */}
                 <nav>

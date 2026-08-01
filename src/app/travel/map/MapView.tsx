@@ -1,21 +1,13 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { X, ChevronLeft, ChevronRight, Camera, ChevronUp, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Map, { Marker } from "react-map-gl/mapbox";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSafeMotion, safeAnimate, easeOut } from "@/lib/animation";
 import "mapbox-gl/dist/mapbox-gl.css";
-
-interface Photo {
-  src: string;
-  title: string;
-  location: string;
-  date?: string;
-  lat?: number;
-  lng?: number;
-  aspectRatio?: string;
-  category?: string;
-}
+import type { Photo } from "@/lib/types/photo";
 
 interface Props {
   photos: Photo[];
@@ -80,6 +72,7 @@ export default function MapView({ photos, mapboxToken }: Props) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const reduce = useSafeMotion();
 
   const selectedPhoto = selectedId !== null ? photos[selectedId] : null;
   const displayPhotos = selectedPhoto ? [selectedPhoto] : photos;
@@ -95,6 +88,32 @@ export default function MapView({ photos, mapboxToken }: Props) {
       (lightboxIndex - 1 + displayPhotos.length) % displayPhotos.length
     );
   }, [lightboxIndex, displayPhotos.length]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (lightboxIndex === null) return;
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxIndex, closeLightbox, goPrev, goNext]);
+
+  useEffect(() => {
+    if (lightboxIndex !== null) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    };
+  }, [lightboxIndex]);
 
   const handleMarkerClick = useCallback(
     (idx: number) => {
@@ -154,13 +173,13 @@ export default function MapView({ photos, mapboxToken }: Props) {
                 >
                   <button
                     onClick={() => handleMarkerClick(idx)}
-                    className="relative flex items-center justify-center"
+                    className="relative flex items-center justify-center min-w-[44px] min-h-[44px]"
                   >
                     <span
                       className={`block rounded-full border-2 border-white shadow-sm transition-all duration-200 ${
                         selectedId === idx
                           ? "w-4 h-4 scale-125"
-                          : "w-2.5 h-2.5 hover:scale-125"
+                          : "w-2.5 h-2.5"
                       }`}
                       style={{
                         backgroundColor: markerColor(photo.category),
@@ -173,7 +192,10 @@ export default function MapView({ photos, mapboxToken }: Props) {
           </Map>
 
           {/* Bottom Panel */}
-          <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:w-[380px] z-10">
+          <div
+            className="absolute left-4 right-4 sm:right-auto sm:w-[380px] z-10"
+            style={{ bottom: `calc(1rem + env(safe-area-inset-bottom, 0px))` }}
+          >
             <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-neutral-100 overflow-hidden">
               {/* Panel Header */}
               <button
@@ -226,77 +248,87 @@ export default function MapView({ photos, mapboxToken }: Props) {
           </div>
 
           {/* Lightbox */}
-          {currentPhoto && lightboxIndex !== null && (
-            <div
-              className="fixed inset-0 z-50 flex flex-col bg-black"
-            >
-              <button
-                onClick={closeLightbox}
-                className="absolute top-5 right-5 p-2 text-white/60 hover:text-white transition-colors z-50"
-                aria-label="关闭"
+          <AnimatePresence>
+            {lightboxIndex !== null && currentPhoto && (
+              <motion.div
+                initial={safeAnimate(reduce, { opacity: 0 })}
+                animate={{ opacity: 1 }}
+                exit={safeAnimate(reduce, { opacity: 0 })}
+                transition={easeOut}
+                className="fixed inset-0 z-50 flex flex-col bg-black"
               >
-                <X className="w-6 h-6" />
-              </button>
-
-              {displayPhotos.length > 1 && (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      goPrev();
-                    }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-white transition-colors z-50"
-                    aria-label="上一张"
-                  >
-                    <ChevronLeft className="w-8 h-8" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      goNext();
-                    }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-white transition-colors z-50"
-                    aria-label="下一张"
-                  >
-                    <ChevronRight className="w-8 h-8" />
-                  </button>
-                </>
-              )}
-
-              {/* Image area */}
-              <div className="flex-1 flex items-center justify-center w-full min-h-0 px-4 md:px-8 pt-16 pb-2">
-                <div
-                  className="relative max-w-full h-full"
-                  onClick={(e) => e.stopPropagation()}
+                <button
+                  onClick={closeLightbox}
+                  className="absolute right-5 p-2 text-white/60 hover:text-white transition-colors z-50"
+                  style={{ top: `calc(1.25rem + env(safe-area-inset-top, 0px))` }}
+                  aria-label="关闭"
                 >
-                  <SafeImage
-                    src={currentPhoto.src}
-                    alt={currentPhoto.title}
-                    fill
-                    className="object-contain"
-                    sizes="90vw"
-                    priority
-                  />
-                </div>
-              </div>
+                  <X className="w-6 h-6" />
+                </button>
 
-              {/* Bottom Info Bar */}
-              <div className="shrink-0 bg-black/80 backdrop-blur-sm px-4 py-3 md:py-4">
-                <div className="mx-auto max-w-5xl flex items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <span className="text-white text-sm font-medium truncate block">
-                      {currentPhoto.title}
-                    </span>
-                    {currentPhoto.location && (
-                      <span className="text-white/50 text-xs truncate block">
-                        {currentPhoto.location}
+                {displayPhotos.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goPrev();
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-white transition-colors z-50"
+                      aria-label="上一张"
+                    >
+                      <ChevronLeft className="w-8 h-8" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goNext();
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-white transition-colors z-50"
+                      aria-label="下一张"
+                    >
+                      <ChevronRight className="w-8 h-8" />
+                    </button>
+                  </>
+                )}
+
+                <div className="flex-1 flex items-center justify-center w-full min-h-0 px-4 md:px-8 pt-16 pb-2">
+                  <motion.div
+                    key={lightboxIndex}
+                    initial={safeAnimate(reduce, { opacity: 0, scale: 0.98 })}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={safeAnimate(reduce, { opacity: 0, scale: 0.98 })}
+                    transition={easeOut}
+                    className="relative max-w-full h-full"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <SafeImage
+                      src={currentPhoto.src}
+                      alt={currentPhoto.title}
+                      fill
+                      className="object-contain"
+                      sizes="90vw"
+                      priority
+                    />
+                  </motion.div>
+                </div>
+
+                <div className="shrink-0 bg-black/80 backdrop-blur-sm px-4 py-3 md:py-4 pb-safe">
+                  <div className="mx-auto max-w-5xl flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <span className="text-white text-sm font-medium truncate block">
+                        {currentPhoto.title}
                       </span>
-                    )}
+                      {currentPhoto.location && (
+                        <span className="text-white/50 text-xs truncate block">
+                          {currentPhoto.location}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
     </div>

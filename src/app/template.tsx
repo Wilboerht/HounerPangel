@@ -1,21 +1,17 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useSafeMotion, safeAnimate, easeOut } from "@/lib/animation";
 
 export default function Template({ children }: { children: React.ReactNode }) {
-  const shouldReduceMotion = useReducedMotion();
+  const reduce = useSafeMotion();
 
   return (
     <motion.div
-      initial={shouldReduceMotion ? false : { opacity: 0, y: -12 }}
+      initial={safeAnimate(reduce, { opacity: 0, y: -8 })}
       animate={{ opacity: 1, y: 0 }}
-      transition={{
-        ease: "easeOut",
-        duration: 0.6,
-        type: "spring",
-        damping: 25,
-        stiffness: 100,
-      }}
+      transition={easeOut}
+      style={{ willChange: reduce ? "auto" : "transform, opacity" }}
     >
       {children}
     </motion.div>

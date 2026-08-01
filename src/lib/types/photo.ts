@@ -11,6 +11,9 @@ export interface Photo {
         shutter?: string;
         iso?: string;
     };
+    lat?: number;
+    lng?: number;
+    category?: string;
     created_at?: string;
     updated_at?: string;
 }

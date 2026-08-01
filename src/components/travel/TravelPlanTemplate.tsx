@@ -41,7 +41,7 @@ export default function TravelPlanTemplate({ data }: Props) {
   const foodRows = useMemo(() => groupFoods(data.foods), [data.foods]);
 
   return (
-    <main className="min-h-screen px-6 py-12 max-w-4xl mx-auto">
+    <main className="min-h-dvh px-6 py-12 max-w-4xl mx-auto">
       {/* Header with Back Link */}
       <header className="mb-12">
         <button

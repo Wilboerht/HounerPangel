@@ -1,24 +1,6 @@
-export interface Photo {
-  id?: string;
-  src: string;
-  title: string;
-  location: string;
-  description?: string;
-  exif?: {
-    camera?: string;
-    lens?: string;
-    aperture?: string;
-    shutter?: string;
-    iso?: string;
-  };
-  lat?: number;
-  lng?: number;
-  date?: string;
-  category?: string;
-  aspectRatio?: string;
-}
+export type { Photo } from "@/lib/types/photo";
 
-export async function getPhotos(): Promise<Photo[]> {
+export async function getPhotos(): Promise<import("@/lib/types/photo").Photo[]> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/photos`, {
     next: { revalidate: 60 },
   });

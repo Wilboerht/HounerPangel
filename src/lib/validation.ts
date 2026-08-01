@@ -42,3 +42,7 @@ export const photoSchema = z.object({
 });
 
 export const photoUpdateSchema = photoSchema;
+
+export const photoDeleteSchema = z.object({
+    id: z.string().uuid("无效的 ID 格式"),
+});

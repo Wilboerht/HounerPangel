@@ -24,13 +24,13 @@ export function PageLayout({
     className = "",
 }: PageLayoutProps) {
     return (
-        <main className={`min-h-screen flex flex-col items-center justify-center px-6 py-12 ${className}`}>
+        <main className={`min-h-dvh flex flex-col items-center justify-center px-6 py-12 ${className}`}>
             <div className={`${maxWidthClasses[maxWidth]} w-full flex flex-col gap-12`}>
                 {backHref && (
                     <nav>
                         <Link
                             href={backHref}
-                            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
+                            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
                         >
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
                             <span>{backLabel}</span>

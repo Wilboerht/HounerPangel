@@ -428,7 +428,7 @@ export default async function BlogPostPage({ params }: Props) {
     };
 
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+        <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

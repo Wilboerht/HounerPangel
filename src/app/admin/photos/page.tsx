@@ -17,21 +17,9 @@ import {
   Upload,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface Photo {
-  id?: string;
-  src: string;
-  title: string;
-  location: string;
-  description?: string;
-  exif?: {
-    camera?: string;
-    lens?: string;
-    aperture?: string;
-    shutter?: string;
-    iso?: string;
-  };
-}
+import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
+import { useFocusTrap } from "@/lib/focus-trap";
+import type { Photo } from "@/lib/types/photo";
 
 const emptyForm: Photo = {
   src: "",
@@ -54,28 +42,37 @@ export default function AdminPhotosPage() {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [keepOriginal, setKeepOriginal] = useState(false);
+  const reduce = useSafeMotion();
+  const photoModalTrapRef = useFocusTrap(showModal);
 
   const loadPhotos = () => {
     fetch("/api/photos")
-      .then((res) => {
-        if (res.status === 401) {
-          setAuthError(true);
-          setLoading(false);
-          return null;
-        }
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data: Photo[]) => {
-        if (data) {
-          setPhotos(data);
-          setLoading(false);
-        }
+        setPhotos(data || []);
+        setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setLoading(false);
+        setAuthError(true);
+      });
   };
 
   useEffect(() => {
-    loadPhotos();
+    fetch("/api/admin/check")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.authenticated) {
+          setAuthError(true);
+          setLoading(false);
+          return;
+        }
+        loadPhotos();
+      })
+      .catch(() => {
+        setAuthError(true);
+        setLoading(false);
+      });
   }, []);
 
   const openNew = () => {
@@ -251,7 +248,7 @@ export default function AdminPhotosPage() {
 
   if (authError) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-6">
+      <main className="min-h-dvh flex items-center justify-center px-6">
         <div className="max-w-sm w-full flex flex-col items-center gap-6 text-center">
           <div className="p-4 rounded-full bg-foreground/5">
             <Lock className="w-8 h-8 text-muted" />
@@ -260,19 +257,27 @@ export default function AdminPhotosPage() {
             <h1 className="text-xl font-semibold text-foreground">需要登录</h1>
             <p className="text-sm text-muted">请先返回博客页面登录</p>
           </div>
-          <Link
-            href="/blog"
-            className="px-6 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
-          >
-            返回博客
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/blog"
+              className="px-6 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+            >
+              返回博客
+            </Link>
+            <button
+              onClick={() => { setAuthError(false); setLoading(true); loadPhotos(); }}
+              className="text-sm text-muted hover:text-foreground transition-colors"
+            >
+              重试
+            </button>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+    <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-5xl w-full flex flex-col gap-12">
         <nav className="flex items-center justify-between">
           <Link
@@ -398,20 +403,21 @@ export default function AdminPhotosPage() {
         {showModal && (
           <>
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={safeAnimate(reduce, { opacity: 0 })}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={safeAnimate(reduce, { opacity: 0 })}
               onClick={() => setShowModal(false)}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 10 }}
+              initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 10 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
+              transition={springModal}
               className="fixed inset-0 flex items-center justify-center z-[101] p-6"
             >
               <div
+                ref={photoModalTrapRef}
                 role="dialog"
                 aria-modal="true"
                 className="relative w-full max-w-2xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[85vh] flex flex-col"

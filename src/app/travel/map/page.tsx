@@ -16,8 +16,11 @@ export default async function TravelMapPage() {
   const photos = await getAllPhotos();
 
   return (
-    <div className="relative h-screen w-full">
-      <div className="absolute top-6 left-6 z-20">
+    <div className="relative h-dvh w-full">
+      <div
+        className="absolute left-6 z-20"
+        style={{ top: `calc(1.5rem + env(safe-area-inset-top, 0px))` }}
+      >
         <BackButton />
       </div>
       <MapView photos={photos} mapboxToken={mapboxToken} />

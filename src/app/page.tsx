@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FileText, FolderKanban, Palette, User, Microscope } from "lucide-react";
 import { ContactMenu } from "@/components/ContactMenu";
 
@@ -11,9 +12,8 @@ const navLinks = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-12">
+    <main className="min-h-dvh flex items-center justify-center px-6 py-12">
       <div className="max-w-2xl w-full flex flex-col md:flex-row md:items-center gap-12">
-        {/* Left: Hero Section */}
         <section className="flex-1 space-y-6">
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
@@ -23,21 +23,15 @@ export default function Home() {
               与世界连结，<br />无限进步
             </p>
           </div>
-
-          {/* Social Links Menu */}
           <ContactMenu />
-
-          {/* Footer */}
           <footer className="pt-12 text-sm text-muted">
             <p>&copy; {new Date().getFullYear()} wilboerht</p>
           </footer>
         </section>
-
-        {/* Right: Navigation */}
         <nav className="flex flex-col gap-4">
           {navLinks.map((link) =>
             link.href ? (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 className="flex items-center gap-2 text-lg text-muted hover:text-foreground transition-colors duration-200 relative group"
@@ -45,7 +39,7 @@ export default function Home() {
                 <link.icon className="w-5 h-5" />
                 {link.name}
                 <span className="absolute left-0 -bottom-1 w-0 h-px bg-foreground group-hover:w-full transition-all duration-200" />
-              </a>
+              </Link>
             ) : (
               <span
                 key={link.name}

@@ -1,37 +1,47 @@
-// Simple in-memory rate limiter for API routes
-// In production, consider using Redis for distributed rate limiting
+const store = new Map<string, { count: number; resetTime: number }>();
 
-interface RateLimitEntry {
-    count: number;
-    resetTime: number;
+export const LOGIN_RATE_LIMIT = { windowMs: 60_000, max: 10 };
+export const ADMIN_RATE_LIMIT = { windowMs: 30_000, max: 20 };
+export const UPLOAD_RATE_LIMIT = { windowMs: 60_000, max: 5 };
+
+let lastCleanup = Date.now();
+
+function cleanupExpired() {
+  const now = Date.now();
+  if (now - lastCleanup < 60_000) return;
+  lastCleanup = now;
+  for (const [key, entry] of store) {
+    if (now > entry.resetTime) {
+      store.delete(key);
+    }
+  }
 }
 
-const store = new Map<string, RateLimitEntry>();
+export function rateLimit(
+  identifier: string,
+  options: { windowMs: number; max: number } = LOGIN_RATE_LIMIT
+): { success: boolean; remaining: number; resetTime: number } {
+  cleanupExpired();
 
-const WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REQUESTS = 10; // 10 requests per minute for login
+  const now = Date.now();
+  const entry = store.get(identifier);
 
-export function rateLimit(identifier: string): { success: boolean; remaining: number; resetTime: number } {
-    const now = Date.now();
-    const entry = store.get(identifier);
+  if (!entry || now > entry.resetTime) {
+    const resetTime = now + options.windowMs;
+    store.set(identifier, { count: 1, resetTime });
+    return { success: true, remaining: options.max - 1, resetTime };
+  }
 
-    if (!entry || now > entry.resetTime) {
-        // New window
-        const resetTime = now + WINDOW_MS;
-        store.set(identifier, { count: 1, resetTime });
-        return { success: true, remaining: MAX_REQUESTS - 1, resetTime };
-    }
+  if (entry.count >= options.max) {
+    return { success: false, remaining: 0, resetTime: entry.resetTime };
+  }
 
-    if (entry.count >= MAX_REQUESTS) {
-        return { success: false, remaining: 0, resetTime: entry.resetTime };
-    }
-
-    entry.count++;
-    return { success: true, remaining: MAX_REQUESTS - entry.count, resetTime: entry.resetTime };
+  entry.count++;
+  return { success: true, remaining: options.max - entry.count, resetTime: entry.resetTime };
 }
 
 export function getRateLimitKey(request: Request): string {
-    const forwarded = request.headers.get("x-forwarded-for");
-    const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
-    return ip;
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+  return ip;
 }

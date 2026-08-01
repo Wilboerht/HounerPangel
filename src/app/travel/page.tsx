@@ -25,7 +25,7 @@ const travelLinks = [
 
 export default function TravelPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+    <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-6xl w-full space-y-8">
         <nav>
           <BackButton />
