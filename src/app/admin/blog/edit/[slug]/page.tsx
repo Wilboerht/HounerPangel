@@ -7,6 +7,7 @@ import { ArrowLeft, Save, X } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useTagManager } from "@/lib/use-tag-manager";
 
 export default function EditBlogPost() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function EditBlogPost() {
     date: "",
     tags: [] as string[],
   });
-  const [tagInput, setTagInput] = useState("");
+  const tagManager = useTagManager(form.tags);
   const [formDirty, setFormDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(false);
 
@@ -62,12 +63,14 @@ export default function EditBlogPost() {
           date: data.date,
           tags: data.tags,
         });
+        tagManager.setTags(data.tags);
         setLoading(false);
       })
       .catch(() => {
         toast.error("加载失败");
         router.push("/admin/blog");
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, router, isAuth, toast]);
 
   useEffect(() => {
@@ -84,20 +87,6 @@ export default function EditBlogPost() {
     if (!formDirty) setFormDirty(true);
   };
 
-  const addTag = (tag: string) => {
-    const trimmed = tag.trim();
-    if (trimmed && !form.tags.includes(trimmed) && form.tags.length < 20) {
-      setForm({ ...form, tags: [...form.tags, trimmed] });
-      setTagInput("");
-      markDirty();
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setForm({ ...form, tags: form.tags.filter((t) => t !== tag) });
-    markDirty();
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -111,12 +100,13 @@ export default function EditBlogPost() {
           excerpt: form.excerpt,
           content: form.content,
           date: form.date,
-          tags: form.tags,
+          tags: tagManager.tags,
         }),
       });
 
       if (res.ok) {
         setFormDirty(false);
+        tagManager.setInput("");
         toast.success("文章已保存");
         router.push("/admin/blog");
       } else {
@@ -233,10 +223,10 @@ export default function EditBlogPost() {
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium text-foreground">
-                标签 <span className="text-muted">({form.tags.length}/20)</span>
+                标签 <span className="text-muted">({tagManager.tags.length}/20)</span>
               </label>
               <div className="flex flex-wrap gap-2 mb-1">
-                {form.tags.map((tag) => (
+                {tagManager.tags.map((tag) => (
                   <span
                     key={tag}
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-foreground/10 text-foreground text-xs font-medium"
@@ -244,7 +234,7 @@ export default function EditBlogPost() {
                     {tag}
                     <button
                       type="button"
-                      onClick={() => removeTag(tag)}
+                      onClick={() => tagManager.removeTag(tag)}
                       className="hover:text-red-500 transition-colors"
                     >
                       <X className="w-3 h-3" />
@@ -255,24 +245,16 @@ export default function EditBlogPost() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === ",") {
-                      e.preventDefault();
-                      addTag(tagInput);
-                    }
-                    if (e.key === "Backspace" && !tagInput && form.tags.length > 0) {
-                      removeTag(form.tags[form.tags.length - 1]);
-                    }
-                  }}
+                  value={tagManager.input}
+                  onChange={(e) => tagManager.setInput(e.target.value)}
+                  onKeyDown={tagManager.handleInputKeyDown}
                   placeholder="输入标签后按回车添加"
                   className="flex-1 px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
                 />
                 <button
                   type="button"
-                  onClick={() => addTag(tagInput)}
-                  disabled={!tagInput.trim()}
+                  onClick={() => tagManager.addTag(tagManager.input)}
+                  disabled={!tagManager.input.trim()}
                   className="px-4 py-2 rounded-lg bg-foreground/5 text-muted hover:text-foreground disabled:opacity-30 transition-colors text-sm"
                 >
                   添加

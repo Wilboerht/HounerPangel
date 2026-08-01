@@ -7,12 +7,6 @@ export const springModal = {
   stiffness: 300,
 };
 
-export const springBouncy = {
-  type: "spring" as const,
-  damping: 15,
-  stiffness: 200,
-};
-
 export const easeOut = {
   duration: 0.4,
   ease: [0.22, 1, 0.36, 1] as const,

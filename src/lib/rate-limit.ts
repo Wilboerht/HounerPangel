@@ -1,7 +1,6 @@
 const store = new Map<string, { count: number; resetTime: number }>();
 
 export const LOGIN_RATE_LIMIT = { windowMs: 60_000, max: 10 };
-export const ADMIN_RATE_LIMIT = { windowMs: 30_000, max: 20 };
 export const UPLOAD_RATE_LIMIT = { windowMs: 60_000, max: 5 };
 
 let lastCleanup = Date.now();

@@ -1,9 +1,9 @@
 "use client";
 
-import { MapPin, Calendar, Wallet, Train, Utensils, Ticket, Check, ArrowLeft, LucideIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { MapPin, Calendar, Wallet, Train, Utensils, Ticket, Check, LucideIcon } from "lucide-react";
 import { useMemo } from "react";
 import { TravelPlan, FoodItem } from "@/types/travel";
+import BackButton from "@/components/BackButton";
 import PlanMap from "./PlanMap";
 
 const IconMap: Record<string, LucideIcon> = {
@@ -37,26 +37,12 @@ function groupFoods(foods: FoodItem[]) {
 }
 
 export default function TravelPlanTemplate({ data }: Props) {
-  const router = useRouter();
   const foodRows = useMemo(() => groupFoods(data.foods), [data.foods]);
 
   return (
     <main className="min-h-dvh px-6 py-12 max-w-4xl mx-auto">
-      {/* Header with Back Link */}
       <header className="mb-12">
-        <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              router.back();
-            } else {
-              router.push("/travel/plan");
-            }
-          }}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mb-6 group"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-          返回
-        </button>
+        <BackButton />
         <div className="text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
             {data.icon} {data.title}

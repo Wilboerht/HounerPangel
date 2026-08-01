@@ -11,6 +11,7 @@ import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import type { BlogPost } from "@/lib/types/blog";
+import { useTagManager } from "@/lib/use-tag-manager";
 
 function slugify(text: string): string {
   return text
@@ -42,7 +43,7 @@ export default function AdminBlogList() {
     date: new Date().toISOString().split("T")[0],
     tags: [] as string[],
   });
-  const [tagInput, setTagInput] = useState("");
+  const tagManager = useTagManager([]);
 
   const [deleteTarget, setDeleteTarget] = useState<BlogPost | null>(null);
   const [formDirty, setFormDirty] = useState(false);
@@ -140,7 +141,7 @@ export default function AdminBlogList() {
           excerpt: newForm.excerpt,
           content: newForm.content,
           date: newForm.date,
-          tags: newForm.tags,
+          tags: tagManager.tags,
         }),
       });
 
@@ -154,7 +155,7 @@ export default function AdminBlogList() {
           date: new Date().toISOString().split("T")[0],
           tags: [],
         });
-        setTagInput("");
+        tagManager.setInput("");
         setFormDirty(false);
         loadPosts();
         toast.success("文章创建成功");
@@ -187,20 +188,6 @@ export default function AdminBlogList() {
 
   const slugValid = !newForm.slug || VALID_SLUG_RE.test(newForm.slug);
 
-  const addTag = (tag: string) => {
-    const trimmed = tag.trim();
-    if (trimmed && !newForm.tags.includes(trimmed) && newForm.tags.length < 20) {
-      setNewForm({ ...newForm, tags: [...newForm.tags, trimmed] });
-      setTagInput("");
-      setFormDirty(true);
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setNewForm({ ...newForm, tags: newForm.tags.filter((t) => t !== tag) });
-    setFormDirty(true);
-  };
-
   const closeNewModal = () => {
     if (formDirty) {
       setPendingClose(true);
@@ -219,7 +206,7 @@ export default function AdminBlogList() {
       date: new Date().toISOString().split("T")[0],
       tags: [],
     });
-    setTagInput("");
+    tagManager.setInput("");
     setFormDirty(false);
     setPendingClose(false);
   };
@@ -512,12 +499,12 @@ export default function AdminBlogList() {
                       />
                     </div>
 
-                    <div className="flex flex-col gap-2">
+                     <div className="flex flex-col gap-2">
                       <label className="text-sm font-medium text-foreground">
-                        标签 <span className="text-muted">({newForm.tags.length}/20)</span>
+                        标签 <span className="text-muted">({tagManager.tags.length}/20)</span>
                       </label>
                       <div className="flex flex-wrap gap-2 mb-1">
-                        {newForm.tags.map((tag) => (
+                        {tagManager.tags.map((tag) => (
                           <span
                             key={tag}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-foreground/10 text-foreground text-xs font-medium"
@@ -525,7 +512,7 @@ export default function AdminBlogList() {
                             {tag}
                             <button
                               type="button"
-                              onClick={() => removeTag(tag)}
+                              onClick={() => tagManager.removeTag(tag)}
                               className="hover:text-red-500 transition-colors"
                             >
                               <X className="w-3 h-3" />
@@ -536,24 +523,16 @@ export default function AdminBlogList() {
                       <div className="flex gap-2">
                         <input
                           type="text"
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === ",") {
-                              e.preventDefault();
-                              addTag(tagInput);
-                            }
-                            if (e.key === "Backspace" && !tagInput && newForm.tags.length > 0) {
-                              removeTag(newForm.tags[newForm.tags.length - 1]);
-                            }
-                          }}
+                          value={tagManager.input}
+                          onChange={(e) => tagManager.setInput(e.target.value)}
+                          onKeyDown={tagManager.handleInputKeyDown}
                           placeholder="输入标签后按回车添加"
                           className="flex-1 px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
                         />
                         <button
                           type="button"
-                          onClick={() => addTag(tagInput)}
-                          disabled={!tagInput.trim()}
+                          onClick={() => tagManager.addTag(tagManager.input)}
+                          disabled={!tagManager.input.trim()}
                           className="px-4 py-2 rounded-lg bg-foreground/5 text-muted hover:text-foreground disabled:opacity-30 transition-colors text-sm"
                         >
                           添加
