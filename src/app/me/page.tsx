@@ -29,17 +29,18 @@ export default function AboutMe() {
                             关于我
                         </h1>
                         <p className="text-lg text-muted leading-relaxed">
-                            Hi，我是 Hank。喜欢科技、旅行或者户外运动的相关话题。
+                            嗨，欢迎访达我的主页，很高兴能在互联网的茫茫大海里与你相遇。
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
-                            {/* 国立江源大学「人工智能计算机」专业在读 ，
-                            <br /> */}
-                            Genius programmer @ Vanto & @ NIHPLOD
+                            我喜欢科技、旅行和户外运动，也是 city walk 轻度爱好者。目前已经走遍了 20 余个城市，并用相机记录下了部分美好瞬间，你可以查看
+                            <Link href="/photos" className="hover:text-foreground transition-colors">「相册」</Link>
+                            或我的
+                            <a href="https://xhslink.cn/m/AuQlZcU2RmE" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">「小红书」</a>账号，希望与你分享这些美好。
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
-                            欢迎关注 ~
+                            Genius programmer @ Vanto & @ NIHPLOD.
                         </p>
-                    </div>
+                        </div>
 
                 </section>
 

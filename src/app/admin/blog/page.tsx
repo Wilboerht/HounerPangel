@@ -41,7 +41,6 @@ export default function AdminBlogList() {
     excerpt: "",
     content: "",
     date: new Date().toISOString().split("T")[0],
-    tags: [] as string[],
   });
   const tagManager = useTagManager([]);
 
@@ -50,7 +49,7 @@ export default function AdminBlogList() {
   const [pendingClose, setPendingClose] = useState(false);
 
   const reduce = useSafeMotion();
-  const newPostTrapRef = useFocusTrap(showNewModal);
+  const newPostTrapRef = useFocusTrap(showNewModal, closeNewModal);
 
   const filteredPosts = search
     ? posts.filter(
@@ -153,7 +152,6 @@ export default function AdminBlogList() {
           excerpt: "",
           content: "",
           date: new Date().toISOString().split("T")[0],
-          tags: [],
         });
         tagManager.setInput("");
         setFormDirty(false);
@@ -204,7 +202,6 @@ export default function AdminBlogList() {
       excerpt: "",
       content: "",
       date: new Date().toISOString().split("T")[0],
-      tags: [],
     });
     tagManager.setInput("");
     setFormDirty(false);

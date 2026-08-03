@@ -24,9 +24,8 @@ export default function EditBlogPost() {
     excerpt: "",
     content: "",
     date: "",
-    tags: [] as string[],
   });
-  const tagManager = useTagManager(form.tags);
+  const tagManager = useTagManager([]);
   const [formDirty, setFormDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(false);
 
@@ -61,7 +60,6 @@ export default function EditBlogPost() {
           excerpt: data.excerpt,
           content: data.content,
           date: data.date,
-          tags: data.tags,
         });
         tagManager.setTags(data.tags);
         setLoading(false);

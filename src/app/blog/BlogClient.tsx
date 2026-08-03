@@ -24,7 +24,7 @@ export default function BlogClient({ posts }: Props) {
 
     const toast = useToast();
     const reduce = useSafeMotion();
-    const loginTrapRef = useFocusTrap(showModal);
+    const loginTrapRef = useFocusTrap(showModal, () => setShowModal(false));
 
     useEffect(() => {
         fetch("/api/admin/check")
@@ -202,6 +202,7 @@ export default function BlogClient({ posts }: Props) {
 
                                 {/* Modal Header */}
                                 <div className="flex flex-col items-center pt-14 pb-6 px-10">
+                                    <h2 id="login-title" className="sr-only">管理员登录</h2>
                                     <Image src="/images/Vanto.svg" alt="Vanto" width={112} height={28} className="h-[28px] w-auto mb-5" />
                                 </div>
 

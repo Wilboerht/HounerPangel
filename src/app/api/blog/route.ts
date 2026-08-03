@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllBlogPosts, createBlogPost } from "@/lib/blog-db";
+import { getAllBlogPosts, createBlogPost, getBlogPostBySlug } from "@/lib/blog-db";
 import { checkAuth } from "@/lib/auth";
 import { blogPostSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
@@ -35,6 +35,11 @@ export async function POST(request: NextRequest) {
         }
 
         const { slug, title, excerpt, content, date, tags } = parseResult.data;
+
+        const existing = await getBlogPostBySlug(slug);
+        if (existing) {
+            return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
+        }
 
         await createBlogPost({
             slug,

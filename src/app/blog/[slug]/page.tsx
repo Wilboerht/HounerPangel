@@ -3,6 +3,7 @@ import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug, getAllBlogSlugs } from "@/lib/blog-db";
+import { env } from "@/lib/env";
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -15,19 +16,21 @@ export async function generateStaticParams() {
         const slugs = await getAllBlogSlugs();
         return slugs.map((slug) => ({ slug }));
     } catch {
-        // Fallback to empty array if Supabase is unavailable during build
         return [];
     }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const post = await getBlogPostBySlug(slug);
+    let post;
+    try {
+        post = await getBlogPostBySlug(slug);
+    } catch {
+        post = null;
+    }
 
     if (!post) {
-        return {
-            title: "Not Found - Hank Wong's Web",
-        };
+        return { title: "Not Found - Hank Wong's Web" };
     }
 
     return {
@@ -36,20 +39,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 }
 
+function findNextSpecial(s: string): number {
+    for (let i = 0; i < s.length; i++) {
+        if ("`[]*_~()".includes(s[i])) return i;
+    }
+    return -1;
+}
+
 function renderInline(text: string): React.ReactNode {
     const tokens: React.ReactNode[] = [];
     let remaining = text;
     let key = 0;
 
-    const push = (node: React.ReactNode) => {
-        tokens.push(<span key={key++}>{node}</span>);
-    };
-
     while (remaining.length > 0) {
         const codeMatch = remaining.match(/^`([^`]+)`/);
         if (codeMatch) {
-            push(
-                <code className="px-1.5 py-0.5 rounded-md bg-foreground/10 text-foreground text-sm font-mono">
+            tokens.push(
+                <code key={key++} className="px-1.5 py-0.5 rounded-md bg-foreground/10 text-foreground text-sm font-mono">
                     {codeMatch[1]}
                 </code>
             );
@@ -59,8 +65,9 @@ function renderInline(text: string): React.ReactNode {
 
         const linkMatch = remaining.match(/^\[([^\]]+)\]\(([^)]+)\)/);
         if (linkMatch) {
-            push(
+            tokens.push(
                 <a
+                    key={key++}
                     href={linkMatch[2]}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -75,8 +82,8 @@ function renderInline(text: string): React.ReactNode {
 
         const boldMatch = remaining.match(/^\*\*([^*]+)\*\*/);
         if (boldMatch) {
-            push(
-                <strong className="font-semibold text-foreground">
+            tokens.push(
+                <strong key={key++} className="font-semibold text-foreground">
                     {renderInline(boldMatch[1])}
                 </strong>
             );
@@ -86,8 +93,8 @@ function renderInline(text: string): React.ReactNode {
 
         const italicMatch = remaining.match(/^(?:\*|_)([^*_]+)(?:\*|_)/);
         if (italicMatch) {
-            push(
-                <em className="italic text-foreground/90">
+            tokens.push(
+                <em key={key++} className="italic text-foreground/90">
                     {renderInline(italicMatch[1])}
                 </em>
             );
@@ -97,8 +104,8 @@ function renderInline(text: string): React.ReactNode {
 
         const strikeMatch = remaining.match(/^~~([^~]+)~~/);
         if (strikeMatch) {
-            push(
-                <del className="line-through text-muted">
+            tokens.push(
+                <del key={key++} className="line-through text-muted">
                     {renderInline(strikeMatch[1])}
                 </del>
             );
@@ -106,7 +113,18 @@ function renderInline(text: string): React.ReactNode {
             continue;
         }
 
-        push(remaining[0]);
+        const nextSpecial = findNextSpecial(remaining);
+        if (nextSpecial === -1) {
+            tokens.push(<span key={key++}>{remaining}</span>);
+            break;
+        }
+        if (nextSpecial > 0) {
+            tokens.push(<span key={key++}>{remaining.slice(0, nextSpecial)}</span>);
+            remaining = remaining.slice(nextSpecial);
+            continue;
+        }
+
+        tokens.push(<span key={key++}>{remaining[0]}</span>);
         remaining = remaining.slice(1);
     }
 
@@ -360,14 +378,14 @@ function renderMarkdown(content: string): React.ReactNode {
                     href={cardUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-5 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-accent/40 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 group"
+                    className="block p-5 rounded-2xl border border-border bg-card/50 hover:border-accent/40 hover:bg-card hover:shadow-lg transition-all duration-300 group"
                 >
                     <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-slate-900 tracking-wide">
+                        <span className="text-sm font-semibold text-foreground tracking-wide">
                             {cardText}
                         </span>
                         <svg
-                            className="w-4 h-4 text-slate-300 group-hover:text-accent transition-colors"
+                            className="w-4 h-4 text-muted group-hover:text-accent transition-colors"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
@@ -376,7 +394,7 @@ function renderMarkdown(content: string): React.ReactNode {
                             <path d="M7 17L17 7M17 7H7M17 7V17" />
                         </svg>
                     </div>
-                    <p className="text-[13px] text-slate-500 leading-relaxed mt-1 truncate">
+                    <p className="text-[13px] text-muted leading-relaxed mt-1 truncate">
                         {cardUrl}
                     </p>
                 </a>
@@ -401,11 +419,18 @@ function renderMarkdown(content: string): React.ReactNode {
 
 export default async function BlogPostPage({ params }: Props) {
     const { slug } = await params;
-    const post = await getBlogPostBySlug(slug);
+    let post;
+    try {
+        post = await getBlogPostBySlug(slug);
+    } catch {
+        post = null;
+    }
 
     if (!post) {
         notFound();
     }
+
+    const siteUrl = env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
 
     const jsonLd = {
         "@context": "https://schema.org",
@@ -417,23 +442,23 @@ export default async function BlogPostPage({ params }: Props) {
         author: {
             "@type": "Person",
             name: "Hank Wong",
-            url: "https://wilboerht.com",
+            url: siteUrl,
         },
         publisher: {
             "@type": "Person",
             name: "Hank Wong",
         },
         keywords: post.tags.join(", "),
-        url: `https://wilboerht.com/blog/${post.slug}`,
+        url: `${siteUrl}/blog/${post.slug}`,
     };
 
     return (
-        <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
+        <main className="min-h-dvh flex flex-col justify-start px-6 py-12">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <div className="max-w-2xl w-full flex flex-col gap-12">
+            <div className="max-w-2xl mx-auto w-full flex flex-col gap-12">
                 <nav>
                     <Link
                         href="/blog"

@@ -46,7 +46,6 @@ export async function PUT(request: NextRequest, { params }: Params) {
         const { title, excerpt, content, date, tags } = parseResult.data;
 
         await updateBlogPost(slug, {
-            slug,
             title,
             excerpt,
             content,

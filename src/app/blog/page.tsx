@@ -12,11 +12,16 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Blog() {
-    const posts = await getAllBlogPosts();
+    let posts;
+    try {
+        posts = await getAllBlogPosts();
+    } catch {
+        posts = [];
+    }
 
     return (
-        <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
-            <div className="max-w-6xl w-full flex flex-col gap-12">
+        <main className="min-h-dvh flex flex-col justify-start px-6 py-12">
+            <div className="max-w-6xl mx-auto w-full flex flex-col gap-12">
                 {/* Navigation */}
                 <nav>
                     <Link

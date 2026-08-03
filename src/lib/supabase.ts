@@ -13,7 +13,7 @@ export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
     const { data, error } = await supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, content, date, tags")
+        .select("slug, title, excerpt, date, tags")
         .order("date", { ascending: false });
 
     if (error) throw error;
@@ -46,13 +46,13 @@ export async function getAllBlogSlugs(): Promise<string[]> {
 export async function createBlogPost(
     post: Omit<BlogPost, "tags"> & { tags: string[] }
 ): Promise<void> {
-    const { error } = await supabase.from("blog_posts").upsert(post, { onConflict: "slug" });
+    const { error } = await supabase.from("blog_posts").insert(post);
     if (error) throw error;
 }
 
 export async function updateBlogPost(
     slug: string,
-    post: Omit<BlogPost, "tags"> & { tags: string[] }
+    post: Omit<BlogPost, "tags" | "slug"> & { tags: string[] }
 ): Promise<void> {
     const { error } = await supabase.from("blog_posts").update(post).eq("slug", slug);
     if (error) throw error;
