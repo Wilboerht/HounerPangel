@@ -75,7 +75,7 @@ export default function BlogClient({ posts }: Props) {
                         posts.map((post) => (
                             <article
                                 key={post.slug}
-                                className="group flex flex-col gap-3 p-4 -mx-4 rounded-xl hover:bg-foreground/[0.02] transition-colors duration-200"
+                                className="group flex flex-col gap-3 p-4 -mx-4 sm:mx-0 sm:rounded-xl sm:hover:bg-foreground/[0.02] transition-colors duration-200"
                             >
                                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                                     <div className="inline-flex items-center gap-1.5">
@@ -201,13 +201,13 @@ export default function BlogClient({ posts }: Props) {
                                 </div>
 
                                 {/* Modal Header */}
-                                <div className="flex flex-col items-center pt-14 pb-6 px-10">
+                                <div className="flex flex-col items-center pt-14 pb-6 px-6 sm:px-10">
                                     <h2 id="login-title" className="sr-only">管理员登录</h2>
                                     <Image src="/images/Vanto.svg" alt="Vanto" width={112} height={28} className="h-[28px] w-auto mb-5" />
                                 </div>
 
                                 {/* Modal Body */}
-                                <div className="px-10 pb-10">
+                                <div className="px-6 sm:px-10 pb-6 sm:pb-10">
                                     <form onSubmit={handleLogin} className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-2">
                                             <label htmlFor="login-password" className="sr-only">密码</label>

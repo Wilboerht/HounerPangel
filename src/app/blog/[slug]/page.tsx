@@ -193,7 +193,7 @@ function renderMarkdown(content: string): React.ReactNode {
             elements.push(
                 <pre
                     key={`pre-${elements.length}`}
-                    className="rounded-xl bg-foreground/5 p-4 overflow-x-auto"
+                    className="rounded-xl bg-foreground/5 p-3 sm:p-4 overflow-x-auto"
                 >
                     <code className="text-sm font-mono text-foreground/80 leading-relaxed">
                         {codeLines.join("\n")}
