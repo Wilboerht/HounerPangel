@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { getAllBlogPosts } from "@/lib/blog-db";
 import BlogClient from "./BlogClient";
+import type { BlogPost } from "@/lib/types/blog";
 
 export const metadata: Metadata = {
     title: "博客 - Hank Wong's Web",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Blog() {
-    let posts;
+    let posts: BlogPost[];
     try {
         posts = await getAllBlogPosts();
     } catch {

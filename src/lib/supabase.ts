@@ -13,7 +13,7 @@ export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
     const { data, error } = await supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, date, tags")
+        .select("slug, title, excerpt, content, date, tags")
         .order("date", { ascending: false });
 
     if (error) throw error;
