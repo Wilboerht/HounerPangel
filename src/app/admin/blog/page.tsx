@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Pencil, Trash2, ArrowLeft, FileText, LogOut, Lock, X, Save, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
@@ -49,7 +49,8 @@ export default function AdminBlogList() {
   const [pendingClose, setPendingClose] = useState(false);
 
   const reduce = useSafeMotion();
-  const newPostTrapRef = useFocusTrap(showNewModal, closeNewModal);
+  const closeModalRef = useRef<(() => void) | null>(null);
+  const newPostTrapRef = useFocusTrap(showNewModal, () => closeModalRef.current?.());
 
   const filteredPosts = search
     ? posts.filter(
@@ -193,6 +194,8 @@ export default function AdminBlogList() {
     }
     resetAndCloseModal();
   };
+
+  closeModalRef.current = closeNewModal;
 
   const resetAndCloseModal = () => {
     setShowNewModal(false);
