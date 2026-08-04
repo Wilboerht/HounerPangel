@@ -110,10 +110,10 @@ export default function EditBlogPost() {
       } else {
         const data = await res.json();
         toast.error(data.error || "保存失败");
-        setSaving(false);
       }
     } catch {
       toast.error("保存失败");
+    } finally {
       setSaving(false);
     }
   };
@@ -189,18 +189,18 @@ export default function EditBlogPost() {
               <label htmlFor="edit-excerpt" className="text-sm font-medium text-foreground">
                 摘要 <span className="text-muted">({form.excerpt.length}/2000)</span>
               </label>
-              <input
+              <textarea
                 id="edit-excerpt"
-                type="text"
                 required
                 maxLength={2000}
+                rows={3}
                 value={form.excerpt}
                 onChange={(e) => {
                   setForm({ ...form, excerpt: e.target.value });
                   markDirty();
                 }}
                 placeholder="简短描述"
-                className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors resize-y"
               />
             </div>
 

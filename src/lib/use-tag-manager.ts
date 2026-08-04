@@ -6,8 +6,11 @@ export function useTagManager(initialTags: string[] = []) {
 
   const addTag = (inputVal: string) => {
     const trimmed = inputVal.trim();
-    if (trimmed && !tags.includes(trimmed) && tags.length < 20) {
-      setTags([...tags, trimmed]);
+    if (trimmed && tags.length < 20) {
+      setTags((prev) => {
+        if (prev.includes(trimmed)) return prev;
+        return [...prev, trimmed];
+      });
       setInput("");
       return true;
     }
@@ -15,11 +18,11 @@ export function useTagManager(initialTags: string[] = []) {
   };
 
   const removeTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
+    setTags((prev) => prev.filter((t) => t !== tag));
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
+    if (e.key === "Enter") {
       e.preventDefault();
       addTag(input);
     }

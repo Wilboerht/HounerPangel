@@ -25,7 +25,7 @@ export function ConfirmDialog({
   danger = true,
 }: ConfirmDialogProps) {
   const reduce = useSafeMotion();
-  const trapRef = useFocusTrap(isOpen);
+  const trapRef = useFocusTrap(isOpen, onClose);
 
   return (
     <AnimatePresence>
@@ -74,7 +74,7 @@ export function ConfirmDialog({
                   取消
                 </button>
                 <button
-                  onClick={() => { onConfirm(); onClose(); }}
+                  onClick={() => { Promise.resolve(onConfirm()).finally(onClose); }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     danger
                       ? "bg-red-500 text-white hover:bg-red-600"

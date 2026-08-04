@@ -207,6 +207,7 @@ export default function AdminBlogList() {
       date: new Date().toISOString().split("T")[0],
     });
     tagManager.setInput("");
+    tagManager.setTags([]);
     setFormDirty(false);
     setPendingClose(false);
   };
@@ -469,18 +470,18 @@ export default function AdminBlogList() {
                       <label htmlFor="new-excerpt" className="text-sm font-medium text-foreground">
                         摘要 <span className="text-muted">({newForm.excerpt.length}/2000)</span>
                       </label>
-                      <input
+                      <textarea
                         id="new-excerpt"
-                        type="text"
                         required
                         maxLength={2000}
+                        rows={3}
                         value={newForm.excerpt}
                         onChange={(e) => {
                           setNewForm({ ...newForm, excerpt: e.target.value });
                           setFormDirty(true);
                         }}
                         placeholder="简短描述"
-                        className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                        className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors resize-y"
                       />
                     </div>
 
