@@ -1,7 +1,6 @@
 import BackButton from "@/components/BackButton";
 import type { Metadata } from "next";
 import { getAllBlogPosts } from "@/lib/blog-db";
-import { seedBlogPosts } from "@/lib/blog-seed";
 import BlogClient from "./BlogClient";
 import type { BlogPost } from "@/lib/types/blog";
 
@@ -18,11 +17,6 @@ export default async function Blog() {
         posts = await getAllBlogPosts();
     } catch {
         posts = [];
-    }
-
-    // 临时种子数据：数据库为空时用于预览样式
-    if (posts.length === 0) {
-        posts = seedBlogPosts;
     }
 
     return (

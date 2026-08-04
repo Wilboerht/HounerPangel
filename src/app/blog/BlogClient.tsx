@@ -75,7 +75,7 @@ export default function BlogClient({ posts }: Props) {
             </section>
 
             {/* Footer */}
-            <footer className="text-sm text-muted border-t border-border/50">
+            <footer className="pt-8 text-sm text-muted">
                 <p>&copy; {new Date().getFullYear()} wilboerht</p>
             </footer>
         </>

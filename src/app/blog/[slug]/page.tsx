@@ -3,7 +3,6 @@ import { Calendar, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug } from "@/lib/blog-db";
-import { seedBlogPosts } from "@/lib/blog-seed";
 import { env } from "@/lib/env";
 import { renderMarkdown } from "@/lib/markdown";
 import type { BlogPost } from "@/lib/types/blog";
@@ -19,9 +18,9 @@ async function fetchPost(slug: string): Promise<BlogPost | null> {
         const post = await getBlogPostBySlug(slug);
         if (post) return post;
     } catch {
-        // fall through to seed data
+        // ignore db errors and treat as not found
     }
-    return seedBlogPosts.find((p) => p.slug === slug) || null;
+    return null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -118,7 +117,7 @@ export default async function BlogPostPage({ params }: Props) {
                     </article>
                 </section>
 
-                <footer className="pt-6 text-sm text-muted border-t border-border/50">
+                <footer className="pt-6 text-sm text-muted">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
             </div>
