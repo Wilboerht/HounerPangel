@@ -214,8 +214,8 @@ export default function PhotographyPage() {
       {/* Gallery */}
       <section className="mx-auto max-w-6xl px-5 md:px-8 lg:px-12 pt-[92px] md:pt-[180px] pb-24 md:pb-40">
         {error ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
-            <p className="text-[#888888]">加载失败</p>
+          <div className="py-20 text-center">
+            <p className="text-sm text-[#888888] mb-3">加载失败</p>
             <button
               onClick={() => { setError(false); setLoading(true); fetch("/api/photos").then(res => res.json()).then(data => { setPhotos(data || []); setLoading(false); }).catch(() => { setError(true); setLoading(false); }); }}
               className="text-sm text-[#888888] hover:text-black transition-colors"

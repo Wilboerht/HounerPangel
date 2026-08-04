@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, ArrowLeft, FileText, LogOut, Lock, X, Save, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft, LogOut, Lock, X, Save, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
@@ -352,31 +352,14 @@ export default function AdminBlogList() {
                   ))}
                 </div>
               ) : search ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-foreground/[0.01] rounded-3xl border border-dashed border-border/50">
-                  <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
-                    <Search className="w-8 h-8" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-lg font-semibold text-foreground/80">无匹配结果</p>
-                    <p className="text-sm text-muted">尝试其他关键词</p>
-                  </div>
-                  <button
-                    onClick={() => setSearch("")}
-                    className="text-sm text-accent hover:underline"
-                  >
+                <div className="py-20 text-center">
+                  <p className="text-sm text-muted mb-3">无匹配结果</p>
+                  <button onClick={() => setSearch("")} className="text-sm text-accent hover:underline">
                     清除搜索
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-foreground/[0.01] rounded-3xl border border-dashed border-border/50">
-                  <div className="p-4 rounded-full bg-foreground/5 text-muted/30">
-                    <FileText className="w-8 h-8" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-lg font-semibold text-foreground/80">暂无文章</p>
-                    <p className="text-sm text-muted">点击右上角新建文章</p>
-                  </div>
-                </div>
+                <p className="py-20 text-center text-sm text-muted">暂无文章</p>
               )}
             </>
           )}

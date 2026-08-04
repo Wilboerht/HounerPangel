@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ArrowLeft, Calendar, Tag } from "lucide-react";
+import { ArrowLeft, Calendar, Tag, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getBlogPostBySlug } from "@/lib/blog-db";
+import { getBlogPostBySlug, getAdjacentPosts } from "@/lib/blog-db";
 import { env } from "@/lib/env";
 import { renderMarkdown } from "@/lib/markdown";
 
@@ -44,6 +44,7 @@ export default async function BlogPostPage({ params }: Props) {
         notFound();
     }
 
+    const { prev, next } = await getAdjacentPosts(slug);
     const siteUrl = env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
 
     const jsonLd = {
@@ -72,7 +73,7 @@ export default async function BlogPostPage({ params }: Props) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <div className="max-w-2xl mx-auto w-full flex flex-col gap-12">
+            <div className="max-w-3xl mx-auto w-full flex flex-col gap-12">
                 <nav>
                     <Link
                         href="/blog"
@@ -83,7 +84,7 @@ export default async function BlogPostPage({ params }: Props) {
                     </Link>
                 </nav>
 
-                <header className="space-y-4">
+                <header className="space-y-5">
                     <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                         <div className="inline-flex items-center gap-1.5">
                             <Calendar className="w-3.5 h-3.5" />
@@ -98,14 +99,15 @@ export default async function BlogPostPage({ params }: Props) {
                         {post.tags.length > 0 && (
                             <div className="flex items-center gap-1.5">
                                 <Tag className="w-3.5 h-3.5" />
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     {post.tags.map((tag) => (
-                                        <span
+                                        <Link
                                             key={tag}
-                                            className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted"
+                                            href={`/blog?tag=${encodeURIComponent(tag)}`}
+                                            className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
                                         >
                                             {tag}
-                                        </span>
+                                        </Link>
                                     ))}
                                 </div>
                             </div>
@@ -121,11 +123,58 @@ export default async function BlogPostPage({ params }: Props) {
                     </p>
                 </header>
 
-                <article className="space-y-5 break-words">
+                <article className="article-body">
                     {renderMarkdown(post.content)}
                 </article>
 
-                <footer className="pt-8 text-sm text-muted border-t border-white/10">
+                {/* Adjacent Posts */}
+                {(prev || next) && (
+                    <nav className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-border/50">
+                        {prev ? (
+                            <Link
+                                href={`/blog/${prev.slug}`}
+                                className="group flex flex-col gap-1 p-4 rounded-xl border border-border/50 bg-card hover:border-accent/30 hover:shadow-sm transition-all duration-200"
+                            >
+                                <span className="text-xs text-muted flex items-center gap-1">
+                                    <ArrowLeft className="w-3 h-3" />
+                                    上一篇
+                                </span>
+                                <span className="font-medium text-foreground group-hover:text-accent transition-colors line-clamp-2">
+                                    {prev.title}
+                                </span>
+                            </Link>
+                        ) : (
+                            <div />
+                        )}
+                        {next ? (
+                            <Link
+                                href={`/blog/${next.slug}`}
+                                className="group flex flex-col gap-1 p-4 rounded-xl border border-border/50 bg-card hover:border-accent/30 hover:shadow-sm transition-all duration-200 sm:text-right sm:items-end"
+                            >
+                                <span className="text-xs text-muted flex items-center gap-1 sm:flex-row-reverse">
+                                    下一篇
+                                    <ArrowRight className="w-3 h-3" />
+                                </span>
+                                <span className="font-medium text-foreground group-hover:text-accent transition-colors line-clamp-2">
+                                    {next.title}
+                                </span>
+                            </Link>
+                        ) : (
+                            <div />
+                        )}
+                    </nav>
+                )}
+
+                <footer className="pt-8 text-sm text-muted border-t border-border/50 space-y-2">
+                    <div className="flex items-center gap-2">
+                        <Link href="/travel" className="text-muted hover:text-foreground transition-colors">
+                            旅行
+                        </Link>
+                        <span>·</span>
+                        <Link href="/photos" className="text-muted hover:text-foreground transition-colors">
+                            摄影集
+                        </Link>
+                    </div>
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
             </div>

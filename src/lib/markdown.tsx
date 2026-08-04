@@ -147,7 +147,7 @@ export function renderMarkdown(content: string): React.ReactNode {
             elements.push(
                 <blockquote
                     key={`bq-${elements.length}`}
-                    className="border-l-2 border-accent/40 pl-4 py-1 text-muted italic"
+                    className="border-l-2 border-accent/40 italic"
                 >
                     {quoteLines.map((q, i) => (
                         <p key={i} className="leading-relaxed">
@@ -223,7 +223,7 @@ export function renderMarkdown(content: string): React.ReactNode {
 
             if (isAllowed) {
                 elements.push(
-                    <div key={`iframe-${elements.length}`} className="my-4">
+                    <div key={`iframe-${elements.length}`} className="iframe-wrapper">
                         <div dangerouslySetInnerHTML={{ __html: iframeHtml }} />
                     </div>
                 );
@@ -282,7 +282,7 @@ export function renderMarkdown(content: string): React.ReactNode {
             flushOrdered();
             flushQuote();
             elements.push(
-                <hr key={`hr-${elements.length}`} className="border-border my-6" />
+                <hr key={`hr-${elements.length}`} className="border-border" />
             );
             continue;
         }
@@ -292,7 +292,7 @@ export function renderMarkdown(content: string): React.ReactNode {
             flushOrdered();
             flushQuote();
             elements.push(
-                <h1 key={index} className="text-2xl font-bold tracking-tight text-foreground mt-12 mb-4">
+                <h1 key={index} className="text-2xl font-bold tracking-tight text-foreground">
                     {renderInline(trimmed.replace("# ", ""))}
                 </h1>
             );
@@ -304,7 +304,7 @@ export function renderMarkdown(content: string): React.ReactNode {
             flushOrdered();
             flushQuote();
             elements.push(
-                <h2 key={index} className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-3">
+                <h2 key={index} className="text-xl font-semibold tracking-tight text-foreground">
                     {renderInline(trimmed.replace("## ", ""))}
                 </h2>
             );
@@ -316,7 +316,7 @@ export function renderMarkdown(content: string): React.ReactNode {
             flushOrdered();
             flushQuote();
             elements.push(
-                <h3 key={index} className="text-lg font-semibold tracking-tight text-foreground mt-8 mb-2">
+                <h3 key={index} className="text-lg font-semibold tracking-tight text-foreground">
                     {renderInline(trimmed.replace("### ", ""))}
                 </h3>
             );
@@ -371,7 +371,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                     index++;
                 }
                 elements.push(
-                    <div key={`tbl-${index}`} className="overflow-x-auto my-4">
+                    <div key={`tbl-${index}`} className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="border-b border-border">
@@ -423,7 +423,7 @@ export function renderMarkdown(content: string): React.ReactNode {
             const isVideo = /\.(mp4|webm|mov|avi|mkv)($|\?)/i.test(imgUrl);
             elements.push(
                 isVideo ? (
-                    <figure key={`vid-${index}`} className="my-4">
+                    <figure key={`vid-${index}`} className="">
                         <video
                             src={imgUrl}
                             controls
@@ -439,7 +439,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                         )}
                     </figure>
                 ) : (
-                    <figure key={`img-${index}`} className="my-4">
+                    <figure key={`img-${index}`} className="">
                         <img
                             src={imgUrl}
                             alt={imgAlt || ""}

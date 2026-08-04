@@ -135,22 +135,9 @@ export default function MapView({ photos, mapboxToken }: Props) {
   return (
     <div className="relative w-full h-full">
       {!mapboxToken ? (
-        <div className="flex flex-col items-center justify-center h-full gap-4 text-muted">
-          <Camera className="w-10 h-10" />
-          <p>地图暂不可用</p>
-        </div>
+        <p className="text-sm text-muted">地图暂不可用</p>
       ) : photos.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-full gap-4 text-muted">
-          <Camera className="w-10 h-10" />
-          <p>地图暂无照片标记</p>
-          <p className="text-sm text-muted/70">
-            在{" "}
-            <code className="px-1.5 py-0.5 rounded bg-foreground/5 text-foreground/70 text-xs">
-              src/app/photos/data.ts
-            </code>{" "}
-            中添加带坐标的照片数据即可展示。
-          </p>
-        </div>
+        <p className="text-sm text-muted">暂无照片标记</p>
       ) : (
         <>
           <Map

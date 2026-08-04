@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Tag, FileText, X, KeyRound, UserCheck } from "lucide-react";
+import { Calendar, Tag, X, KeyRound, UserCheck, Search, ArrowRight } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
@@ -17,10 +17,13 @@ interface Props {
 
 export default function BlogClient({ posts }: Props) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [showModal, setShowModal] = useState(false);
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [search, setSearch] = useState("");
+    const [selectedTag, setSelectedTag] = useState<string | null>(searchParams.get("tag"));
 
     const toast = useToast();
     const reduce = useSafeMotion();
@@ -32,6 +35,25 @@ export default function BlogClient({ posts }: Props) {
             .then((data) => setIsLoggedIn(data.authenticated))
             .catch(() => setIsLoggedIn(false));
     }, []);
+
+    const allTags = useMemo(() => {
+        const tags = new Set<string>();
+        posts.forEach((post) => post.tags.forEach((tag) => tags.add(tag)));
+        return Array.from(tags).sort((a, b) => a.localeCompare(b, "zh-CN"));
+    }, [posts]);
+
+    const filteredPosts = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        return posts.filter((post) => {
+            const matchesTag = selectedTag ? post.tags.includes(selectedTag) : true;
+            if (!query) return matchesTag;
+            const matchesSearch =
+                post.title.toLowerCase().includes(query) ||
+                post.excerpt.toLowerCase().includes(query) ||
+                post.tags.some((tag) => tag.toLowerCase().includes(query));
+            return matchesTag && matchesSearch;
+        });
+    }, [posts, search, selectedTag]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,6 +79,17 @@ export default function BlogClient({ posts }: Props) {
         }
     };
 
+    const selectTag = (tag: string | null) => {
+        setSelectedTag(tag);
+        const params = new URLSearchParams(searchParams.toString());
+        if (tag) {
+            params.set("tag", tag);
+        } else {
+            params.delete("tag");
+        }
+        router.replace(`/blog?${params.toString()}`, { scroll: false });
+    };
+
     return (
         <>
             <section className="space-y-10">
@@ -69,13 +102,64 @@ export default function BlogClient({ posts }: Props) {
                     </p>
                 </div>
 
+                {/* Search & Tags */}
+                <div className="space-y-4">
+                    {allTags.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button
+                                onClick={() => selectTag(null)}
+                                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                    selectedTag === null
+                                        ? "bg-foreground text-background"
+                                        : "bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10"
+                                }`}
+                            >
+                                全部
+                            </button>
+                            {allTags.map((tag) => (
+                                <button
+                                    key={tag}
+                                    onClick={() => selectTag(tag)}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                        selectedTag === tag
+                                            ? "bg-foreground text-background"
+                                            : "bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10"
+                                    }`}
+                                >
+                                    {tag}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                        <input
+                            type="text"
+                            placeholder="搜索文章标题、摘要或标签..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full pl-10 pr-9 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                        />
+                        {search && (
+                            <button
+                                onClick={() => setSearch("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
+                                aria-label="清除搜索"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                </div>
+
                 {/* Blog List */}
                 <div className="flex flex-col gap-6">
-                    {posts.length > 0 ? (
-                        posts.map((post) => (
+                    {filteredPosts.length > 0 ? (
+                        filteredPosts.map((post) => (
                             <article
                                 key={post.slug}
-                                className="group flex flex-col gap-3 p-4 -mx-4 sm:mx-0 sm:rounded-xl sm:hover:bg-foreground/[0.02] transition-colors duration-200"
+                                className="group flex flex-col gap-4 p-5 rounded-2xl border border-border/50 bg-card hover:border-accent/30 hover:shadow-sm transition-all duration-200"
                             >
                                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                                     <div className="inline-flex items-center gap-1.5">
@@ -91,14 +175,15 @@ export default function BlogClient({ posts }: Props) {
                                     {post.tags.length > 0 && (
                                         <div className="flex items-center gap-1.5">
                                             <Tag className="w-3.5 h-3.5" />
-                                            <div className="flex gap-2">
+                                            <div className="flex flex-wrap gap-2">
                                                 {post.tags.map((tag) => (
-                                                    <span
+                                                    <button
                                                         key={tag}
-                                                        className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted"
+                                                        onClick={() => selectTag(tag)}
+                                                        className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
                                                     >
                                                         {tag}
-                                                    </span>
+                                                    </button>
                                                 ))}
                                             </div>
                                         </div>
@@ -113,29 +198,42 @@ export default function BlogClient({ posts }: Props) {
                                         {post.excerpt}
                                     </p>
                                 </Link>
+
+                                <Link
+                                    href={`/blog/${post.slug}`}
+                                    className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-accent transition-colors group/link"
+                                >
+                                    <span>阅读全文</span>
+                                    <ArrowRight className="w-4 h-4 group-hover/link:translate-x-0.5 transition-transform" />
+                                </Link>
                             </article>
                         ))
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-foreground/[0.01] rounded-3xl border border-dashed border-border/50">
-                            <div className="p-4 rounded-full bg-foreground/5 text-muted">
-                                <FileText className="w-8 h-8" />
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-lg font-semibold text-foreground/80">暂无文章</p>
-                                <p className="text-sm text-muted">Nothing here yet.</p>
-                            </div>
+                        <div className="py-20 text-center space-y-3">
+                            <p className="text-sm text-muted">暂无文章</p>
+                            {(selectedTag || search) && (
+                                <button
+                                    onClick={() => {
+                                        selectTag(null);
+                                        setSearch("");
+                                    }}
+                                    className="text-sm text-accent hover:underline"
+                                >
+                                    清除筛选条件
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="pt-8 text-sm text-muted border-t border-white/10 space-y-2">
+            <footer className="pt-8 text-sm text-muted border-t border-border/50 space-y-2">
                 <div className="flex items-center gap-2">
                     <Link href="/travel" className="text-muted hover:text-foreground transition-colors">
                         旅行
                     </Link>
-                    <span>|</span>
+                    <span>·</span>
                     <Link href="/photos" className="text-muted hover:text-foreground transition-colors">
                         摄影集
                     </Link>

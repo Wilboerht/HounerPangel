@@ -45,6 +45,17 @@ export async function getBlogPostBySlug(slug: string, includeUnpublished = false
     return data ? { ...data, tags: data.tags ?? [], published: data.published ?? false } : null;
 }
 
+export async function getAdjacentPosts(slug: string, includeUnpublished = false): Promise<{ prev: BlogPost | null; next: BlogPost | null }> {
+    const all = await getAllBlogPosts(includeUnpublished);
+    const index = all.findIndex((post) => post.slug === slug);
+    if (index === -1) return { prev: null, next: null };
+
+    return {
+        prev: index < all.length - 1 ? all[index + 1] : null,
+        next: index > 0 ? all[index - 1] : null,
+    };
+}
+
 export async function getAllBlogSlugs(includeUnpublished = false): Promise<string[]> {
     let query = supabase.from("blog_posts").select("slug");
     if (!includeUnpublished) query = query.eq("published", true);
