@@ -1,9 +1,8 @@
-import Link from "next/link";
 import BackButton from "@/components/BackButton";
-import { Calendar, Tag, ArrowLeft, ArrowRight } from "lucide-react";
+import { Calendar, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getBlogPostBySlug, getAdjacentPosts } from "@/lib/blog-db";
+import { getBlogPostBySlug } from "@/lib/blog-db";
 import { seedBlogPosts } from "@/lib/blog-seed";
 import { env } from "@/lib/env";
 import { renderMarkdown } from "@/lib/markdown";
@@ -23,16 +22,6 @@ async function fetchPost(slug: string): Promise<BlogPost | null> {
         // fall through to seed data
     }
     return seedBlogPosts.find((p) => p.slug === slug) || null;
-}
-
-function getAdjacentFromSeed(slug: string): { prev: BlogPost | null; next: BlogPost | null } {
-    const sorted = [...seedBlogPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    const index = sorted.findIndex((p) => p.slug === slug);
-    if (index === -1) return { prev: null, next: null };
-    return {
-        prev: index < sorted.length - 1 ? sorted[index + 1] : null,
-        next: index > 0 ? sorted[index - 1] : null,
-    };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -57,20 +46,6 @@ export default async function BlogPostPage({ params }: Props) {
         notFound();
     }
 
-    let adjacent: { prev: BlogPost | null; next: BlogPost | null };
-    try {
-        const dbAdjacent = await getAdjacentPosts(slug);
-        // If DB has no posts, fallback to seed data for adjacent navigation.
-        if (!dbAdjacent.prev && !dbAdjacent.next) {
-            adjacent = getAdjacentFromSeed(slug);
-        } else {
-            adjacent = dbAdjacent;
-        }
-    } catch {
-        adjacent = getAdjacentFromSeed(slug);
-    }
-
-    const { prev, next } = adjacent;
     const siteUrl = env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
 
     const jsonLd = {
@@ -94,12 +69,12 @@ export default async function BlogPostPage({ params }: Props) {
     };
 
     return (
-        <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12 pt-safe pb-safe">
+        <main className="min-h-dvh flex flex-col items-center justify-center px-6 pt-content pb-content">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <div className="max-w-3xl mx-auto w-full flex flex-col gap-10">
+            <div className="max-w-2xl mx-auto w-full flex flex-col gap-10">
                 <nav>
                     <BackButton label="返回博客" fallbackHref="/blog" />
                 </nav>
@@ -122,13 +97,12 @@ export default async function BlogPostPage({ params }: Props) {
                                     <Tag className="w-3.5 h-3.5" />
                                     <div className="flex flex-wrap gap-2">
                                         {post.tags.map((tag) => (
-                                            <Link
+                                            <span
                                                 key={tag}
-                                                href={`/blog?tag=${encodeURIComponent(tag)}`}
-                                                className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
+                                                className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted"
                                             >
                                                 {tag}
-                                            </Link>
+                                            </span>
                                         ))}
                                     </div>
                                 </div>
@@ -147,44 +121,6 @@ export default async function BlogPostPage({ params }: Props) {
                     <article className="article-body">
                         {renderMarkdown(post.content)}
                     </article>
-
-                    {/* Adjacent Posts */}
-                    {(prev || next) && (
-                        <nav className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-border/50">
-                            {prev ? (
-                                <Link
-                                    href={`/blog/${prev.slug}`}
-                                    className="group flex flex-col gap-1 p-4 rounded-xl border border-border/50 bg-card hover:border-accent/30 hover:shadow-sm transition-all duration-200"
-                                >
-                                    <span className="text-xs text-muted flex items-center gap-1">
-                                        <ArrowLeft className="w-3 h-3" />
-                                        上一篇
-                                    </span>
-                                    <span className="font-medium text-foreground group-hover:text-accent transition-colors line-clamp-2">
-                                        {prev.title}
-                                    </span>
-                                </Link>
-                            ) : (
-                                <div />
-                            )}
-                            {next ? (
-                                <Link
-                                    href={`/blog/${next.slug}`}
-                                    className="group flex flex-col gap-1 p-4 rounded-xl border border-border/50 bg-card hover:border-accent/30 hover:shadow-sm transition-all duration-200 sm:text-right sm:items-end"
-                                >
-                                    <span className="text-xs text-muted flex items-center gap-1 sm:flex-row-reverse">
-                                        下一篇
-                                        <ArrowRight className="w-3 h-3" />
-                                    </span>
-                                    <span className="font-medium text-foreground group-hover:text-accent transition-colors line-clamp-2">
-                                        {next.title}
-                                    </span>
-                                </Link>
-                            ) : (
-                                <div />
-                            )}
-                        </nav>
-                    )}
                 </section>
 
                 <footer className="pt-6 text-sm text-muted border-t border-border/50">

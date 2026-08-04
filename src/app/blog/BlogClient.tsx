@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -168,50 +167,43 @@ export default function BlogClient({ posts }: Props) {
                                 role="dialog"
                                 aria-modal="true"
                                 aria-labelledby="login-title"
-                                className="relative w-full max-w-[420px] bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden"
+                                className="relative w-full max-w-[360px] bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden"
                             >
                                 {/* Close Button */}
-                                <div className="absolute top-6 right-6 z-10">
-                                    <button
-                                        onClick={() => setShowModal(false)}
-                                        aria-label="关闭登录窗口"
-                                        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
-                                    >
-                                        <X size={16} strokeWidth={2.5} />
-                                    </button>
-                                </div>
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    aria-label="关闭登录窗口"
+                                    className="absolute top-4 right-4 p-2 text-muted hover:text-foreground transition-colors"
+                                >
+                                    <X size={18} strokeWidth={2} />
+                                </button>
 
                                 {/* Modal Header */}
-                                <div className="flex flex-col items-center pt-14 pb-6 px-6 sm:px-10">
-                                    <h2 id="login-title" className="sr-only">管理员登录</h2>
-                                    <Image src="/images/Vanto.svg" alt="Vanto" width={112} height={28} className="h-[28px] w-auto mb-5" />
+                                <div className="pt-8 pb-6 px-6">
+                                    <h2 id="login-title" className="text-base font-medium text-foreground">管理后台</h2>
                                 </div>
 
                                 {/* Modal Body */}
-                                <div className="px-6 sm:px-10 pb-6 sm:pb-10">
+                                <div className="px-6 pb-8">
                                     <form onSubmit={handleLogin} className="flex flex-col gap-4">
-                                        <div className="flex flex-col gap-2">
-                                            <label htmlFor="login-password" className="sr-only">密码</label>
-                                            <input
-                                                id="login-password"
-                                                type="password"
-                                                required
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                placeholder="请输入密码"
-                                                autoFocus
-                                                className="px-4 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
-                                            />
-                                        </div>
+                                        <label htmlFor="login-password" className="sr-only">密码</label>
+                                        <input
+                                            id="login-password"
+                                            type="password"
+                                            required
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="密码"
+                                            autoFocus
+                                            className="px-4 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                                        />
 
                                         <button
                                             type="submit"
                                             disabled={loading}
                                             className="w-full px-4 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
                                         >
-                                            <span className="relative">
-                                                {loading ? "登录中..." : "登录"}
-                                            </span>
+                                            {loading ? "登录中..." : "登录"}
                                         </button>
                                     </form>
                                 </div>

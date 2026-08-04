@@ -108,6 +108,14 @@
   padding-right: env(safe-area-inset-right, 0px);
 }
 
+/* Content page safe-area padding: base spacing + dynamic safe area */
+.pt-content {
+  padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+}
+.pb-content {
+  padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px));
+}
+
 /* dvh fallback for browsers that don't support dynamic viewport units */
 @supports not (min-height: 100dvh) {
   .min-h-dvh {
@@ -196,7 +204,6 @@
   margin-bottom: 1.5rem;
   border-left: 2px solid var(--accent);
   padding-left: 1rem;
-  font-style: italic;
 }
 
 .article-body pre,

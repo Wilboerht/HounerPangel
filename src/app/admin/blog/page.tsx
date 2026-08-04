@@ -251,7 +251,7 @@ export default function AdminBlogList() {
   }
 
   return (
-    <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
+    <main className="min-h-dvh flex flex-col items-center justify-center px-6 pt-content pb-content">
       <div className="max-w-3xl w-full flex flex-col gap-12">
         <nav>
           <Link
