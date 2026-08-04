@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowLeft, Calendar, Tag, ArrowRight } from "lucide-react";
+import BackButton from "@/components/BackButton";
+import { Calendar, Tag, ArrowLeft, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug, getAdjacentPosts } from "@/lib/blog-db";
@@ -73,15 +74,9 @@ export default async function BlogPostPage({ params }: Props) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <div className="max-w-3xl mx-auto w-full flex flex-col gap-12">
+            <div className="max-w-3xl mx-auto w-full flex flex-col gap-10">
                 <nav>
-                    <Link
-                        href="/blog"
-                        className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
-                    >
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-                        <span>返回博客</span>
-                    </Link>
+                    <BackButton label="返回博客" fallbackHref="/blog" />
                 </nav>
 
                 <header className="space-y-5">

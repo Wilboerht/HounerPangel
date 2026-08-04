@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import BackButton from "@/components/BackButton";
 import type { Metadata } from "next";
 import { getAllBlogPosts } from "@/lib/blog-db";
 import BlogClient from "./BlogClient";
@@ -22,16 +21,10 @@ export default async function Blog() {
 
     return (
         <main className="min-h-dvh flex flex-col justify-start px-6 py-12 pt-safe pb-safe">
-            <div className="max-w-3xl mx-auto w-full flex flex-col gap-12">
+            <div className="max-w-3xl mx-auto w-full flex flex-col gap-10">
                 {/* Navigation */}
                 <nav>
-                    <Link
-                        href="/"
-                        className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
-                    >
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-                        <span>返回主页</span>
-                    </Link>
+                    <BackButton label="返回主页" fallbackHref="/" />
                 </nav>
 
                 <BlogClient posts={posts} />
