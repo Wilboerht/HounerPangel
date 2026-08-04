@@ -109,11 +109,11 @@ export default async function BlogPostPage({ params }: Props) {
                             )}
                         </div>
 
-                        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                             {post.title}
                         </h1>
 
-                        <p className="text-lg text-muted leading-relaxed">
+                        <p className="text-lg text-muted/80 leading-relaxed">
                             {post.excerpt}
                         </p>
                     </header>
