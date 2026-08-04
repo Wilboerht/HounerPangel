@@ -84,14 +84,9 @@ export default function BlogClient({ posts }: Props) {
     return (
         <>
             <section className="space-y-10">
-                <div className="space-y-4">
-                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                        博客
-                    </h1>
-                    <p className="text-lg text-muted leading-relaxed">
-                        Thoughts, notes, and creations along the way.
-                    </p>
-                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                    博客
+                </h1>
 
                 {/* Tags */}
                 {allTags.length > 0 && (
@@ -178,54 +173,34 @@ export default function BlogClient({ posts }: Props) {
                             </article>
                         ))
                     ) : (
-                        <div className="py-20 text-center space-y-3">
-                            <p className="text-sm text-muted">暂无文章</p>
-                            {selectedTag && (
-                                <button
-                                    onClick={() => selectTag(null)}
-                                    className="text-sm text-accent hover:underline"
-                                >
-                                    清除筛选条件
-                                </button>
-                            )}
+                        <div className="py-16 text-center">
+                            <p className="text-sm text-muted/50 tracking-wide">内容正在整理中</p>
                         </div>
                     )}
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="pt-8 text-sm text-muted border-t border-border/50 space-y-2">
-                <div className="flex items-center gap-2">
-                    <Link href="/travel" className="text-muted hover:text-foreground transition-colors">
-                        旅行
-                    </Link>
-                    <span>·</span>
-                    <Link href="/photos" className="text-muted hover:text-foreground transition-colors">
-                        摄影集
-                    </Link>
-                </div>
-                <div className="flex items-center gap-2">
-                    <p>&copy; {new Date().getFullYear()} wilboerht</p>
-                    <span>·</span>
-                    <button
-                        onClick={() => {
-                            if (isLoggedIn) {
-                                router.push("/admin/blog");
-                            } else {
-                                setShowModal(true);
-                            }
-                        }}
-                        className="inline-flex items-center gap-1.5 text-muted hover:text-foreground transition-colors min-h-[44px]"
-                        title={isLoggedIn ? "进入后台" : "管理"}
-                    >
-                        {isLoggedIn ? (
-                            <UserCheck className="w-3.5 h-3.5" />
-                        ) : (
-                            <KeyRound className="w-3.5 h-3.5" />
-                        )}
-                        <span className="text-sm">管理后台</span>
-                    </button>
-                </div>
+            <footer className="pt-6 flex items-center justify-between text-sm text-muted border-t border-border/50">
+                <p>&copy; {new Date().getFullYear()} wilboerht</p>
+                <button
+                    onClick={() => {
+                        if (isLoggedIn) {
+                            router.push("/admin/blog");
+                        } else {
+                            setShowModal(true);
+                        }
+                    }}
+                    className="inline-flex items-center gap-1.5 text-muted hover:text-foreground transition-colors min-h-[44px]"
+                    title={isLoggedIn ? "进入后台" : "管理"}
+                >
+                    {isLoggedIn ? (
+                        <UserCheck className="w-3.5 h-3.5" />
+                    ) : (
+                        <KeyRound className="w-3.5 h-3.5" />
+                    )}
+                    <span>管理后台</span>
+                </button>
             </footer>
 
             {/* Login Modal */}

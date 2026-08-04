@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { FileText, User, Microscope } from "lucide-react";
+import { FileText, User, Microscope, Plane, Camera } from "lucide-react";
 import { ContactMenu } from "@/components/ContactMenu";
 
 const navLinks = [
   { name: "关于", href: "/me", icon: User },
   { name: "博客", href: "/blog", icon: FileText },
+  { name: "旅行", href: "/travel", icon: Plane },
+  { name: "摄影集", href: "/photos", icon: Camera },
   { name: "研究", href: null as string | null, icon: Microscope },
 ];
 

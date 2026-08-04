@@ -160,16 +160,7 @@ export default async function BlogPostPage({ params }: Props) {
                     </nav>
                 )}
 
-                <footer className="pt-8 text-sm text-muted border-t border-border/50 space-y-2">
-                    <div className="flex items-center gap-2">
-                        <Link href="/travel" className="text-muted hover:text-foreground transition-colors">
-                            旅行
-                        </Link>
-                        <span>·</span>
-                        <Link href="/photos" className="text-muted hover:text-foreground transition-colors">
-                            摄影集
-                        </Link>
-                    </div>
+                <footer className="pt-6 text-sm text-muted border-t border-border/50">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
             </div>
