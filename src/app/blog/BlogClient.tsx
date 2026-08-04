@@ -159,7 +159,7 @@ export default function BlogClient({ posts }: Props) {
                         ) : (
                             <KeyRound className="w-3.5 h-3.5" />
                         )}
-                        <span className="text-xs">管理后台</span>
+                        <span className="text-sm">管理后台</span>
                     </button>
                 </div>
             </footer>

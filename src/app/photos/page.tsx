@@ -329,8 +329,8 @@ export default function PhotographyPage() {
             <div className="shrink-0 px-5 md:px-8 lg:px-16 py-4 md:py-6 pb-safe">
               <div className="mx-auto max-w-5xl flex flex-wrap items-start justify-center gap-x-6 md:gap-x-10 gap-y-4 text-center">
                 <div>
-                  <p className="text-xs text-[#aaaaaa] mb-1.5">参数</p>
-                  <div className="flex items-center gap-2.5 text-[12px] text-[#555555]">
+                  <p className="text-sm text-[#aaaaaa] mb-1.5">参数</p>
+                  <div className="flex items-center gap-2.5 text-sm text-[#555555]">
                     {photos[lightboxIndex].exif?.aperture && (
                       <span className="flex items-center gap-1">
                         <Aperture size={12} />
@@ -345,7 +345,7 @@ export default function PhotographyPage() {
                     )}
                     {photos[lightboxIndex].exif?.iso && (
                       <span className="flex items-center gap-1">
-                        <span className="text-[9px] font-semibold border border-current rounded px-0.5 leading-none py-[1px]">ISO</span>
+                        <span className="text-[13px] font-semibold border border-current rounded px-0.5 leading-none py-[1px]">ISO</span>
                         {photos[lightboxIndex].exif.iso}
                       </span>
                     )}
@@ -353,21 +353,21 @@ export default function PhotographyPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-[#aaaaaa] mb-1.5">地点</p>
-                  <p className="text-[12px] text-[#555555]">{photos[lightboxIndex].location}</p>
+                  <p className="text-sm text-[#aaaaaa] mb-1.5">地点</p>
+                  <p className="text-sm text-[#555555]">{photos[lightboxIndex].location}</p>
                 </div>
 
                 {photos[lightboxIndex].exif?.camera && (
                   <div>
-                    <p className="text-xs text-[#aaaaaa] mb-1.5">相机</p>
-                    <p className="text-[12px] text-[#555555]">{photos[lightboxIndex].exif.camera}</p>
+                    <p className="text-sm text-[#aaaaaa] mb-1.5">相机</p>
+                    <p className="text-sm text-[#555555]">{photos[lightboxIndex].exif.camera}</p>
                   </div>
                 )}
 
                 {photos[lightboxIndex].exif?.lens && (
                   <div>
-                    <p className="text-xs text-[#aaaaaa] mb-1.5">镜头</p>
-                    <p className="text-[12px] text-[#555555]">{photos[lightboxIndex].exif.lens}</p>
+                    <p className="text-sm text-[#aaaaaa] mb-1.5">镜头</p>
+                    <p className="text-sm text-[#555555]">{photos[lightboxIndex].exif.lens}</p>
                   </div>
                 )}
               </div>

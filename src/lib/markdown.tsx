@@ -482,7 +482,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                             <path d="M7 17L17 7M17 7H7M17 7V17" />
                         </svg>
                     </div>
-                    <p className="text-[13px] text-muted leading-relaxed mt-1 truncate">
+                    <p className="text-sm text-muted leading-relaxed mt-1 truncate">
                         {cardUrl}
                     </p>
                 </a>

@@ -220,7 +220,7 @@ export default function MapView({ photos, mapboxToken }: Props) {
                   {selectedPhoto && (
                     <button
                       onClick={() => setSelectedId(null)}
-                      className="text-xs text-muted hover:text-foreground transition-colors mb-3"
+                      className="text-sm text-muted hover:text-foreground transition-colors mb-3"
                     >
                       ← 查看全部
                     </button>

@@ -215,14 +215,14 @@ export default function TravelPlanTemplate({ data }: Props) {
               </div>
             ))}
           </div>
-          <div className="mt-6 p-4 bg-primary/5 border border-primary/10 rounded-lg text-xs text-muted leading-relaxed">
+          <div className="mt-6 p-4 bg-primary/5 border border-primary/10 rounded-lg text-sm text-muted leading-relaxed">
             💡 <strong>注意事项：</strong> 需在香港境内连接本地网络；出入境记录需为 PDF 格式且不得改名；汇丰扫描证件时建议寻找纯色背景。
           </div>
         </section>
       )}
 
       {/* Footer */}
-      <footer className="mt-12 py-8 border-t border-border text-center text-xs text-muted">
+      <footer className="mt-12 py-8 border-t border-border text-center text-sm text-muted">
         <p>&copy; {new Date().getFullYear()} wilboerht</p>
       </footer>
     </main>
