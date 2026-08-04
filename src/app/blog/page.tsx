@@ -1,5 +1,4 @@
 import BackButton from "@/components/BackButton";
-import { ToastProvider } from "@/components/toast";
 import type { Metadata } from "next";
 import { getAllBlogPosts } from "@/lib/blog-db";
 import { seedBlogPosts } from "@/lib/blog-seed";
@@ -34,9 +33,7 @@ export default async function Blog() {
                     <BackButton label="返回主页" fallbackHref="/" />
                 </nav>
 
-                <ToastProvider>
-                    <BlogClient posts={posts} />
-                </ToastProvider>
+                <BlogClient posts={posts} />
             </div>
         </main>
     );

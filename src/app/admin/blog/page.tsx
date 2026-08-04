@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, ArrowLeft, LogOut, Lock, X, Save, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft, LogOut, X, Save, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
@@ -38,7 +38,6 @@ export default function AdminBlogList() {
   const [newForm, setNewForm] = useState({
     slug: "",
     title: "",
-    excerpt: "",
     content: "",
     date: new Date().toISOString().split("T")[0],
     published: false,
@@ -139,7 +138,6 @@ export default function AdminBlogList() {
         body: JSON.stringify({
           slug: newForm.slug,
           title: newForm.title,
-          excerpt: newForm.excerpt,
           content: newForm.content,
           date: newForm.date,
           tags: tagManager.tags,
@@ -152,7 +150,6 @@ export default function AdminBlogList() {
         setNewForm({
           slug: "",
           title: "",
-          excerpt: "",
           content: "",
           date: new Date().toISOString().split("T")[0],
           published: false,
@@ -205,7 +202,6 @@ export default function AdminBlogList() {
     setNewForm({
       slug: "",
       title: "",
-      excerpt: "",
       content: "",
       date: new Date().toISOString().split("T")[0],
       published: false,
@@ -216,35 +212,76 @@ export default function AdminBlogList() {
     setPendingClose(false);
   };
 
+  const [password, setPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        setPassword("");
+        setAuthError(false);
+        loadPosts();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "密码错误");
+      }
+    } catch {
+      toast.error("登录失败");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
   if (authError) {
     return (
-      <main className="min-h-dvh flex items-center justify-center px-6">
-        <div className="max-w-sm w-full flex flex-col items-center gap-6 text-center">
-          <div className="p-4 rounded-full bg-foreground/5">
-            <Lock className="w-8 h-8 text-muted" />
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-xl font-semibold text-foreground">需要登录</h1>
-            <p className="text-sm text-muted">请先登录后访问管理页面</p>
-          </div>
-          <div className="flex items-center gap-3">
+      <main className="min-h-dvh flex flex-col items-center justify-center px-6 pt-content pb-content">
+        <div className="max-w-2xl mx-auto w-full flex flex-col gap-10">
+          <nav>
             <Link
-              href="/blog"
-              className="px-6 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+              href="/"
+              className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
             >
-              返回博客
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
+              <span>返回主页</span>
             </Link>
-            <button
-              onClick={() => {
-                setAuthError(false);
-                setLoading(true);
-                loadPosts();
-              }}
-              className="text-sm text-muted hover:text-foreground transition-colors"
-            >
-              重试
-            </button>
-          </div>
+          </nav>
+
+          <section className="space-y-8 max-w-sm">
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">管理后台</h1>
+              <p className="text-lg text-muted leading-relaxed">请输入密码以继续</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="admin-password" className="text-sm font-medium text-foreground">密码</label>
+                <input
+                  id="admin-password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="请输入密码"
+                  autoFocus
+                  className="w-full px-4 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loginLoading}
+                className="w-full px-4 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
+              >
+                {loginLoading ? "登录中..." : "登录"}
+              </button>
+            </form>
+          </section>
         </div>
       </main>
     );
@@ -315,28 +352,28 @@ export default function AdminBlogList() {
                   {filteredPosts.map((post) => (
                     <div
                       key={post.slug}
-                      className="flex items-center justify-between p-4 rounded-xl border border-border/50 hover:bg-foreground/[0.02] transition-colors"
+                      className="flex items-center justify-between gap-4 p-4 rounded-xl border border-border/50 hover:bg-foreground/[0.02] transition-colors"
                     >
                       <div className="flex flex-col gap-1 min-w-0 flex-1">
                         <h3 className="font-semibold text-foreground truncate">{post.title}</h3>
-                        <p className="text-sm text-muted">
-                          {new Date(post.date).toLocaleDateString("zh-CN")}
+                        <p className="text-sm text-muted flex flex-wrap items-center gap-x-2">
+                          <span>{new Date(post.date).toLocaleDateString("zh-CN")}</span>
                           {post.tags.length > 0 && (
-                            <span className="ml-2">{post.tags.join(", ")}</span>
+                            <span className="truncate">{post.tags.join(" · ")}</span>
                           )}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                      <div className="flex items-center gap-1 flex-shrink-0">
                         <Link
                           href={`/admin/blog/edit/${post.slug}`}
-                          className="p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
+                          className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors min-h-[44px] min-w-[44px]"
                           title="编辑"
                         >
                           <Pencil className="w-4 h-4" />
                         </Link>
                         <button
                           onClick={() => setDeleteTarget(post)}
-                          className="p-2 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-500 transition-colors"
+                          className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-500 transition-colors min-h-[44px] min-w-[44px]"
                           title="删除"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -392,19 +429,19 @@ export default function AdminBlogList() {
                   <button
                     onClick={closeNewModal}
                     aria-label="关闭新建窗口"
-                    className="p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
+                    className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors min-h-[44px] min-w-[44px]"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="px-8 pt-8 pb-4 flex-shrink-0">
+                <div className="px-6 sm:px-8 pt-8 pb-4 flex-shrink-0">
                   <h2 id="new-post-title" className="text-xl font-bold text-foreground">
                     新建文章
                   </h2>
                 </div>
 
-                <div className="px-8 pb-8 overflow-y-auto">
+                <div className="px-6 sm:px-8 pb-8 overflow-y-auto">
                   <form onSubmit={handleCreate} className="flex flex-col gap-5">
                     <div className="flex flex-col gap-2">
                       <label htmlFor="new-title" className="text-sm font-medium text-foreground">
@@ -444,25 +481,6 @@ export default function AdminBlogList() {
                             ? "border-red-300 focus:border-red-400"
                             : "border-border/50 focus:border-accent/50"
                         }`}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <label htmlFor="new-excerpt" className="text-sm font-medium text-foreground">
-                        摘要 <span className="text-muted">({newForm.excerpt.length}/2000)</span>
-                      </label>
-                      <textarea
-                        id="new-excerpt"
-                        required
-                        maxLength={2000}
-                        rows={3}
-                        value={newForm.excerpt}
-                        onChange={(e) => {
-                          setNewForm({ ...newForm, excerpt: e.target.value });
-                          setFormDirty(true);
-                        }}
-                        placeholder="简短描述"
-                        className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors resize-y"
                       />
                     </div>
 

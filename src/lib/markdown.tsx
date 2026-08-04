@@ -147,7 +147,7 @@ export function renderMarkdown(content: string): React.ReactNode {
             elements.push(
                 <blockquote
                     key={`bq-${elements.length}`}
-                    className="border-l-2 border-accent/40 italic"
+                    className="border-l-2 border-accent/40"
                 >
                     {quoteLines.map((q, i) => (
                         <p key={i} className="leading-relaxed">

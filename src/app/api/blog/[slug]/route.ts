@@ -45,11 +45,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
             );
         }
 
-        const { title, excerpt, content, date, tags, published } = parseResult.data;
+        const { title, content, date, tags, published } = parseResult.data;
 
         await updateBlogPost(slug, {
             title,
-            excerpt,
             content,
             date,
             tags,

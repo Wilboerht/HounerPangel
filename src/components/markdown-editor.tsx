@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Eye, Edit3, Bold, Italic, Heading2, Heading3,
   Link, Code, Code2, List, Image as ImageIcon, Video,
@@ -24,15 +24,32 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const videoInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
 
+  // Sync external value changes (initial load, form reset, toolbar actions from parent)
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    if (ta.value !== value) {
+      ta.value = value;
+    }
+  }, [value]);
+
+  const updateValue = (newValue: string) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.value = newValue;
+    onChange(newValue);
+  };
+
   const insertText = (before: string, after: string = "", placeholder: string = "") => {
     const ta = textareaRef.current;
     if (!ta) return;
     const start = ta.selectionStart;
     const end = ta.selectionEnd;
-    const selected = value.slice(start, end);
+    const current = ta.value;
+    const selected = current.slice(start, end);
     const text = selected || placeholder;
-    const newValue = value.slice(0, start) + before + text + after + value.slice(end);
-    onChange(newValue);
+    const newValue = current.slice(0, start) + before + text + after + current.slice(end);
+    updateValue(newValue);
     requestAnimationFrame(() => {
       ta.focus();
       if (selected) {
@@ -47,11 +64,13 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const ta = textareaRef.current;
     if (!ta) return;
     const start = ta.selectionStart;
-    const before = value.slice(0, start);
+    const current = ta.value;
+    const before = current.slice(0, start);
     const prefix = before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : before.length === 0 ? "" : "\n\n";
     const text = syntax + placeholder;
     const suffix = "\n";
-    onChange(before + prefix + text + suffix + value.slice(start));
+    const newValue = before + prefix + text + suffix + current.slice(start);
+    updateValue(newValue);
     requestAnimationFrame(() => {
       ta.focus();
       const pos = start + prefix.length + syntax.length;
@@ -105,13 +124,13 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
 
   return (
     <div className="border border-border/50 rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between px-3 py-2 bg-foreground/5 border-b border-border/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 bg-foreground/5 border-b border-border/50">
         <div className="flex items-center gap-1" role="tablist">
           <button
             onClick={() => setTab("edit")}
             role="tab"
             aria-selected={tab === "edit"}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
               tab === "edit" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
           >
@@ -122,7 +141,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             onClick={() => setTab("preview")}
             role="tab"
             aria-selected={tab === "preview"}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
               tab === "preview" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
           >
@@ -131,7 +150,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           </button>
         </div>
         {tab === "edit" && (
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-0.5 overflow-x-auto no-scrollbar -mx-1 px-1">
             {tools.map((tool) => (
               <button
                 key={tool.label}
@@ -139,19 +158,19 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
                 onClick={tool.action}
                 title={tool.label}
                 aria-label={tool.label}
-                className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
+                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors flex-shrink-0"
               >
                 <tool.icon className="w-4 h-4" />
               </button>
             ))}
-            <div className="w-px h-5 bg-border/50 mx-1" />
+            <div className="w-px h-5 bg-border/50 mx-1 flex-shrink-0" />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
               title="上传图片"
               aria-label="上传图片"
-              className="p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50"
+              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50 flex-shrink-0"
             >
               <ImageIcon className="w-4 h-4" />
             </button>
@@ -161,7 +180,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
               disabled={uploading}
               title="上传视频"
               aria-label="上传视频"
-              className="p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50"
+              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50 flex-shrink-0"
             >
               <Video className="w-4 h-4" />
             </button>
@@ -188,8 +207,8 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           id={id || undefined}
           required={required}
           rows={rows}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          defaultValue={value}
+          onInput={(e) => onChange(e.currentTarget.value)}
           placeholder={"## 开头\n\n写点什么..."}
           className="w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px]"
         />
@@ -200,7 +219,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
               {renderMarkdown(value)}
             </div>
           ) : (
-            <span className="text-muted/50">预览区域 — 开始输入 Markdown 内容</span>
+            <span className="text-muted/50">预览区域 — 开始 Markdown 内容</span>
           )}
         </div>
       )}

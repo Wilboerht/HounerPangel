@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { slug, title, excerpt, content, date, tags, published } = parseResult.data;
+        const { slug, title, content, date, tags, published } = parseResult.data;
 
         const existing = await getBlogPostBySlug(slug);
         if (existing) {
@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
         await createBlogPost({
             slug,
             title,
-            excerpt,
             content,
             date,
             tags,

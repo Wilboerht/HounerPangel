@@ -6,7 +6,6 @@ export const blogPostSchema = z.object({
         .max(255, "Slug 过长")
         .regex(/^[a-z0-9-]+$/, "Slug 只能包含小写字母、数字和连字符"),
     title: z.string().min(1, "标题不能为空").max(500, "标题过长"),
-    excerpt: z.string().min(1, "摘要不能为空").max(2000, "摘要过长"),
     content: z.string().min(1, "正文不能为空").max(100_000, "正文过长"),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "日期格式必须为 YYYY-MM-DD").refine((val) => {
         const d = new Date(val + "T00:00:00");

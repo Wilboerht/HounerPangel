@@ -34,7 +34,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     return {
         title: `${post.title} - Hank Wong's Web`,
-        description: post.excerpt,
     };
 }
 
@@ -52,7 +51,7 @@ export default async function BlogPostPage({ params }: Props) {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         headline: post.title,
-        description: post.excerpt,
+        description: post.content.slice(0, 160),
         datePublished: post.date,
         dateModified: post.date,
         author: {
@@ -112,10 +111,6 @@ export default async function BlogPostPage({ params }: Props) {
                         <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                             {post.title}
                         </h1>
-
-                        <p className="text-lg text-muted/80 leading-relaxed">
-                            {post.excerpt}
-                        </p>
                     </header>
 
                     <article className="article-body">

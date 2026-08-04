@@ -5,21 +5,31 @@ const FOCUSABLE =
 
 export function useFocusTrap(active: boolean, onEscape?: () => void) {
   const ref = useRef<HTMLDivElement>(null);
+  const onEscapeRef = useRef(onEscape);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+
+  // Keep the latest callback without re-triggering the effect
+  useEffect(() => {
+    onEscapeRef.current = onEscape;
+  }, [onEscape]);
 
   useEffect(() => {
     if (!active || !ref.current) return;
 
     const container = ref.current;
-    const previouslyFocused = document.activeElement as HTMLElement;
+    previouslyFocusedRef.current = document.activeElement as HTMLElement;
 
     const focusable = container.querySelectorAll<HTMLElement>(FOCUSABLE);
     const firstFocusable = focusable[0];
 
-    if (firstFocusable) firstFocusable.focus();
+    // Only auto-focus when the trap is activated; don't steal focus on re-renders
+    if (firstFocusable && !container.contains(document.activeElement)) {
+      firstFocusable.focus();
+    }
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        onEscape?.();
+        onEscapeRef.current?.();
         return;
       }
 
@@ -53,11 +63,13 @@ export function useFocusTrap(active: boolean, onEscape?: () => void) {
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      if (previouslyFocused && typeof previouslyFocused.focus === "function") {
-        previouslyFocused.focus();
+      const prev = previouslyFocusedRef.current;
+      if (prev && typeof prev.focus === "function") {
+        prev.focus();
       }
     };
-  }, [active, onEscape]);
+    // Only depend on active state, so parent re-renders don't re-initialize focus
+  }, [active]);
 
   return ref;
 }

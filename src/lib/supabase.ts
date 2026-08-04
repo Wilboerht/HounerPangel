@@ -12,7 +12,7 @@ export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_
 export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogPost[]> {
     let query = supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, content, date, tags, published")
+        .select("slug, title, content, date, tags, published")
         .order("date", { ascending: false });
 
     if (!includeUnpublished) query = query.eq("published", true);
@@ -30,7 +30,7 @@ export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogP
 export async function getBlogPostBySlug(slug: string, includeUnpublished = false): Promise<BlogPost | null> {
     let query = supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, content, date, tags, published")
+        .select("slug, title, content, date, tags, published")
         .eq("slug", slug);
 
     if (!includeUnpublished) query = query.eq("published", true);

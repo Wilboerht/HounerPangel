@@ -22,7 +22,7 @@ export async function GET() {
       <link>${siteUrl}/blog/${escapeXml(post.slug)}</link>
       <guid>${siteUrl}/blog/${escapeXml(post.slug)}</guid>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-      <description><![CDATA[${post.excerpt}]]></description>
+      <description><![CDATA[${post.content.slice(0, 160)}]]></description>
       ${post.tags.map((t) => `<category>${escapeXml(t)}</category>`).join("")}
     </item>`).join("");
 
