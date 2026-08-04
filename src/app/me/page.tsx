@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function AboutMe() {
     return (
         <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12 pt-safe pb-safe">
-            <div className="max-w-2xl w-full flex flex-col gap-12">
+            <div className="max-w-2xl w-full flex flex-col gap-10">
                 {/* Navigation */}
                 <nav>
                     <Link
@@ -32,9 +32,7 @@ export default function AboutMe() {
                             嗨，欢迎访达我的主页，很高兴能在互联网的茫茫大海里与你相遇。
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
-                            我喜欢科技、旅行、美食和户外运动，也是 city walk 轻度爱好者。已经走遍了 20 余个城市，并用相机记录下了许多美好的瞬间，你可以查看
-                            <Link href="/photos" className="hover:text-foreground transition-colors">「相册」</Link>
-                            或我的
+                            我喜欢科技、旅行、美食和户外运动，也是 city walk 轻度爱好者。已经走遍了 20 余个城市，并用相机记录下了许多美好的瞬间，你可以查看我的
                             <a href="https://xhslink.cn/m/AuQlZcU2RmE" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">「小红书」</a>账号，希望能与你分享这些美好。
                         </p>
                         <p className="text-lg text-muted leading-relaxed">
@@ -45,7 +43,7 @@ export default function AboutMe() {
                 </section>
 
                 {/* Footer */}
-                <footer className="pt-8 text-sm text-muted border-t border-white/10">
+                <footer className="text-sm text-muted border-t border-white/10">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
             </div>

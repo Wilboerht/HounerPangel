@@ -84,13 +84,13 @@ export default function BlogClient({ posts }: Props) {
                 </h1>
 
                 {/* Blog List */}
-                <div className="space-y-12">
+                <div className="space-y-10">
                     {posts.length > 0 ? (
                         Object.entries(groupedPosts)
                             .sort(([a], [b]) => Number(b) - Number(a))
                             .map(([year, yearPosts]) => (
                                 <div key={year} className="space-y-4">
-                                    <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                                    <h2 className="text-xl font-semibold tracking-tight text-foreground">
                                         {year}
                                     </h2>
                                     <div className="space-y-3">
@@ -98,15 +98,15 @@ export default function BlogClient({ posts }: Props) {
                                             <Link
                                                 key={post.slug}
                                                 href={`/blog/${post.slug}`}
-                                                className="group flex items-baseline gap-4 sm:gap-6 text-sm"
+                                                className="group flex items-baseline gap-4 sm:gap-6"
                                             >
                                                 <time
                                                     dateTime={post.date}
-                                                    className="text-muted shrink-0 w-16 sm:w-20"
+                                                    className="text-sm text-muted shrink-0 w-20 sm:w-24"
                                                 >
                                                     {formatDate(post.date)}
                                                 </time>
-                                                <span className="text-foreground group-hover:text-accent transition-colors duration-200">
+                                                <span className="text-base text-foreground group-hover:text-accent transition-colors duration-200">
                                                     {post.title}
                                                 </span>
                                             </Link>
@@ -123,7 +123,7 @@ export default function BlogClient({ posts }: Props) {
             </section>
 
             {/* Footer */}
-            <footer className="pt-6 flex items-center justify-between text-sm text-muted border-t border-border/50">
+            <footer className="flex items-center justify-between text-sm text-muted border-t border-border/50">
                 <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 <button
                     onClick={() => {

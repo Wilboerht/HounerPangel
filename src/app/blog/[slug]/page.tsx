@@ -4,8 +4,10 @@ import { Calendar, Tag, ArrowLeft, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug, getAdjacentPosts } from "@/lib/blog-db";
+import { seedBlogPosts } from "@/lib/blog-seed";
 import { env } from "@/lib/env";
 import { renderMarkdown } from "@/lib/markdown";
+import type { BlogPost } from "@/lib/types/blog";
 
 interface Props {
     params: Promise<{ slug: string }>;

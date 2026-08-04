@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
 import { getAllBlogPosts } from "@/lib/blog-db";
-import { cnPlans, jpPlans } from "@/data/travel";
 import { env } from "@/lib/env";
 
 const siteUrl = env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
@@ -12,13 +11,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     } catch {
         // If Supabase is unavailable during build, skip blog posts
     }
-    const allPlans = [...cnPlans, ...jpPlans];
 
     const staticRoutes = [
         "/",
         "/me",
         "/blog",
-        "/travel/plan",
     ];
 
     const routes: MetadataRoute.Sitemap = [
@@ -33,12 +30,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: new Date(post.date),
             changeFrequency: "monthly" as const,
             priority: 0.6,
-        })),
-        ...allPlans.map((plan) => ({
-            url: `${siteUrl}/travel/plan/${plan.slug}`,
-            lastModified: new Date(),
-            changeFrequency: "monthly" as const,
-            priority: 0.5,
         })),
     ];
 
