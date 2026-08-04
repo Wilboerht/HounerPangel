@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Tag, X, KeyRound, UserCheck, Search, ArrowRight } from "lucide-react";
+import { Calendar, Tag, X, KeyRound, UserCheck, ArrowRight } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
@@ -22,7 +22,6 @@ export default function BlogClient({ posts }: Props) {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [search, setSearch] = useState("");
     const [selectedTag, setSelectedTag] = useState<string | null>(searchParams.get("tag"));
 
     const toast = useToast();
@@ -43,17 +42,9 @@ export default function BlogClient({ posts }: Props) {
     }, [posts]);
 
     const filteredPosts = useMemo(() => {
-        const query = search.trim().toLowerCase();
-        return posts.filter((post) => {
-            const matchesTag = selectedTag ? post.tags.includes(selectedTag) : true;
-            if (!query) return matchesTag;
-            const matchesSearch =
-                post.title.toLowerCase().includes(query) ||
-                post.excerpt.toLowerCase().includes(query) ||
-                post.tags.some((tag) => tag.toLowerCase().includes(query));
-            return matchesTag && matchesSearch;
-        });
-    }, [posts, search, selectedTag]);
+        if (!selectedTag) return posts;
+        return posts.filter((post) => post.tags.includes(selectedTag));
+    }, [posts, selectedTag]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -102,56 +93,34 @@ export default function BlogClient({ posts }: Props) {
                     </p>
                 </div>
 
-                {/* Search & Tags */}
-                <div className="space-y-4">
-                    {allTags.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-2">
+                {/* Tags */}
+                {allTags.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            onClick={() => selectTag(null)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                selectedTag === null
+                                    ? "bg-foreground text-background"
+                                    : "bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10"
+                            }`}
+                        >
+                            全部
+                        </button>
+                        {allTags.map((tag) => (
                             <button
-                                onClick={() => selectTag(null)}
+                                key={tag}
+                                onClick={() => selectTag(tag)}
                                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                                    selectedTag === null
+                                    selectedTag === tag
                                         ? "bg-foreground text-background"
                                         : "bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10"
                                 }`}
                             >
-                                全部
+                                {tag}
                             </button>
-                            {allTags.map((tag) => (
-                                <button
-                                    key={tag}
-                                    onClick={() => selectTag(tag)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                                        selectedTag === tag
-                                            ? "bg-foreground text-background"
-                                            : "bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10"
-                                    }`}
-                                >
-                                    {tag}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                        <input
-                            type="text"
-                            placeholder="搜索文章标题、摘要或标签..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-10 pr-9 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
-                        />
-                        {search && (
-                            <button
-                                onClick={() => setSearch("")}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
-                                aria-label="清除搜索"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        )}
+                        ))}
                     </div>
-                </div>
+                )}
 
                 {/* Blog List */}
                 <div className="flex flex-col gap-6">
@@ -211,12 +180,9 @@ export default function BlogClient({ posts }: Props) {
                     ) : (
                         <div className="py-20 text-center space-y-3">
                             <p className="text-sm text-muted">暂无文章</p>
-                            {(selectedTag || search) && (
+                            {selectedTag && (
                                 <button
-                                    onClick={() => {
-                                        selectTag(null);
-                                        setSearch("");
-                                    }}
+                                    onClick={() => selectTag(null)}
                                     className="text-sm text-accent hover:underline"
                                 >
                                     清除筛选条件

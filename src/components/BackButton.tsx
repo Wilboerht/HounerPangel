@@ -20,9 +20,9 @@ export default function BackButton({ label = "返回", fallbackHref = "/" }: Bac
           router.push(fallbackHref);
         }
       }}
-      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm text-muted bg-transparent border border-transparent hover:bg-foreground/5 hover:border-border/50 hover:text-foreground transition-all duration-200 group min-h-[44px]"
+      className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
     >
-      <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" />
+      <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
       <span>{label}</span>
     </button>
   );
