@@ -3,9 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Tag, X, KeyRound, UserCheck, ArrowRight } from "lucide-react";
+import { X, KeyRound, UserCheck } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
@@ -17,12 +17,10 @@ interface Props {
 
 export default function BlogClient({ posts }: Props) {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const [showModal, setShowModal] = useState(false);
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [selectedTag, setSelectedTag] = useState<string | null>(searchParams.get("tag"));
 
     const toast = useToast();
     const reduce = useSafeMotion();
@@ -34,17 +32,6 @@ export default function BlogClient({ posts }: Props) {
             .then((data) => setIsLoggedIn(data.authenticated))
             .catch(() => setIsLoggedIn(false));
     }, []);
-
-    const allTags = useMemo(() => {
-        const tags = new Set<string>();
-        posts.forEach((post) => post.tags.forEach((tag) => tags.add(tag)));
-        return Array.from(tags).sort((a, b) => a.localeCompare(b, "zh-CN"));
-    }, [posts]);
-
-    const filteredPosts = useMemo(() => {
-        if (!selectedTag) return posts;
-        return posts.filter((post) => post.tags.includes(selectedTag));
-    }, [posts, selectedTag]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -70,16 +57,24 @@ export default function BlogClient({ posts }: Props) {
         }
     };
 
-    const selectTag = (tag: string | null) => {
-        setSelectedTag(tag);
-        const params = new URLSearchParams(searchParams.toString());
-        if (tag) {
-            params.set("tag", tag);
-        } else {
-            params.delete("tag");
-        }
-        router.replace(`/blog?${params.toString()}`, { scroll: false });
-    };
+    const groupedPosts = useMemo(() => {
+        const groups: Record<string, BlogPost[]> = {};
+        posts.forEach((post) => {
+            const year = new Date(post.date).getFullYear().toString();
+            if (!groups[year]) groups[year] = [];
+            groups[year].push(post);
+        });
+        Object.values(groups).forEach((group) => {
+            group.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        });
+        return groups;
+    }, [posts]);
+
+    const formatDate = (date: string) =>
+        new Date(date).toLocaleDateString("zh-CN", {
+            month: "long",
+            day: "numeric",
+        });
 
     return (
         <>
@@ -88,90 +83,37 @@ export default function BlogClient({ posts }: Props) {
                     博客
                 </h1>
 
-                {/* Tags */}
-                {allTags.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2">
-                        <button
-                            onClick={() => selectTag(null)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                                selectedTag === null
-                                    ? "bg-foreground text-background"
-                                    : "bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10"
-                            }`}
-                        >
-                            全部
-                        </button>
-                        {allTags.map((tag) => (
-                            <button
-                                key={tag}
-                                onClick={() => selectTag(tag)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                                    selectedTag === tag
-                                        ? "bg-foreground text-background"
-                                        : "bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10"
-                                }`}
-                            >
-                                {tag}
-                            </button>
-                        ))}
-                    </div>
-                )}
-
                 {/* Blog List */}
-                <div className="flex flex-col gap-6">
-                    {filteredPosts.length > 0 ? (
-                        filteredPosts.map((post) => (
-                            <article
-                                key={post.slug}
-                                className="group flex flex-col gap-4 p-5 rounded-2xl border border-border/50 bg-card hover:border-accent/30 hover:shadow-sm transition-all duration-200"
-                            >
-                                <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
-                                    <div className="inline-flex items-center gap-1.5">
-                                        <Calendar className="w-3.5 h-3.5" />
-                                        <time dateTime={post.date}>
-                                            {new Date(post.date).toLocaleDateString("zh-CN", {
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                            })}
-                                        </time>
-                                    </div>
-                                    {post.tags.length > 0 && (
-                                        <div className="flex items-center gap-1.5">
-                                            <Tag className="w-3.5 h-3.5" />
-                                            <div className="flex flex-wrap gap-2">
-                                                {post.tags.map((tag) => (
-                                                    <button
-                                                        key={tag}
-                                                        onClick={() => selectTag(tag)}
-                                                        className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
-                                                    >
-                                                        {tag}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <Link href={`/blog/${post.slug}`} className="block space-y-2">
-                                    <h2 className="text-xl font-semibold tracking-tight text-foreground group-hover:text-accent transition-colors duration-200">
-                                        {post.title}
+                <div className="space-y-12">
+                    {posts.length > 0 ? (
+                        Object.entries(groupedPosts)
+                            .sort(([a], [b]) => Number(b) - Number(a))
+                            .map(([year, yearPosts]) => (
+                                <div key={year} className="space-y-4">
+                                    <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                                        {year}
                                     </h2>
-                                    <p className="text-muted leading-relaxed">
-                                        {post.excerpt}
-                                    </p>
-                                </Link>
-
-                                <Link
-                                    href={`/blog/${post.slug}`}
-                                    className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-accent transition-colors group/link"
-                                >
-                                    <span>阅读全文</span>
-                                    <ArrowRight className="w-4 h-4 group-hover/link:translate-x-0.5 transition-transform" />
-                                </Link>
-                            </article>
-                        ))
+                                    <div className="space-y-3">
+                                        {yearPosts.map((post) => (
+                                            <Link
+                                                key={post.slug}
+                                                href={`/blog/${post.slug}`}
+                                                className="group flex items-baseline gap-4 sm:gap-6 text-sm"
+                                            >
+                                                <time
+                                                    dateTime={post.date}
+                                                    className="text-muted shrink-0 w-16 sm:w-20"
+                                                >
+                                                    {formatDate(post.date)}
+                                                </time>
+                                                <span className="text-foreground group-hover:text-accent transition-colors duration-200">
+                                                    {post.title}
+                                                </span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
                     ) : (
                         <div className="py-16 text-center">
                             <p className="text-sm text-muted/50 tracking-wide">内容正在整理中</p>

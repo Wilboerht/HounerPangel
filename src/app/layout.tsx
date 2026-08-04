@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Serif, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import "highlight.js/styles/github.css";
 import { Analytics } from "@vercel/analytics/react";
@@ -14,6 +14,18 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const notoSerif = Noto_Serif({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const notoSerifSC = Noto_Serif_SC({
+  variable: "--font-serif-sc",
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 const siteUrl = env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
@@ -66,7 +78,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} ${notoSerifSC.variable} antialiased`}
       >
         <ToastProvider>
           {children}

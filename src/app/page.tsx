@@ -15,16 +15,11 @@ export default function Home() {
     <main className="min-h-dvh flex items-center justify-center px-6 py-12 pt-safe pb-safe">
       <div className="max-w-2xl w-full flex flex-col md:flex-row md:items-center gap-12">
         <section className="flex-1 space-y-6">
-          <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-              Hank Wong
-            </h1>
-            <p className="text-lg text-muted leading-relaxed">
-              与世界连结，<br />无限进步
-            </p>
-          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+            Hank Wong
+          </h1>
           <ContactMenu />
-          <footer className="pt-12 text-sm text-muted">
+          <footer className="text-sm text-muted">
             <p>&copy; {new Date().getFullYear()} wilboerht</p>
           </footer>
         </section>

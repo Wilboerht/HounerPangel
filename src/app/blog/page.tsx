@@ -1,6 +1,7 @@
 import BackButton from "@/components/BackButton";
 import type { Metadata } from "next";
 import { getAllBlogPosts } from "@/lib/blog-db";
+import { seedBlogPosts } from "@/lib/blog-seed";
 import BlogClient from "./BlogClient";
 import type { BlogPost } from "@/lib/types/blog";
 
@@ -19,9 +20,13 @@ export default async function Blog() {
         posts = [];
     }
 
+    // 临时种子数据：数据库为空时用于预览样式
+    if (posts.length === 0) {
+        posts = seedBlogPosts;
+    }
+
     return (
-        <main className="min-h-dvh flex flex-col items-center px-6 pt-safe pb-safe">
-            <div className="grow shrink-0 basis-12" />
+        <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12 pt-safe pb-safe">
             <div className="max-w-3xl mx-auto w-full flex flex-col gap-10">
                 {/* Navigation */}
                 <nav>
@@ -30,7 +35,6 @@ export default async function Blog() {
 
                 <BlogClient posts={posts} />
             </div>
-            <div className="grow shrink-0 basis-12" />
         </main>
     );
 }
