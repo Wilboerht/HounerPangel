@@ -24,6 +24,7 @@ export default function EditBlogPost() {
     excerpt: "",
     content: "",
     date: "",
+    published: false,
   });
   const tagManager = useTagManager([]);
   const [formDirty, setFormDirty] = useState(false);
@@ -60,6 +61,7 @@ export default function EditBlogPost() {
           excerpt: data.excerpt,
           content: data.content,
           date: data.date,
+          published: data.published ?? false,
         });
         tagManager.setTags(data.tags);
         setLoading(false);
@@ -99,6 +101,7 @@ export default function EditBlogPost() {
           content: form.content,
           date: form.date,
           tags: tagManager.tags,
+          published: form.published,
         }),
       });
 
@@ -135,7 +138,7 @@ export default function EditBlogPost() {
   }
 
   return (
-    <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12">
+    <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-12 pt-safe pb-safe">
       <div className="max-w-3xl w-full flex flex-col gap-12">
         <nav>
           <Link
@@ -219,6 +222,24 @@ export default function EditBlogPost() {
               />
             </div>
 
+            <div className="flex items-center gap-3">
+              <label htmlFor="edit-published" className="text-sm font-medium text-foreground">发布状态</label>
+              <div className="relative inline-flex items-center cursor-pointer">
+                <input
+                  id="edit-published"
+                  type="checkbox"
+                  checked={form.published}
+                  onChange={(e) => {
+                    setForm({ ...form, published: e.target.checked });
+                    markDirty();
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+              </div>
+              <span className="text-xs text-muted">{form.published ? "已发布" : "草稿"}</span>
+            </div>
+
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium text-foreground">
                 标签 <span className="text-muted">({tagManager.tags.length}/20)</span>
@@ -233,7 +254,7 @@ export default function EditBlogPost() {
                     <button
                       type="button"
                       onClick={() => tagManager.removeTag(tag)}
-                      className="hover:text-red-500 transition-colors"
+                      className="hover:text-red-500 transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center"
                     >
                       <X className="w-3 h-3" />
                     </button>

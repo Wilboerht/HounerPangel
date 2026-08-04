@@ -6,20 +6,23 @@ import {
   Link, Code, Code2, List, Image as ImageIcon, Video,
 } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
+import { useToast } from "@/components/toast";
 
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
   rows?: number;
   required?: boolean;
+  id?: string;
 }
 
-export function MarkdownEditor({ value, onChange, rows = 12, required = false }: MarkdownEditorProps) {
+export function MarkdownEditor({ value, onChange, rows = 12, required = false, id }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [uploading, setUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
 
   const insertText = (before: string, after: string = "", placeholder: string = "") => {
     const ta = textareaRef.current;
@@ -65,9 +68,11 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false }:
       if (res.ok) {
         const { url } = await res.json();
         insertText(`${prefix}(${url})\n`);
+      } else {
+        toast.error("上传失败");
       }
     } catch {
-      // silently fail
+      toast.error("上传失败");
     } finally {
       setUploading(false);
     }
@@ -130,26 +135,32 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false }:
             {tools.map((tool) => (
               <button
                 key={tool.label}
+                type="button"
                 onClick={tool.action}
                 title={tool.label}
-                className="p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
+                aria-label={tool.label}
+                className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
               >
                 <tool.icon className="w-4 h-4" />
               </button>
             ))}
             <div className="w-px h-5 bg-border/50 mx-1" />
             <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
               title="上传图片"
+              aria-label="上传图片"
               className="p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50"
             >
               <ImageIcon className="w-4 h-4" />
             </button>
             <button
+              type="button"
               onClick={() => videoInputRef.current?.click()}
               disabled={uploading}
               title="上传视频"
+              aria-label="上传视频"
               className="p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50"
             >
               <Video className="w-4 h-4" />
@@ -174,7 +185,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false }:
       {tab === "edit" ? (
         <textarea
           ref={textareaRef}
-          id="md-editor"
+          id={id || undefined}
           required={required}
           rows={rows}
           value={value}

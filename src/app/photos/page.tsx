@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,7 +22,6 @@ function Navbar() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
   }, [pathname]);
 
@@ -39,14 +38,14 @@ function Navbar() {
       }`}
     >
       <div className="mx-auto max-w-6xl px-5 md:px-8 lg:px-12">
-        <nav className="flex h-[120px] items-center justify-between">
+        <nav className="flex h-[72px] md:h-[120px] items-center justify-between">
           <Link href="/" className="flex items-center">
             <Image
               src="/images/Portfolio.svg"
               alt="Portfolio"
-              width={120}
-              height={36}
-              className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity"
+              width={100}
+              height={30}
+              className="h-8 md:h-10 w-auto opacity-90 hover:opacity-100 transition-opacity"
               priority
             />
           </Link>
@@ -71,7 +70,7 @@ function Navbar() {
           </div>
 
           <button
-            className="md:hidden text-black"
+            className="md:hidden text-black min-w-[44px] min-h-[44px] flex items-center justify-center"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
           >
@@ -122,12 +121,21 @@ function Footer() {
   );
 }
 
+function Spinner() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="w-6 h-6 border-2 border-[#dddddd] border-t-[#888888] rounded-full animate-spin" />
+    </div>
+  );
+}
+
 export default function PhotographyPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const reduce = useSafeMotion();
+  const touchRef = useRef<{ startX: number; startY: number } | null>(null);
 
   useEffect(() => {
     fetch("/api/photos")
@@ -153,6 +161,22 @@ export default function PhotographyPage() {
       i === null ? null : i === photos.length - 1 ? 0 : i + 1
     );
   }, [photos.length]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchRef.current = { startX: t.clientX, startY: t.clientY };
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchRef.current) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchRef.current.startX;
+    const dy = t.clientY - touchRef.current.startY;
+    touchRef.current = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+    if (dx > 0) prevImage();
+    else nextImage();
+  }, [prevImage, nextImage]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -188,7 +212,7 @@ export default function PhotographyPage() {
       <Navbar />
 
       {/* Gallery */}
-      <section className="mx-auto max-w-6xl px-5 md:px-8 lg:px-12 pt-[140px] md:pt-[180px] pb-24 md:pb-40">
+      <section className="mx-auto max-w-6xl px-5 md:px-8 lg:px-12 pt-[92px] md:pt-[180px] pb-24 md:pb-40">
         {error ? (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
             <p className="text-[#888888]">加载失败</p>
@@ -200,7 +224,7 @@ export default function PhotographyPage() {
             </button>
           </div>
         ) : loading ? (
-          <p className="text-center text-[#888888] py-20">加载中...</p>
+          <Spinner />
         ) : photos.length === 0 ? (
           <p className="text-center text-[#888888] py-20">暂无照片</p>
         ) : (
@@ -209,6 +233,7 @@ export default function PhotographyPage() {
               <ScrollReveal key={photo.id || photo.src} delay={i * 0.05}>
               <button
                 onClick={() => setLightboxIndex(i)}
+                aria-label={photo.title}
                 className="group relative block w-full overflow-hidden rounded text-left"
               >
                 <Image
@@ -232,7 +257,7 @@ export default function PhotographyPage() {
 
       <Footer />
 
-      {/* Lightbox - white background style like camarts.cn/c9a */}
+      {/* Lightbox */}
       <AnimatePresence>
         {lightboxIndex !== null && (
           <motion.div
@@ -240,51 +265,62 @@ export default function PhotographyPage() {
             animate={{ opacity: 1 }}
             exit={safeAnimate(reduce, { opacity: 0 })}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] bg-[#f5f5f5] flex flex-col"
+            className="fixed inset-0 z-[100] bg-[#f5f5f5] flex flex-col h-dvh"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           >
             {/* Close */}
             <button
               onClick={closeLightbox}
-              className="absolute right-5 md:right-8 z-10 p-2 text-[#888888] hover:text-black transition-colors"
-              style={{ top: `calc(1.25rem + env(safe-area-inset-top, 0px))` }}
+              className="absolute right-4 md:right-8 z-10 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#888888] hover:text-black transition-colors"
+              style={{ top: `calc(0.5rem + env(safe-area-inset-top, 0px))` }}
               aria-label="关闭"
             >
               <X size={24} />
             </button>
 
+            {/* Counter */}
+            <div className="absolute left-1/2 -translate-x-1/2 z-10 min-h-[44px] flex items-center"
+              style={{ top: `calc(0.5rem + env(safe-area-inset-top, 0px))` }}>
+              <span className="text-sm text-[#888888]">{lightboxIndex + 1} / {photos.length}</span>
+            </div>
+
             {/* Prev */}
             <button
               onClick={prevImage}
-              className="absolute left-3 md:left-8 top-1/2 -translate-y-1/2 z-10 p-2 text-[#888888] hover:text-black transition-colors"
+              className="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 z-10 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/60 hover:bg-white text-[#555555] hover:text-black transition-colors"
               aria-label="上一张"
             >
-              <ChevronLeft size={32} />
+              <ChevronLeft size={28} />
             </button>
 
             {/* Next */}
             <button
               onClick={nextImage}
-              className="absolute right-3 md:right-8 top-1/2 -translate-y-1/2 z-10 p-2 text-[#888888] hover:text-black transition-colors"
+              className="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 z-10 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/60 hover:bg-white text-[#555555] hover:text-black transition-colors"
               aria-label="下一张"
             >
-              <ChevronRight size={32} />
+              <ChevronRight size={28} />
             </button>
 
             {/* Image */}
-            <div className="flex-1 flex items-center justify-center w-full min-h-0 px-4 md:px-8 pt-8 pb-4">
+            <div className="flex-1 flex items-center justify-center w-full min-h-0 px-12 md:px-20 pt-12 pb-4">
               <motion.div
                 key={lightboxIndex}
                 initial={safeAnimate(reduce, { opacity: 0, scale: 0.98 })}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={safeAnimate(reduce, { opacity: 0, scale: 0.98 })}
                 transition={{ duration: 0.3 }}
-                className="max-w-full h-full flex items-center justify-center"
+                className="relative w-full h-full max-w-5xl flex items-center justify-center"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={photos[lightboxIndex].src}
                   alt={photos[lightboxIndex].title}
-                  className="max-w-full max-h-full w-auto h-auto object-contain shadow-[0_12px_48px_rgba(0,0,0,0.15)]"
+                  width={1600}
+                  height={1200}
+                  className="max-w-full max-h-full w-auto h-auto object-contain"
+                  style={{ boxShadow: "0 12px 48px rgba(0,0,0,0.15)" }}
+                  unoptimized
                 />
               </motion.div>
             </div>
@@ -292,7 +328,6 @@ export default function PhotographyPage() {
             {/* Info Bar */}
             <div className="shrink-0 px-5 md:px-8 lg:px-16 py-4 md:py-6 pb-safe">
               <div className="mx-auto max-w-5xl flex flex-wrap items-start justify-center gap-x-6 md:gap-x-10 gap-y-4 text-center">
-                {/* 参数 */}
                 <div>
                   <p className="text-xs text-[#aaaaaa] mb-1.5">参数</p>
                   <div className="flex items-center gap-2.5 text-[12px] text-[#555555]">
@@ -317,13 +352,11 @@ export default function PhotographyPage() {
                   </div>
                 </div>
 
-                {/* 地点 */}
                 <div>
                   <p className="text-xs text-[#aaaaaa] mb-1.5">地点</p>
                   <p className="text-[12px] text-[#555555]">{photos[lightboxIndex].location}</p>
                 </div>
 
-                {/* 相机 */}
                 {photos[lightboxIndex].exif?.camera && (
                   <div>
                     <p className="text-xs text-[#aaaaaa] mb-1.5">相机</p>
@@ -331,7 +364,6 @@ export default function PhotographyPage() {
                   </div>
                 )}
 
-                {/* 镜头 */}
                 {photos[lightboxIndex].exif?.lens && (
                   <div>
                     <p className="text-xs text-[#aaaaaa] mb-1.5">镜头</p>

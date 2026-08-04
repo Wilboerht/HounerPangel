@@ -41,6 +41,7 @@ export default function AdminBlogList() {
     excerpt: "",
     content: "",
     date: new Date().toISOString().split("T")[0],
+    published: false,
   });
   const tagManager = useTagManager([]);
 
@@ -142,6 +143,7 @@ export default function AdminBlogList() {
           content: newForm.content,
           date: newForm.date,
           tags: tagManager.tags,
+          published: newForm.published,
         }),
       });
 
@@ -153,6 +155,7 @@ export default function AdminBlogList() {
           excerpt: "",
           content: "",
           date: new Date().toISOString().split("T")[0],
+          published: false,
         });
         tagManager.setInput("");
         setFormDirty(false);
@@ -181,7 +184,7 @@ export default function AdminBlogList() {
   };
 
   const handleSlugChange = (slug: string) => {
-    setNewForm({ ...newForm, slug: slug.toLowerCase().replace(/\s+/g, "-") });
+    setNewForm((prev) => ({ ...prev, slug: slug.toLowerCase().replace(/\s+/g, "-") }));
     setFormDirty(true);
   };
 
@@ -205,6 +208,7 @@ export default function AdminBlogList() {
       excerpt: "",
       content: "",
       date: new Date().toISOString().split("T")[0],
+      published: false,
     });
     tagManager.setInput("");
     tagManager.setTags([]);
@@ -500,6 +504,24 @@ export default function AdminBlogList() {
                       />
                     </div>
 
+                    <div className="flex items-center gap-3">
+                      <label htmlFor="new-published" className="text-sm font-medium text-foreground">发布状态</label>
+                      <div className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          id="new-published"
+                          type="checkbox"
+                          checked={newForm.published}
+                          onChange={(e) => {
+                            setNewForm({ ...newForm, published: e.target.checked });
+                            setFormDirty(true);
+                          }}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                      </div>
+                      <span className="text-xs text-muted">{newForm.published ? "已发布" : "草稿"}</span>
+                    </div>
+
                      <div className="flex flex-col gap-2">
                       <label className="text-sm font-medium text-foreground">
                         标签 <span className="text-muted">({tagManager.tags.length}/20)</span>
@@ -514,7 +536,7 @@ export default function AdminBlogList() {
                             <button
                               type="button"
                               onClick={() => tagManager.removeTag(tag)}
-                              className="hover:text-red-500 transition-colors"
+                              className="hover:text-red-500 transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center"
                             >
                               <X className="w-3 h-3" />
                             </button>

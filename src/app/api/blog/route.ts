@@ -4,9 +4,11 @@ import { checkAuth } from "@/lib/auth";
 import { blogPostSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const posts = await getAllBlogPosts();
+        const authError = checkAuth(request);
+        const includeUnpublished = authError === null;
+        const posts = await getAllBlogPosts(includeUnpublished);
         return NextResponse.json(posts);
     } catch (error) {
         console.error("Failed to fetch blog posts:", error);
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { slug, title, excerpt, content, date, tags } = parseResult.data;
+        const { slug, title, excerpt, content, date, tags, published } = parseResult.data;
 
         const existing = await getBlogPostBySlug(slug);
         if (existing) {
@@ -48,6 +50,7 @@ export async function POST(request: NextRequest) {
             content,
             date,
             tags,
+            published,
         });
 
         return NextResponse.json({ success: true }, { status: 201 });

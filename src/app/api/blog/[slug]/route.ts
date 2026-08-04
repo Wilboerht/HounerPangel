@@ -8,10 +8,12 @@ interface Params {
     params: Promise<{ slug: string }>;
 }
 
-export async function GET(_request: NextRequest, { params }: Params) {
+export async function GET(request: NextRequest, { params }: Params) {
     try {
         const { slug } = await params;
-        const post = await getBlogPostBySlug(slug);
+        const authError = checkAuth(request);
+        const includeUnpublished = authError === null;
+        const post = await getBlogPostBySlug(slug, includeUnpublished);
         if (!post) {
             return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
@@ -43,7 +45,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
             );
         }
 
-        const { title, excerpt, content, date, tags } = parseResult.data;
+        const { title, excerpt, content, date, tags, published } = parseResult.data;
 
         await updateBlogPost(slug, {
             title,
@@ -51,6 +53,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
             content,
             date,
             tags,
+            published,
         });
 
         return NextResponse.json({ success: true });

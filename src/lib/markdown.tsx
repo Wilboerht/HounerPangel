@@ -1,3 +1,5 @@
+import hljs from "highlight.js";
+
 function findNextSpecial(s: string): number {
     for (let i = 0; i < s.length; i++) {
         if ("`[]*_~()".includes(s[i])) return i;
@@ -50,14 +52,25 @@ function renderInline(text: string): React.ReactNode {
             continue;
         }
 
-        const italicMatch = remaining.match(/^(?:\*|_)([^*_]+)(?:\*|_)/);
-        if (italicMatch) {
+        const italicMatch = remaining.match(/^(\*)([^*]+)(\*)/);
+        if (italicMatch && italicMatch[1] === italicMatch[3]) {
             tokens.push(
                 <em key={key++} className="italic text-foreground/90">
-                    {renderInline(italicMatch[1])}
+                    {renderInline(italicMatch[2])}
                 </em>
             );
             remaining = remaining.slice(italicMatch[0].length);
+            continue;
+        }
+
+        const underscoreMatch = remaining.match(/^(_)([^_]+)(_)/);
+        if (underscoreMatch) {
+            tokens.push(
+                <em key={key++} className="italic text-foreground/90">
+                    {renderInline(underscoreMatch[2])}
+                </em>
+            );
+            remaining = remaining.slice(underscoreMatch[0].length);
             continue;
         }
 
@@ -99,6 +112,7 @@ export function renderMarkdown(content: string): React.ReactNode {
     let inQuote = false;
     let inIframe = false;
     let codeLines: string[] = [];
+    let codeLanguage = "";
     let iframeLines: string[] = [];
     let unorderedItems: React.ReactNode[] = [];
     let orderedItems: React.ReactNode[] = [];
@@ -149,17 +163,30 @@ export function renderMarkdown(content: string): React.ReactNode {
 
     const flushCodeBlock = () => {
         if (inCodeBlock && codeLines.length > 0) {
+            const code = codeLines.join("\n");
+            let highlighted: string;
+            try {
+                if (codeLanguage && hljs.getLanguage(codeLanguage)) {
+                    highlighted = hljs.highlight(code, { language: codeLanguage }).value;
+                } else {
+                    highlighted = hljs.highlightAuto(code).value;
+                }
+            } catch {
+                highlighted = code;
+            }
             elements.push(
                 <pre
                     key={`pre-${elements.length}`}
                     className="rounded-xl bg-foreground/5 p-3 sm:p-4 overflow-x-auto"
                 >
-                    <code className="text-sm font-mono text-foreground/80 leading-relaxed">
-                        {codeLines.join("\n")}
-                    </code>
+                    <code
+                        className="text-sm font-mono leading-relaxed hljs"
+                        dangerouslySetInnerHTML={{ __html: highlighted }}
+                    />
                 </pre>
             );
             codeLines = [];
+            codeLanguage = "";
             inCodeBlock = false;
         }
     };
@@ -221,6 +248,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                 flushUnordered();
                 flushOrdered();
                 flushQuote();
+                codeLanguage = trimmed.replace("```", "").trim();
                 inCodeBlock = true;
             } else {
                 flushCodeBlock();
@@ -255,6 +283,18 @@ export function renderMarkdown(content: string): React.ReactNode {
             flushQuote();
             elements.push(
                 <hr key={`hr-${elements.length}`} className="border-border my-6" />
+            );
+            continue;
+        }
+
+        if (trimmed.startsWith("# ") && !trimmed.startsWith("## ")) {
+            flushUnordered();
+            flushOrdered();
+            flushQuote();
+            elements.push(
+                <h1 key={index} className="text-2xl font-bold tracking-tight text-foreground mt-12 mb-4">
+                    {renderInline(trimmed.replace("# ", ""))}
+                </h1>
             );
             continue;
         }
@@ -311,6 +351,58 @@ export function renderMarkdown(content: string): React.ReactNode {
             orderedItems.push(
                 <li key={index}>{renderInline(trimmed.replace(/^\d+\.\s/, ""))}</li>
             );
+            continue;
+        }
+
+        if (trimmed.startsWith("|")) {
+            flushUnordered();
+            flushOrdered();
+            flushQuote();
+            const headerCells = trimmed.split("|").filter(c => c.trim()).map(c => c.trim());
+            const nextLine = index + 1 < lines.length ? lines[index + 1].trim() : "";
+            const isSeparator = /^\|[\s\-:|]+\|$/.test(nextLine);
+            if (isSeparator && headerCells.length > 0) {
+                index++; // consume separator
+                const bodyRows: string[][] = [];
+                while (index + 1 < lines.length) {
+                    const nextTrimmed = lines[index + 1].trim();
+                    if (!nextTrimmed.startsWith("|")) break;
+                    bodyRows.push(nextTrimmed.split("|").filter(c => c.trim()).map(c => c.trim()));
+                    index++;
+                }
+                elements.push(
+                    <div key={`tbl-${index}`} className="overflow-x-auto my-4">
+                        <table className="w-full text-sm border-collapse">
+                            <thead>
+                                <tr className="border-b border-border">
+                                    {headerCells.map((cell, ci) => (
+                                        <th key={ci} className="px-3 py-2 text-left font-semibold text-foreground">
+                                            {cell}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {bodyRows.map((row, ri) => (
+                                    <tr key={ri} className="border-b border-border/50">
+                                        {row.map((cell, ci) => (
+                                            <td key={ci} className="px-3 py-2 text-muted">
+                                                {renderInline(cell)}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                );
+            } else {
+                elements.push(
+                    <p key={index} className="text-muted leading-relaxed">
+                        {renderInline(trimmed)}
+                    </p>
+                );
+            }
             continue;
         }
 

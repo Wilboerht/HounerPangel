@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getBlogPostBySlug, getAllBlogSlugs } from "@/lib/blog-db";
+import { getBlogPostBySlug } from "@/lib/blog-db";
 import { env } from "@/lib/env";
 import { renderMarkdown } from "@/lib/markdown";
 
@@ -11,15 +11,6 @@ interface Props {
 }
 
 export const dynamic = "force-dynamic";
-
-export async function generateStaticParams() {
-    try {
-        const slugs = await getAllBlogSlugs();
-        return slugs.map((slug) => ({ slug }));
-    } catch {
-        return [];
-    }
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
@@ -76,7 +67,7 @@ export default async function BlogPostPage({ params }: Props) {
     };
 
     return (
-        <main className="min-h-dvh flex flex-col justify-start px-6 py-12">
+        <main className="min-h-dvh flex flex-col justify-start px-6 py-12 pt-safe pb-safe">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -85,7 +76,7 @@ export default async function BlogPostPage({ params }: Props) {
                 <nav>
                     <Link
                         href="/blog"
-                        className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group"
+                        className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
                         <span>返回博客</span>
@@ -130,7 +121,7 @@ export default async function BlogPostPage({ params }: Props) {
                     </p>
                 </header>
 
-                <article className="space-y-5">
+                <article className="space-y-5 break-words">
                     {renderMarkdown(post.content)}
                 </article>
 

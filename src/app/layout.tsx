@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "highlight.js/styles/github.css";
 import { Analytics } from "@vercel/analytics/react";
 import { ToastProvider } from "@/components/toast";
 import { env } from "@/lib/env";
@@ -63,10 +64,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="zh-CN">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
       >
         <ToastProvider>
           {children}

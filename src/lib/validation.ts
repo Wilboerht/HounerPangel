@@ -8,8 +8,12 @@ export const blogPostSchema = z.object({
     title: z.string().min(1, "标题不能为空").max(500, "标题过长"),
     excerpt: z.string().min(1, "摘要不能为空").max(2000, "摘要过长"),
     content: z.string().min(1, "正文不能为空").max(100_000, "正文过长"),
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "日期格式必须为 YYYY-MM-DD"),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "日期格式必须为 YYYY-MM-DD").refine((val) => {
+        const d = new Date(val + "T00:00:00");
+        return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === val;
+    }, "日期不合法"),
     tags: z.array(z.string().min(1).max(50)).max(20, "标签数量过多").default([]),
+    published: z.boolean().default(false),
 });
 
 export const blogPostUpdateSchema = blogPostSchema.omit({ slug: true });

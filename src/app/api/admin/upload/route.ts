@@ -30,7 +30,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: `File too large (max ${isVideo ? "100MB" : "10MB"})` }, { status: 400 });
         }
 
-        const ext = file.name.split(".").pop() || "png";
+        const buf = Buffer.from(await file.arrayBuffer());
+        const allowedExts: Record<string, string[]> = {
+            image: ["png", "jpg", "jpeg", "gif", "webp", "svg"],
+            video: ["mp4", "webm", "mov", "avi"],
+        };
+        const category = isVideo ? "video" : "image";
+        const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+        if (!allowedExts[category].includes(ext)) {
+            return NextResponse.json({ error: `Unsupported ${category} format` }, { status: 400 });
+        }
         const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const filePath = `blog/${fileName}`;
 

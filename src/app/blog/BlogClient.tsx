@@ -49,10 +49,10 @@ export default function BlogClient({ posts }: Props) {
             } else {
                 const data = await res.json();
                 toast.error(data.error || "密码错误");
-                setLoading(false);
             }
         } catch {
             toast.error("登录失败");
+        } finally {
             setLoading(false);
         }
     };
@@ -151,7 +151,7 @@ export default function BlogClient({ posts }: Props) {
                                 setShowModal(true);
                             }
                         }}
-                        className="inline-flex items-center gap-1.5 text-muted hover:text-foreground transition-colors"
+                        className="inline-flex items-center gap-1.5 text-muted hover:text-foreground transition-colors min-h-[44px]"
                         title={isLoggedIn ? "进入后台" : "管理"}
                     >
                         {isLoggedIn ? (
@@ -194,7 +194,7 @@ export default function BlogClient({ posts }: Props) {
                                     <button
                                         onClick={() => setShowModal(false)}
                                         aria-label="关闭登录窗口"
-                                        className="p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
+                                        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
                                     >
                                         <X size={16} strokeWidth={2.5} />
                                     </button>

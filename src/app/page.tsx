@@ -10,7 +10,7 @@ const navLinks = [
 
 export default function Home() {
   return (
-    <main className="min-h-dvh flex items-center justify-center px-6 py-12">
+    <main className="min-h-dvh flex items-center justify-center px-6 py-12 pt-safe pb-safe">
       <div className="max-w-2xl w-full flex flex-col md:flex-row md:items-center gap-12">
         <section className="flex-1 space-y-6">
           <div className="space-y-4">

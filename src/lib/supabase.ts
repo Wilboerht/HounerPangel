@@ -10,35 +10,45 @@ export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_
     },
 });
 
-export async function getAllBlogPosts(): Promise<BlogPost[]> {
-    const { data, error } = await supabase
+export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogPost[]> {
+    let query = supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, content, date, tags")
+        .select("slug, title, excerpt, content, date, tags, published")
         .order("date", { ascending: false });
+
+    if (!includeUnpublished) query = query.eq("published", true);
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return (data || []).map((row) => ({
         ...row,
         tags: row.tags ?? [],
+        published: row.published ?? false,
     }));
 }
 
-export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
-    const { data, error } = await supabase
+export async function getBlogPostBySlug(slug: string, includeUnpublished = false): Promise<BlogPost | null> {
+    let query = supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, content, date, tags")
-        .eq("slug", slug)
-        .single();
+        .select("slug, title, excerpt, content, date, tags, published")
+        .eq("slug", slug);
+
+    if (!includeUnpublished) query = query.eq("published", true);
+
+    const { data, error } = await query.single();
 
     if (error) {
-        if (error.code === "PGRST116") return null; // not found
+        if (error.code === "PGRST116") return null;
         throw error;
     }
-    return data ? { ...data, tags: data.tags ?? [] } : null;
+    return data ? { ...data, tags: data.tags ?? [], published: data.published ?? false } : null;
 }
 
-export async function getAllBlogSlugs(): Promise<string[]> {
-    const { data, error } = await supabase.from("blog_posts").select("slug");
+export async function getAllBlogSlugs(includeUnpublished = false): Promise<string[]> {
+    let query = supabase.from("blog_posts").select("slug");
+    if (!includeUnpublished) query = query.eq("published", true);
+    const { data, error } = await query;
     if (error) throw error;
     return (data || []).map((row) => row.slug);
 }

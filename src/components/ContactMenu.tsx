@@ -97,9 +97,8 @@ export function ContactMenu() {
             <div
                 role="menu"
                 aria-label="联系方式"
-                className={`fixed inset-x-4 md:absolute md:inset-auto md:top-full md:left-0 md:mt-3 p-2 bg-background border border-border rounded-2xl md:rounded-xl shadow-2xl md:shadow-lg transition-all duration-200 flex flex-col gap-1 md:min-w-[160px] z-50 pb-safe ${isOpen ? 'opacity-100 translate-y-0 visible' : 'opacity-0 translate-y-8 md:translate-y-2 invisible pointer-events-none'
+                className={`fixed inset-x-4 bottom-4 md:absolute md:inset-auto md:top-full md:bottom-auto md:left-0 md:mt-3 p-2 bg-background border border-border rounded-2xl md:rounded-xl shadow-2xl md:shadow-lg transition-all duration-200 flex flex-col gap-1 md:min-w-[160px] z-50 pb-safe ${isOpen ? 'opacity-100 translate-y-0 visible' : 'opacity-0 translate-y-8 md:translate-y-2 invisible pointer-events-none'
                     }`}
-                style={{ bottom: `calc(1rem + env(safe-area-inset-bottom, 0px))` }}
             >
                 {/* Mobile handle indicator */}
                 <div className="md:hidden w-12 h-1.5 bg-border rounded-full mx-auto my-2 shrink-0" />

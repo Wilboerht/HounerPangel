@@ -109,6 +109,25 @@
   padding-right: env(safe-area-inset-right, 0px);
 }
 
+/* dvh fallback for browsers that don't support dynamic viewport units */
+@supports not (min-height: 100dvh) {
+  .min-h-dvh {
+    min-height: 100vh !important;
+  }
+}
+
+/* Samsung Internet keyboard fix: prevent fixed elements from jumping */
+@media screen and (max-width: 768px) {
+  .fixed-safe {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+  }
+}
+
 /* Handle Browser Autofill Styles */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
