@@ -70,9 +70,53 @@ export async function updateBlogPost(
     if (error) throw error;
 }
 
+function extractStoragePaths(content: string): string[] {
+    const baseUrl = env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+    if (!baseUrl) return [];
+
+    const prefix = `${baseUrl}/storage/v1/object/public/images/`;
+    const paths = new Set<string>();
+    const regexes = [
+        /!\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown image: ![alt](url)
+        /(?:src|poster)\s*=\s*["']([^"']+)["']/g, // HTML img/video src
+    ];
+
+    for (const regex of regexes) {
+        let match: RegExpExecArray | null;
+        while ((match = regex.exec(content)) !== null) {
+            const url = match[1].split("?")[0].split("#")[0];
+            if (url.startsWith(prefix)) {
+                const path = decodeURIComponent(url.slice(prefix.length));
+                if (path) paths.add(path);
+            }
+        }
+    }
+
+    return Array.from(paths);
+}
+
 export async function deleteBlogPost(slug: string): Promise<void> {
+    // Fetch post content to clean up associated media before deleting the row
+    const { data: post, error: fetchError } = await supabase
+        .from("blog_posts")
+        .select("content")
+        .eq("slug", slug)
+        .maybeSingle();
+
+    if (fetchError) throw fetchError;
+
+    const paths = post ? extractStoragePaths(post.content) : [];
+
     const { error } = await supabase.from("blog_posts").delete().eq("slug", slug);
     if (error) throw error;
+
+    // Best-effort cleanup of uploaded images/videos
+    if (paths.length > 0) {
+        const { error: storageError } = await supabase.storage.from("images").remove(paths);
+        if (storageError) {
+            console.error("Failed to delete associated media:", storageError);
+        }
+    }
 }
 
 
