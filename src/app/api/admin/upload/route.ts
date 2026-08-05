@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: `File too large (max ${isVideo ? "100MB" : "10MB"})` }, { status: 400 });
         }
 
-        const buf = Buffer.from(await file.arrayBuffer());
         const allowedExts: Record<string, string[]> = {
             image: ["png", "jpg", "jpeg", "gif", "webp", "svg"],
             video: ["mp4", "webm", "mov", "avi"],

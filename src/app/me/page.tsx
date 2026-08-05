@@ -43,7 +43,7 @@ export default function AboutMe() {
                 </section>
 
                 {/* Footer */}
-                <footer className="text-sm text-muted border-t border-white/10">
+                <footer className="text-sm text-muted">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
             </div>

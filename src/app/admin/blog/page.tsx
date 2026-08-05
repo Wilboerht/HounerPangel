@@ -441,7 +441,7 @@ export default function AdminBlogList() {
                   </h2>
                 </div>
 
-                <div className="px-6 sm:px-8 pb-8 overflow-y-auto">
+                <div className="px-6 sm:px-8 pb-8 overflow-y-auto no-scrollbar">
                   <form onSubmit={handleCreate} className="flex flex-col gap-5">
                     <div className="flex flex-col gap-2">
                       <label htmlFor="new-title" className="text-sm font-medium text-foreground">

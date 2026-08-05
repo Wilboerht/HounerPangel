@@ -55,14 +55,6 @@ export async function getAdjacentPosts(slug: string, includeUnpublished = false)
     };
 }
 
-export async function getAllBlogSlugs(includeUnpublished = false): Promise<string[]> {
-    let query = supabase.from("blog_posts").select("slug");
-    if (!includeUnpublished) query = query.eq("published", true);
-    const { data, error } = await query;
-    if (error) throw error;
-    return (data || []).map((row) => row.slug);
-}
-
 export async function createBlogPost(
     post: Omit<BlogPost, "tags"> & { tags: string[] }
 ): Promise<void> {

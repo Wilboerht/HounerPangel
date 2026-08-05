@@ -440,6 +440,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                     </figure>
                 ) : (
                     <figure key={`img-${index}`} className="">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={imgUrl}
                             alt={imgAlt || ""}
