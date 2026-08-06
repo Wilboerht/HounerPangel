@@ -28,7 +28,9 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const parsed = requestSchema.safeParse(body);
         if (!parsed.success) {
-            return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+            const fields = parsed.error.issues.map((i) => i.path.join(".")).join(", ");
+            console.error("upload-url validation failed:", JSON.stringify(parsed.error.issues));
+            return NextResponse.json({ error: `Invalid request: ${fields}` }, { status: 400 });
         }
 
         const { fileName, contentType, size } = parsed.data;
@@ -36,7 +38,8 @@ export async function POST(request: NextRequest) {
         const isVideo = contentType.startsWith("video/");
         const isImage = contentType.startsWith("image/");
         if (!isImage && !isVideo) {
-            return NextResponse.json({ error: "Only image and video files allowed" }, { status: 400 });
+            console.error("upload-url invalid content type:", { fileName, contentType, size });
+            return NextResponse.json({ error: `Only image and video files allowed, got: "${contentType}"` }, { status: 400 });
         }
 
         const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024;

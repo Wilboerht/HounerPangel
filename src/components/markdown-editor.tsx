@@ -16,6 +16,26 @@ interface MarkdownEditorProps {
   id?: string;
 }
 
+const MIME_MAP: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+  svg: "image/svg+xml",
+  mp4: "video/mp4",
+  webm: "video/webm",
+  mov: "video/quicktime",
+  avi: "video/x-msvideo",
+};
+
+function getMimeType(file: File): string {
+  if (file.type) return file.type;
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (ext && MIME_MAP[ext]) return MIME_MAP[ext];
+  return file.type || "";
+}
+
 export function MarkdownEditor({ value, onChange, rows = 12, required = false, id }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [uploading, setUploading] = useState(false);
@@ -80,12 +100,13 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   };
 
   const uploadToStorage = async (file: File): Promise<string> => {
+    const contentType = getMimeType(file);
     const res = await fetch("/api/admin/upload-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         fileName: file.name,
-        contentType: file.type,
+        contentType,
         size: file.size,
       }),
     });
@@ -101,7 +122,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", signedUrl);
-      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.setRequestHeader("Content-Type", contentType);
 
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
