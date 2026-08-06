@@ -189,8 +189,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const alt = file.name.replace(/\.[^.]+$/, "");
-    handleFileUpload(file, (url) => `![${alt}](${url})`);
+    handleFileUpload(file, (url) => `![](${url})`);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
