@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBlogPostBySlug, updateBlogPost, deleteBlogPost } from "@/lib/blog-db";
 import { checkAuth } from "@/lib/auth";
+import { verifySessionToken } from "@/lib/session";
 import { blogPostUpdateSchema, slugParamSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
+
+function isAdmin(request: NextRequest): boolean {
+    const session = request.cookies.get("admin-session");
+    if (!session) return false;
+    return verifySessionToken(session.value);
+}
 
 interface Params {
     params: Promise<{ slug: string }>;
@@ -11,8 +18,7 @@ interface Params {
 export async function GET(request: NextRequest, { params }: Params) {
     try {
         const { slug } = await params;
-        const authError = checkAuth(request);
-        const includeUnpublished = authError === null;
+        const includeUnpublished = isAdmin(request);
         const post = await getBlogPostBySlug(slug, includeUnpublished);
         if (!post) {
             return NextResponse.json({ error: "Not found" }, { status: 404 });

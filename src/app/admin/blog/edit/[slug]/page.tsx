@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { useToast } from "@/components/toast";
@@ -68,8 +67,7 @@ export default function EditBlogPost() {
         toast.error("加载失败");
         router.push("/admin/blog");
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, router, isAuth, toast]);
+  }, [slug, router, isAuth]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!formDirty) return;
@@ -80,6 +78,14 @@ export default function EditBlogPost() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [formDirty]);
+
+  const goBack = useCallback(() => {
+    if (formDirty) {
+      setPendingClose(true);
+      return;
+    }
+    router.push("/admin/blog");
+  }, [formDirty, router]);
 
   const markDirty = () => {
     if (!formDirty) setFormDirty(true);
@@ -106,7 +112,7 @@ export default function EditBlogPost() {
         setFormDirty(false);
         tagManager.setInput("");
         toast.success("文章已保存");
-        router.push("/admin/blog");
+        setTimeout(() => router.push("/admin/blog"), 600);
       } else {
         const data = await res.json();
         toast.error(data.error || "保存失败");
@@ -138,20 +144,27 @@ export default function EditBlogPost() {
     <main className="min-h-dvh flex flex-col items-center justify-center px-6 pt-content pb-content">
       <div className="max-w-3xl w-full flex flex-col gap-12">
         <nav>
-          <Link
-            href="/admin/blog"
+          <button
+            onClick={goBack}
             className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
             <span>返回管理</span>
-          </Link>
+          </button>
         </nav>
 
         <section className="space-y-10">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-              编辑文章
-            </h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                编辑文章
+              </h1>
+              {!form.published && (
+                <span className="flex-shrink-0 px-2 py-1 rounded text-xs font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                  草稿
+                </span>
+              )}
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -196,7 +209,7 @@ export default function EditBlogPost() {
                   setForm({ ...form, date: e.target.value });
                   markDirty();
                 }}
-                className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors"
+                className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors [color-scheme:dark]"
               />
             </div>
 
@@ -213,7 +226,7 @@ export default function EditBlogPost() {
                   }}
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
               </div>
               <span className="text-xs text-muted">{form.published ? "已发布" : "草稿"}</span>
             </div>
@@ -229,13 +242,13 @@ export default function EditBlogPost() {
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-foreground/10 text-foreground text-xs font-medium"
                   >
                     {tag}
-                    <button
-                      type="button"
-                      onClick={() => tagManager.removeTag(tag)}
-                      className="hover:text-red-500 transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
+                     <button
+                       type="button"
+                       onClick={() => { tagManager.removeTag(tag); markDirty(); }}
+                       className="hover:text-red-500 transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center"
+                     >
+                       <X className="w-3 h-3" />
+                     </button>
                   </span>
                 ))}
               </div>
@@ -244,18 +257,18 @@ export default function EditBlogPost() {
                   type="text"
                   value={tagManager.input}
                   onChange={(e) => tagManager.setInput(e.target.value)}
-                  onKeyDown={tagManager.handleInputKeyDown}
+                   onKeyDown={(e) => { const wasAdded = tagManager.handleInputKeyDown(e); if (wasAdded) markDirty(); }}
                   placeholder="输入标签后按回车添加"
                   className="flex-1 px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
                 />
-                <button
-                  type="button"
-                  onClick={() => tagManager.addTag(tagManager.input)}
-                  disabled={!tagManager.input.trim()}
-                  className="px-4 py-2 rounded-lg bg-foreground/5 text-muted hover:text-foreground disabled:opacity-30 transition-colors text-sm"
-                >
-                  添加
-                </button>
+                 <button
+                   type="button"
+                   onClick={() => { if (tagManager.addTag(tagManager.input)) markDirty(); }}
+                   disabled={!tagManager.input.trim()}
+                   className="px-4 py-2 rounded-lg bg-foreground/5 text-muted hover:text-foreground disabled:opacity-30 transition-colors text-sm"
+                 >
+                   添加
+                 </button>
               </div>
             </div>
 
@@ -280,21 +293,20 @@ export default function EditBlogPost() {
                 <Save className="w-4 h-4" />
                 {saving ? "保存中..." : "保存"}
               </button>
-              <Link
-                href="/admin/blog"
-                onClick={(e) => {
-                  if (formDirty) {
-                    e.preventDefault();
-                    setPendingClose(true);
-                  }
-                }}
+              <button
+                type="button"
+                onClick={goBack}
                 className="text-sm text-muted hover:text-foreground transition-colors"
               >
                 取消
-              </Link>
+              </button>
             </div>
           </form>
         </section>
+
+        <footer className="pt-8 text-sm text-muted border-t border-white/10">
+          <p>&copy; {new Date().getFullYear()} wilboerht</p>
+        </footer>
       </div>
 
       <ConfirmDialog

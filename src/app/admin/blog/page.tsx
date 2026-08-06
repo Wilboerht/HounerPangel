@@ -32,6 +32,12 @@ export default function AdminBlogList() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 200);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const [showNewModal, setShowNewModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -52,12 +58,12 @@ export default function AdminBlogList() {
   const closeModalRef = useRef<(() => void) | null>(null);
   const newPostTrapRef = useFocusTrap(showNewModal, () => closeModalRef.current?.());
 
-  const filteredPosts = search
+  const filteredPosts = debouncedSearch
     ? posts.filter(
         (p) =>
-          p.title.toLowerCase().includes(search.toLowerCase()) ||
-          p.slug.toLowerCase().includes(search.toLowerCase()) ||
-          p.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()))
+          p.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          p.slug.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          p.tags.some((t) => t.toLowerCase().includes(debouncedSearch.toLowerCase()))
       )
     : posts;
 
@@ -70,7 +76,6 @@ export default function AdminBlogList() {
       })
       .catch(() => {
         setLoading(false);
-        setAuthError(true);
       });
   };
 
@@ -155,6 +160,7 @@ export default function AdminBlogList() {
           published: false,
         });
         tagManager.setInput("");
+        tagManager.setTags([]);
         setFormDirty(false);
         loadPosts();
         toast.success("文章创建成功");
@@ -195,7 +201,9 @@ export default function AdminBlogList() {
     resetAndCloseModal();
   };
 
-  closeModalRef.current = closeNewModal;
+  useEffect(() => {
+    closeModalRef.current = closeNewModal;
+  });
 
   const resetAndCloseModal = () => {
     setShowNewModal(false);
@@ -343,8 +351,17 @@ export default function AdminBlogList() {
                     placeholder="搜索文章标题、slug 或标签..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
                   />
+                  {search && (
+                    <button
+                      onClick={() => setSearch("")}
+                      aria-label="清除搜索"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               )}
               {filteredPosts.length > 0 ? (
@@ -355,7 +372,14 @@ export default function AdminBlogList() {
                       className="flex items-center justify-between gap-4 p-4 rounded-xl border border-border/50 hover:bg-foreground/[0.02] transition-colors"
                     >
                       <div className="flex flex-col gap-1 min-w-0 flex-1">
-                        <h3 className="font-semibold text-foreground truncate">{post.title}</h3>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <h3 className="font-semibold text-foreground truncate">{post.title}</h3>
+                          {!post.published && (
+                            <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                              草稿
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-muted flex flex-wrap items-center gap-x-2">
                           <span>{new Date(post.date).toLocaleDateString("zh-CN")}</span>
                           {post.tags.length > 0 && (
@@ -416,14 +440,14 @@ export default function AdminBlogList() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
               transition={springModal}
-              className="fixed inset-0 flex items-center justify-center z-[101] p-6"
+              className="fixed inset-0 flex items-center justify-center z-[101] p-6 max-sm:p-0"
             >
               <div
                 ref={newPostTrapRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="new-post-title"
-                className="relative w-full max-w-2xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
+                className="relative w-full max-w-3xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[90vh] flex flex-col max-sm:rounded-none max-sm:max-h-none max-sm:h-dvh"
               >
                 <div className="absolute top-4 right-4 z-10">
                   <button
@@ -435,14 +459,14 @@ export default function AdminBlogList() {
                   </button>
                 </div>
 
-                <div className="px-6 sm:px-8 pt-8 pb-4 flex-shrink-0">
+                <div className="px-6 sm:px-8 pt-8 pb-4 flex-shrink-0 pr-14 sm:pr-16">
                   <h2 id="new-post-title" className="text-xl font-bold text-foreground">
                     新建文章
                   </h2>
                 </div>
 
                 <div className="px-6 sm:px-8 pb-8 overflow-y-auto no-scrollbar">
-                  <form onSubmit={handleCreate} className="flex flex-col gap-5">
+                  <form onSubmit={handleCreate} className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
                       <label htmlFor="new-title" className="text-sm font-medium text-foreground">
                         标题 <span className="text-muted">({newForm.title.length}/500)</span>
@@ -495,7 +519,7 @@ export default function AdminBlogList() {
                           setNewForm({ ...newForm, date: e.target.value });
                           setFormDirty(true);
                         }}
-                        className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors"
+                        className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors [color-scheme:dark]"
                       />
                     </div>
 
@@ -512,7 +536,7 @@ export default function AdminBlogList() {
                           }}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                        <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
                       </div>
                       <span className="text-xs text-muted">{newForm.published ? "已发布" : "草稿"}</span>
                     </div>
@@ -530,7 +554,7 @@ export default function AdminBlogList() {
                             {tag}
                             <button
                               type="button"
-                              onClick={() => tagManager.removeTag(tag)}
+                              onClick={() => { tagManager.removeTag(tag); setFormDirty(true); }}
                               className="hover:text-red-500 transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center"
                             >
                               <X className="w-3 h-3" />
@@ -543,18 +567,18 @@ export default function AdminBlogList() {
                           type="text"
                           value={tagManager.input}
                           onChange={(e) => tagManager.setInput(e.target.value)}
-                          onKeyDown={tagManager.handleInputKeyDown}
+                          onKeyDown={(e) => { const wasAdded = tagManager.handleInputKeyDown(e); if (wasAdded) setFormDirty(true); }}
                           placeholder="输入标签后按回车添加"
                           className="flex-1 px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
                         />
-                        <button
-                          type="button"
-                          onClick={() => tagManager.addTag(tagManager.input)}
-                          disabled={!tagManager.input.trim()}
-                          className="px-4 py-2 rounded-lg bg-foreground/5 text-muted hover:text-foreground disabled:opacity-30 transition-colors text-sm"
-                        >
-                          添加
-                        </button>
+                      <button
+                        type="button"
+                        onClick={() => { if (tagManager.addTag(tagManager.input)) setFormDirty(true); }}
+                        disabled={!tagManager.input.trim()}
+                        className="px-4 py-2 rounded-lg bg-foreground/5 text-muted hover:text-foreground disabled:opacity-30 transition-colors text-sm"
+                      >
+                        添加
+                      </button>
                       </div>
                     </div>
 

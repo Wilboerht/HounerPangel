@@ -45,13 +45,34 @@ export async function getBlogPostBySlug(slug: string, includeUnpublished = false
 }
 
 export async function getAdjacentPosts(slug: string, includeUnpublished = false): Promise<{ prev: BlogPost | null; next: BlogPost | null }> {
-    const all = await getAllBlogPosts(includeUnpublished);
-    const index = all.findIndex((post) => post.slug === slug);
-    if (index === -1) return { prev: null, next: null };
+    const current = await getBlogPostBySlug(slug, includeUnpublished);
+    if (!current) return { prev: null, next: null };
+
+    const baseQuery = () => {
+        let q = supabase
+            .from("blog_posts")
+            .select("slug, title, content, date, tags, published");
+        if (!includeUnpublished) q = q.eq("published", true);
+        return q;
+    };
+
+    const [{ data: prevData }, { data: nextData }] = await Promise.all([
+        baseQuery()
+            .lt("date", current.date)
+            .order("date", { ascending: false })
+            .limit(1),
+        baseQuery()
+            .gt("date", current.date)
+            .order("date", { ascending: true })
+            .limit(1),
+    ]);
+
+    const mapPost = (post: typeof prevData extends (infer U)[] | null ? U : never) =>
+        post ? { ...post, tags: post.tags ?? [], published: post.published ?? false } : null;
 
     return {
-        prev: index < all.length - 1 ? all[index + 1] : null,
-        next: index > 0 ? all[index - 1] : null,
+        prev: prevData?.[0] ? mapPost(prevData[0]) : null,
+        next: nextData?.[0] ? mapPost(nextData[0]) : null,
     };
 }
 
@@ -96,7 +117,6 @@ function extractStoragePaths(content: string): string[] {
 }
 
 export async function deleteBlogPost(slug: string): Promise<void> {
-    // Fetch post content to clean up associated media before deleting the row
     const { data: post, error: fetchError } = await supabase
         .from("blog_posts")
         .select("content")
@@ -107,16 +127,15 @@ export async function deleteBlogPost(slug: string): Promise<void> {
 
     const paths = post ? extractStoragePaths(post.content) : [];
 
-    const { error } = await supabase.from("blog_posts").delete().eq("slug", slug);
-    if (error) throw error;
-
-    // Best-effort cleanup of uploaded images/videos
     if (paths.length > 0) {
         const { error: storageError } = await supabase.storage.from("images").remove(paths);
         if (storageError) {
             console.error("Failed to delete associated media:", storageError);
         }
     }
+
+    const { error } = await supabase.from("blog_posts").delete().eq("slug", slug);
+    if (error) throw error;
 }
 
 

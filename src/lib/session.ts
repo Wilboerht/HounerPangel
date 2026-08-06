@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { env } from "./env";
 
 function getSecret(): string {
-    return env.SESSION_SECRET || env.ADMIN_PASSWORD;
+    return env.SESSION_SECRET;
 }
 
 function sign(data: string, secret: string): string {

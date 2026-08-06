@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllBlogPosts, createBlogPost, getBlogPostBySlug } from "@/lib/blog-db";
 import { checkAuth } from "@/lib/auth";
+import { verifySessionToken } from "@/lib/session";
 import { blogPostSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
+function isAdmin(request: NextRequest): boolean {
+    const session = request.cookies.get("admin-session");
+    if (!session) return false;
+    return verifySessionToken(session.value);
+}
+
 export async function GET(request: NextRequest) {
     try {
-        const authError = checkAuth(request);
-        const includeUnpublished = authError === null;
+        const includeUnpublished = isAdmin(request);
         const posts = await getAllBlogPosts(includeUnpublished);
         return NextResponse.json(posts);
     } catch (error) {

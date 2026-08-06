@@ -68,13 +68,22 @@ export function ConfirmDialog({
               </div>
               <div className="flex items-center justify-end gap-3 mt-6">
                 <button
+                  type="button"
                   onClick={onClose}
                   className="px-4 py-2 rounded-lg text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
                 >
                   取消
                 </button>
                 <button
-                  onClick={() => { Promise.resolve(onConfirm()).finally(onClose); }}
+                  onClick={async () => {
+                    try {
+                      await onConfirm();
+                    } catch {
+                      // onConfirm handles its own errors
+                    } finally {
+                      onClose();
+                    }
+                  }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     danger
                       ? "bg-red-500 text-white hover:bg-red-600"

@@ -3,6 +3,8 @@ import { checkAuth } from "@/lib/auth";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { supabase } from "@/lib/supabase";
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
     const authError = checkAuth(request);
     if (authError) return authError;

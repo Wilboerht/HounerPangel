@@ -1,35 +1,39 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 export function useTagManager(initialTags: string[] = []) {
   const [tags, setTags] = useState<string[]>(initialTags);
   const [input, setInput] = useState("");
 
-  const addTag = (inputVal: string) => {
+  const addTag = useCallback((inputVal: string) => {
     const trimmed = inputVal.trim();
-    if (trimmed && tags.length < 20) {
-      setTags((prev) => {
-        if (prev.includes(trimmed)) return prev;
-        return [...prev, trimmed];
-      });
-      setInput("");
-      return true;
-    }
-    return false;
-  };
+    if (!trimmed) return false;
+    let wasAdded = false;
+    setTags((prev) => {
+      if (prev.length >= 20 || prev.includes(trimmed)) return prev;
+      wasAdded = true;
+      return [...prev, trimmed];
+    });
+    if (wasAdded) setInput("");
+    return wasAdded;
+  }, []);
 
-  const removeTag = (tag: string) => {
+  const removeTag = useCallback((tag: string) => {
     setTags((prev) => prev.filter((t) => t !== tag));
-  };
+  }, []);
 
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      addTag(input);
+      return addTag(input);
     }
-    if (e.key === "Backspace" && !input && tags.length > 0) {
-      removeTag(tags[tags.length - 1]);
+    if (e.key === "Backspace" && !input) {
+      if (tags.length > 0) {
+        setTags((prev) => prev.slice(0, -1));
+        return true;
+      }
     }
-  };
+    return false;
+  }, [input, tags, addTag]);
 
-  return { tags, setTags, input, setInput, addTag, removeTag, handleInputKeyDown };
+  return useMemo(() => ({ tags, setTags, input, setInput, addTag, removeTag, handleInputKeyDown }), [tags, input, addTag, removeTag, handleInputKeyDown]);
 }

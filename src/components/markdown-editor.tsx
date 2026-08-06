@@ -19,6 +19,7 @@ interface MarkdownEditorProps {
 export function MarkdownEditor({ value, onChange, rows = 12, required = false, id }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -78,42 +79,96 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     });
   };
 
-  const handleFileUpload = async (file: File, prefix: string) => {
+  const uploadToStorage = async (file: File): Promise<string> => {
+    const res = await fetch("/api/admin/upload-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: file.name,
+        contentType: file.type,
+        size: file.size,
+      }),
+    });
+
+    if (!res.ok) {
+      let message = "上传失败";
+      try { const d = await res.json(); if (d.error) message = d.error; } catch {}
+      throw new Error(message);
+    }
+
+    const { signedUrl, publicUrl } = await res.json();
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", signedUrl);
+      xhr.setRequestHeader("Content-Type", file.type);
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          setUploadProgress(`${pct}%`);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error("上传失败"));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error("上传失败"));
+      xhr.send(file);
+    });
+
+    return publicUrl as string;
+  };
+
+  const handleFileUpload = async (file: File, getMarkdown: (url: string) => string) => {
     setUploading(true);
+    setUploadProgress("");
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-      if (res.ok) {
-        const { url } = await res.json();
-        insertText(`${prefix}(${url})\n`);
-      } else {
-        let message = "上传失败";
-        try {
-          const data = await res.json();
-          if (data.error) message = data.error;
-        } catch {}
-        toast.error(message);
-      }
-    } catch {
-      toast.error("上传失败");
+      const url = await uploadToStorage(file);
+      insertText(getMarkdown(url) + "\n");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "上传失败");
     } finally {
       setUploading(false);
+      setUploadProgress("");
     }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    handleFileUpload(file, `![${file.name.replace(/\.[^.]+$/, "")}]`);
+    const alt = file.name.replace(/\.[^.]+$/, "");
+    handleFileUpload(file, (url) => `![${alt}](${url})`);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    handleFileUpload(file, `![${file.name.replace(/\.[^.]+$/, "")}]`);
+    handleFileUpload(file, (url) => `<video src="${url}" controls></video>`);
     if (videoInputRef.current) videoInputRef.current.value = "";
+  };
+
+  const insertCodeBlock = () => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const current = ta.value;
+    const before = current.slice(0, start);
+    const prefix = before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : before.length === 0 ? "" : "\n\n";
+    const text = "```\ncode\n```\n";
+    const newValue = before + prefix + text + current.slice(start);
+    updateValue(newValue);
+    requestAnimationFrame(() => {
+      ta.focus();
+      const pos = start + prefix.length + 4;
+      ta.setSelectionRange(pos, pos + 4);
+    });
   };
 
   const tools = [
@@ -123,18 +178,21 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     { icon: Heading3, label: "三级标题", action: () => insertBlock("### ", "标题") },
     { icon: Link, label: "链接", action: () => insertText("[", "](url)", "链接文字") },
     { icon: Code, label: "行内代码", action: () => insertText("`", "`", "code") },
-    { icon: Code2, label: "代码块", action: () => insertBlock("```\n", "code") },
+    { icon: Code2, label: "代码块", action: insertCodeBlock },
     { icon: List, label: "无序列表", action: () => insertBlock("- ", "列表项") },
   ];
 
   return (
     <div className="border border-border/50 rounded-lg overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 bg-foreground/5 border-b border-border/50">
-        <div className="flex items-center gap-1" role="tablist">
+        <div className="flex items-center gap-1" role="tablist" aria-label="编辑器视图切换">
           <button
+            type="button"
+            id="tab-edit"
             onClick={() => setTab("edit")}
             role="tab"
             aria-selected={tab === "edit"}
+            aria-controls="md-editor-panel"
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
               tab === "edit" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
@@ -143,9 +201,12 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             编辑
           </button>
           <button
+            type="button"
+            id="tab-preview"
             onClick={() => setTab("preview")}
             role="tab"
             aria-selected={tab === "preview"}
+            aria-controls="md-preview-panel"
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
               tab === "preview" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
@@ -155,7 +216,12 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           </button>
         </div>
         {tab === "edit" && (
-          <div className="flex items-center gap-0.5 overflow-x-auto no-scrollbar -mx-1 px-1">
+          <div className="flex items-center gap-0.5 flex-wrap -mx-1 px-1">
+            {uploading && (
+              <span className="text-xs text-muted flex-shrink-0 mr-1">
+                {uploadProgress || "上传中..."}
+              </span>
+            )}
             {tools.map((tool) => (
               <button
                 key={tool.label}
@@ -209,7 +275,9 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       {tab === "edit" ? (
         <textarea
           ref={textareaRef}
-          id={id || undefined}
+          id={id || "md-editor-panel"}
+          role="tabpanel"
+          aria-labelledby="tab-edit"
           required={required}
           rows={rows}
           defaultValue={value}
@@ -218,9 +286,9 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           className="w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px]"
         />
       ) : (
-        <div className="px-4 py-3 bg-foreground/[0.02] min-h-[300px] text-sm text-muted leading-relaxed">
+        <div id="md-preview-panel" role="tabpanel" aria-labelledby="tab-preview" className="px-4 py-3 bg-foreground/[0.02] min-h-[300px] text-sm leading-relaxed">
           {value ? (
-            <div className="prose prose-sm max-w-none space-y-4">
+            <div className="prose prose-sm max-w-none space-y-4 text-foreground">
               {renderMarkdown(value)}
             </div>
           ) : (
