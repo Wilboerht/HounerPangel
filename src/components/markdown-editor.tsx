@@ -88,7 +88,12 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         const { url } = await res.json();
         insertText(`${prefix}(${url})\n`);
       } else {
-        toast.error("上传失败");
+        let message = "上传失败";
+        try {
+          const data = await res.json();
+          if (data.error) message = data.error;
+        } catch {}
+        toast.error(message);
       }
     } catch {
       toast.error("上传失败");

@@ -23,7 +23,7 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, "");
 }
 
-const VALID_SLUG_RE = /^[a-z0-9-]+$/;
+const VALID_SLUG_RE = /^[a-z0-9\-]+$/;
 
 export default function AdminBlogList() {
   const router = useRouter();
@@ -475,7 +475,7 @@ export default function AdminBlogList() {
                         value={newForm.slug}
                         onChange={(e) => handleSlugChange(e.target.value)}
                         placeholder="hello-world"
-                        pattern="^[a-z0-9-]+$"
+                        pattern="^[a-z0-9\-]+$"
                         className={`px-4 py-2 rounded-lg bg-foreground/5 border text-foreground placeholder:text-muted/50 focus:outline-none transition-colors ${
                           newForm.slug && !slugValid
                             ? "border-red-300 focus:border-red-400"
