@@ -17,6 +17,8 @@ const EXT_TO_MIME: Record<string, string> = {
     gif: "image/gif",
     webp: "image/webp",
     svg: "image/svg+xml",
+    heic: "image/heic",
+    heif: "image/heif",
     mp4: "video/mp4",
     webm: "video/webm",
     mov: "video/quicktime",
@@ -24,7 +26,7 @@ const EXT_TO_MIME: Record<string, string> = {
 };
 
 const ALLOWED_EXTENSIONS: Record<string, string[]> = {
-    image: ["png", "jpg", "jpeg", "gif", "webp", "svg"],
+    image: ["png", "jpg", "jpeg", "gif", "webp", "svg", "heic", "heif"],
     video: ["mp4", "webm", "mov", "avi"],
 };
 
