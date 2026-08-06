@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const PUBLIC_API = ["/api/admin/login", "/api/admin/check", "/api/admin/logout"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     if (pathname.startsWith("/api/admin/") && !PUBLIC_API.includes(pathname)) {
