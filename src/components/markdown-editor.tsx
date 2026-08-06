@@ -23,6 +23,8 @@ const MIME_MAP: Record<string, string> = {
   gif: "image/gif",
   webp: "image/webp",
   svg: "image/svg+xml",
+  heic: "image/heic",
+  heif: "image/heif",
   mp4: "video/mp4",
   webm: "video/webm",
   mov: "video/quicktime",
@@ -35,6 +37,8 @@ function getMimeType(file: File): string {
   if (ext && MIME_MAP[ext]) return MIME_MAP[ext];
   return file.type || "";
 }
+
+const CONVERT_EXTENSIONS = new Set(["heic", "heif"]);
 
 export function MarkdownEditor({ value, onChange, rows = 12, required = false, id }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
@@ -100,6 +104,28 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   };
 
   const uploadToStorage = async (file: File): Promise<string> => {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    const isHeic = CONVERT_EXTENSIONS.has(ext);
+
+    if (isHeic) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        let message = "上传失败";
+        try { const d = await res.json(); if (d.error) message = d.error; } catch {}
+        throw new Error(message);
+      }
+
+      const { url } = await res.json();
+      return url as string;
+    }
+
     const contentType = getMimeType(file);
     const res = await fetch("/api/admin/upload-url", {
       method: "POST",
