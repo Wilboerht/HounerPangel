@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
-import { FootprintMap } from "@/components/footprint-map";
+import { FootprintMapLazy } from "@/components/footprint-map-lazy";
 import { cities } from "@/data/cities";
 
 export const metadata: Metadata = {
@@ -12,6 +12,16 @@ export const metadata: Metadata = {
 export default function Footprints() {
     return (
         <main className="relative h-dvh w-screen">
+            {/* Warm up the connection to the CARTO basemap CDN and start the
+                style fetch while the map bundle is still downloading */}
+            <link rel="preconnect" href="https://basemaps.cartocdn.com" crossOrigin="anonymous" />
+            <link rel="preconnect" href="https://tiles.basemaps.cartocdn.com" crossOrigin="anonymous" />
+            <link
+                rel="preload"
+                href="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+                as="fetch"
+                crossOrigin="anonymous"
+            />
             <Link
                 href="/"
                 aria-label="返回主页"
@@ -20,7 +30,7 @@ export default function Footprints() {
                 <ArrowLeft className="h-4 w-4" />
                 返回
             </Link>
-            <FootprintMap cities={cities} />
+            <FootprintMapLazy cities={cities} />
         </main>
     );
 }
