@@ -20,6 +20,7 @@ export const cities: City[] = [
     { name: "湖州", coordinates: [120.0868, 30.8944] },
     { name: "嘉兴", coordinates: [120.7555, 30.7461] },
     { name: "绍兴", coordinates: [120.5802, 30.0303] },
+    { name: "诸暨", coordinates: [120.2469, 29.7086] },
     { name: "宁波", coordinates: [121.5503, 29.8746] },
     { name: "舟山", coordinates: [122.2072, 29.9853] },
     { name: "南昌", coordinates: [115.8582, 28.6829] },
@@ -27,5 +28,6 @@ export const cities: City[] = [
     { name: "抚州", coordinates: [116.3582, 27.9492] },
     { name: "上饶", coordinates: [117.9713, 28.4549] },
     { name: "鹰潭", coordinates: [117.0692, 28.2602] },
+    { name: "井冈山", coordinates: [114.2892, 26.7480] },
     { name: "武汉", coordinates: [114.3055, 30.5928] },
 ];

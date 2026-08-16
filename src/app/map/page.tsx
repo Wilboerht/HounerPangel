@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { FootprintMap } from "@/components/footprint-map";
 import { cities } from "@/data/cities";
@@ -9,7 +11,15 @@ export const metadata: Metadata = {
 
 export default function Footprints() {
     return (
-        <main className="h-dvh w-screen">
+        <main className="relative h-dvh w-screen">
+            <Link
+                href="/"
+                aria-label="返回主页"
+                className="absolute left-4 top-4 z-10 flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border bg-card/90 px-3 text-sm text-muted shadow-sm backdrop-blur transition-colors duration-200 hover:text-foreground"
+            >
+                <ArrowLeft className="h-4 w-4" />
+                返回
+            </Link>
             <FootprintMap cities={cities} />
         </main>
     );
