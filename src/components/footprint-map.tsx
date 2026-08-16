@@ -1,0 +1,97 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Map, { Marker, Popup, NavigationControl } from "react-map-gl/mapbox";
+import "mapbox-gl/dist/mapbox-gl.css";
+import type { City } from "@/data/cities";
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+function computeBounds(cities: City[]): [number, number, number, number] | undefined {
+    if (cities.length === 0) return undefined;
+    const lngs = cities.map((c) => c.coordinates[0]);
+    const lats = cities.map((c) => c.coordinates[1]);
+    return [
+        Math.min(...lngs),
+        Math.min(...lats),
+        Math.max(...lngs),
+        Math.max(...lats),
+    ];
+}
+
+export function FootprintMap({ cities }: { cities: City[] }) {
+    const [selected, setSelected] = useState<City | null>(null);
+    const bounds = useMemo(() => computeBounds(cities), [cities]);
+
+    if (!MAPBOX_TOKEN) {
+        return (
+            <div className="flex h-full w-full items-center justify-center bg-background px-6">
+                <p className="text-sm text-muted text-center leading-relaxed">
+                    地图未配置。请在 <code>.env.local</code> 中设置{" "}
+                    <code>NEXT_PUBLIC_MAPBOX_TOKEN</code> 后重启开发服务器。
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <Map
+            mapboxAccessToken={MAPBOX_TOKEN}
+            initialViewState={
+                bounds
+                    ? { bounds, fitBoundsOptions: { padding: 60, maxZoom: 6 } }
+                    : { longitude: 104.0, latitude: 35.5, zoom: 3 }
+            }
+            style={{ width: "100%", height: "100%" }}
+            mapStyle="mapbox://styles/mapbox/light-v11"
+        >
+            <NavigationControl position="top-right" />
+            {cities.map((city) => (
+                <Marker
+                    key={city.name}
+                    longitude={city.coordinates[0]}
+                    latitude={city.coordinates[1]}
+                    anchor="bottom"
+                    onClick={(e) => {
+                        e.originalEvent.stopPropagation();
+                        setSelected(city);
+                    }}
+                >
+                    <button
+                        type="button"
+                        aria-label={city.name}
+                        className={`block cursor-pointer p-0 transition-colors duration-200 ${
+                            selected?.name === city.name
+                                ? "text-foreground"
+                                : "text-foreground/50 hover:text-foreground"
+                        }`}
+                    >
+                        <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2C8.13 2 5 5.13 5 8.5c0 5.25 7 13 7 13s7-7.75 7-13C19 5.13 15.87 2 12 2zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                        </svg>
+                    </button>
+                </Marker>
+            ))}
+            {selected && (
+                <Popup
+                    longitude={selected.coordinates[0]}
+                    latitude={selected.coordinates[1]}
+                    anchor="bottom"
+                    offset={24}
+                    onClose={() => setSelected(null)}
+                    closeOnClick={false}
+                    className="footprint-popup"
+                >
+                    <div className="space-y-0.5 pr-3">
+                        <p className="text-sm font-bold text-foreground">{selected.name}</p>
+                        {(selected.visitDate || selected.note) && (
+                            <p className="text-xs text-muted">
+                                {[selected.visitDate, selected.note].filter(Boolean).join(" · ")}
+                            </p>
+                        )}
+                    </div>
+                </Popup>
+            )}
+        </Map>
+    );
+}

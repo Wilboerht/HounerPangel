@@ -236,6 +236,36 @@
   margin-top: 0.5rem;
 }
 
+/* Footprint map popup: align mapbox default popup with site style */
+.footprint-popup .mapboxgl-popup-content {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
+  padding: 0.625rem 0.875rem;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.footprint-popup .mapboxgl-popup-close-button {
+  color: var(--muted);
+  font-size: 14px;
+  padding: 2px 8px;
+  right: 2px;
+  top: 0;
+}
+
+.footprint-popup .mapboxgl-popup-close-button:hover {
+  color: var(--foreground);
+  background: transparent;
+}
+
+/* anchor="bottom": tip points down from the popup's bottom edge */
+.footprint-popup .mapboxgl-popup-tip {
+  border-top-color: var(--card);
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,

@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { FileText, User } from "lucide-react";
+import { FileText, MapPin, User } from "lucide-react";
 import { ContactMenu } from "@/components/ContactMenu";
 
 const navLinks = [
   { name: "关于", href: "/me", icon: User },
   { name: "博客", href: "/blog", icon: FileText },
+  { name: "足迹", href: "/map", icon: MapPin },
 ];
 
 export default function Home() {
