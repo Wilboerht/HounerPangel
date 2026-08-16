@@ -1,11 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Map, { Marker, Popup, NavigationControl } from "react-map-gl/mapbox";
-import "mapbox-gl/dist/mapbox-gl.css";
+import Map, { Marker, Popup, NavigationControl } from "react-map-gl/maplibre";
+import "maplibre-gl/dist/maplibre-gl.css";
 import type { City } from "@/data/cities";
-
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 function computeBounds(cities: City[]): [number, number, number, number] | undefined {
     if (cities.length === 0) return undefined;
@@ -23,27 +21,15 @@ export function FootprintMap({ cities }: { cities: City[] }) {
     const [selected, setSelected] = useState<City | null>(null);
     const bounds = useMemo(() => computeBounds(cities), [cities]);
 
-    if (!MAPBOX_TOKEN) {
-        return (
-            <div className="flex h-full w-full items-center justify-center bg-background px-6">
-                <p className="text-sm text-muted text-center leading-relaxed">
-                    地图未配置。请在 <code>.env.local</code> 中设置{" "}
-                    <code>NEXT_PUBLIC_MAPBOX_TOKEN</code> 后重启开发服务器。
-                </p>
-            </div>
-        );
-    }
-
     return (
         <Map
-            mapboxAccessToken={MAPBOX_TOKEN}
             initialViewState={
                 bounds
                     ? { bounds, fitBoundsOptions: { padding: 60, maxZoom: 6 } }
                     : { longitude: 104.0, latitude: 35.5, zoom: 3 }
             }
             style={{ width: "100%", height: "100%" }}
-            mapStyle="mapbox://styles/mapbox/light-v11"
+            mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         >
             <NavigationControl position="top-right" />
             {cities.map((city) => (

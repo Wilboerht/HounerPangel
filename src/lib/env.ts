@@ -6,7 +6,6 @@ const envSchema = z.object({
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, "SUPABASE_SERVICE_ROLE_KEY is required"),
     ADMIN_PASSWORD: z.string().min(1, "ADMIN_PASSWORD is required"),
     SESSION_SECRET: z.string().min(1, "SESSION_SECRET is required"),
-    NEXT_PUBLIC_MAPBOX_TOKEN: z.string().optional(),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 
