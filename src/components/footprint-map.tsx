@@ -63,13 +63,14 @@ export function FootprintMap({ cities }: { cities: City[] }) {
                     longitude={selected.coordinates[0]}
                     latitude={selected.coordinates[1]}
                     anchor="bottom"
-                    offset={24}
+                    offset={22}
                     onClose={() => setSelected(null)}
-                    closeOnClick={false}
+                    closeOnClick={true}
+                    closeButton={false}
                     className="footprint-popup"
                 >
-                    <div className="space-y-0.5 pr-3">
-                        <p className="text-sm font-bold text-foreground">{selected.name}</p>
+                    <div className="space-y-0.5">
+                        <p className="text-sm font-semibold tracking-wide text-foreground">{selected.name}</p>
                         {(selected.visitDate || selected.note) && (
                             <p className="text-xs text-muted">
                                 {[selected.visitDate, selected.note].filter(Boolean).join(" · ")}
