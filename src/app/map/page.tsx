@@ -16,6 +16,10 @@ export default function Footprints() {
                 style fetch while the map bundle is still downloading */}
             <link rel="preconnect" href="https://basemaps.cartocdn.com" crossOrigin="anonymous" />
             <link rel="preconnect" href="https://tiles.basemaps.cartocdn.com" crossOrigin="anonymous" />
+            <link rel="preconnect" href="https://tiles-a.basemaps.cartocdn.com" crossOrigin="anonymous" />
+            <link rel="preconnect" href="https://tiles-b.basemaps.cartocdn.com" crossOrigin="anonymous" />
+            <link rel="preconnect" href="https://tiles-c.basemaps.cartocdn.com" crossOrigin="anonymous" />
+            <link rel="preconnect" href="https://tiles-d.basemaps.cartocdn.com" crossOrigin="anonymous" />
             <link
                 rel="preload"
                 href="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
