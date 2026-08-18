@@ -3,6 +3,8 @@ export interface City {
     name: string;
     /** [经度, 纬度] */
     coordinates: [number, number];
+    /** 足迹状态：visited 已到访（默认），planned 计划前往 */
+    status?: "visited" | "planned";
     /** 到访时间，如 "2024-05" */
     visitDate?: string;
     /** 一句话备注 */
@@ -33,4 +35,7 @@ export const cities: City[] = [
     { name: "鹰潭", coordinates: [117.0692, 28.2602] },
     { name: "井冈山", coordinates: [114.2892, 26.7480] },
     { name: "武汉", coordinates: [114.3055, 30.5928] },
+    { name: "香港", coordinates: [114.1694, 22.3193], status: "planned" },
+    { name: "南京", coordinates: [118.7969, 32.0603], status: "planned" },
+    { name: "景德镇", coordinates: [117.1784, 29.2688], status: "planned" },
 ];

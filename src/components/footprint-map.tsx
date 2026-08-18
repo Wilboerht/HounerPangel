@@ -47,9 +47,13 @@ export function FootprintMap({ cities }: { cities: City[] }) {
                         type="button"
                         aria-label={city.name}
                         className={`block cursor-pointer p-0 transition-colors duration-200 ${
-                            selected?.name === city.name
-                                ? "text-foreground"
-                                : "text-foreground/50 hover:text-foreground"
+                            city.status === "planned"
+                                ? selected?.name === city.name
+                                    ? "text-accent"
+                                    : "text-accent/60 hover:text-accent"
+                                : selected?.name === city.name
+                                  ? "text-foreground"
+                                  : "text-foreground/50 hover:text-foreground"
                         }`}
                     >
                         <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="currentColor" aria-hidden="true">
@@ -71,6 +75,9 @@ export function FootprintMap({ cities }: { cities: City[] }) {
                 >
                     <div className="space-y-0.5">
                         <p className="text-sm font-semibold tracking-wide text-foreground">{selected.name}</p>
+                        {selected.status === "planned" && (
+                            <p className="text-xs text-accent">计划前往</p>
+                        )}
                         {(selected.visitDate || selected.note) && (
                             <p className="text-xs text-muted">
                                 {[selected.visitDate, selected.note].filter(Boolean).join(" · ")}
