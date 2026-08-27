@@ -4,6 +4,9 @@ import type { BlogPost } from "@/lib/types/blog";
 
 const escapeXml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
+// Safely embed text in CDATA by splitting any "]]>" sequence.
+const cdata = (s: string) => `<![CDATA[${s.replace(/]]>/g, "]]]]><![CDATA[>")}]]>`;
+
 const siteUrl = env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
 
 export async function GET() {
@@ -18,11 +21,11 @@ export async function GET() {
 
     const items = posts.map((post) => `
     <item>
-      <title><![CDATA[${post.title}]]></title>
+      <title>${cdata(post.title)}</title>
       <link>${siteUrl}/blog/${escapeXml(post.slug)}</link>
       <guid>${siteUrl}/blog/${escapeXml(post.slug)}</guid>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-      <description><![CDATA[${post.content.slice(0, 160)}]]></description>
+      <description>${cdata(post.content.slice(0, 160))}</description>
       ${post.tags.map((t) => `<category>${escapeXml(t)}</category>`).join("")}
     </item>`).join("");
 

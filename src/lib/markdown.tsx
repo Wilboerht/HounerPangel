@@ -1,4 +1,89 @@
-import hljs from "highlight.js";
+import hljs from "highlight.js/lib/core";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import python from "highlight.js/lib/languages/python";
+import bash from "highlight.js/lib/languages/bash";
+import json from "highlight.js/lib/languages/json";
+import css from "highlight.js/lib/languages/css";
+import xml from "highlight.js/lib/languages/xml";
+import sql from "highlight.js/lib/languages/sql";
+import yaml from "highlight.js/lib/languages/yaml";
+import go from "highlight.js/lib/languages/go";
+import rust from "highlight.js/lib/languages/rust";
+import c from "highlight.js/lib/languages/c";
+import cpp from "highlight.js/lib/languages/cpp";
+import java from "highlight.js/lib/languages/java";
+import diff from "highlight.js/lib/languages/diff";
+import markdownLang from "highlight.js/lib/languages/markdown";
+import plaintext from "highlight.js/lib/languages/plaintext";
+
+hljs.registerLanguage("javascript", javascript);
+hljs.registerLanguage("typescript", typescript);
+hljs.registerLanguage("python", python);
+hljs.registerLanguage("bash", bash);
+hljs.registerLanguage("json", json);
+hljs.registerLanguage("css", css);
+hljs.registerLanguage("xml", xml);
+hljs.registerLanguage("sql", sql);
+hljs.registerLanguage("yaml", yaml);
+hljs.registerLanguage("go", go);
+hljs.registerLanguage("rust", rust);
+hljs.registerLanguage("c", c);
+hljs.registerLanguage("cpp", cpp);
+hljs.registerLanguage("java", java);
+hljs.registerLanguage("diff", diff);
+hljs.registerLanguage("markdown", markdownLang);
+hljs.registerLanguage("plaintext", plaintext);
+
+function escapeHtml(s: string): string {
+    return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+// 链接协议白名单：仅允许 https?://、mailto:、以及 / 或 # 开头的相对路径
+function isSafeLinkUrl(url: string): boolean {
+    const trimmed = url.trim();
+    return /^(https?:\/\/|mailto:|\/|#)/i.test(trimmed);
+}
+
+// 图片/视频地址白名单：仅允许 http(s) 或相对路径
+function isSafeMediaUrl(url: string): boolean {
+    const trimmed = url.trim();
+    return /^(https?:\/\/|\/|#)/i.test(trimmed);
+}
+
+const IFRAME_ALLOWED_DOMAINS = [
+    "embed.music.apple.com",
+    "open.spotify.com",
+    "bandcamp.com",
+    "www.youtube.com",
+    "youtube.com",
+    "player.bilibili.com",
+    "music.163.com",
+    "y.qq.com",
+    "platform.twitter.com",
+    "twitter.com",
+    "x.com",
+    "www.instagram.com",
+    "instagram.com",
+];
+
+// 校验 iframe src 域名白名单，通过则返回干净的 src，否则返回 null
+function getAllowedIframeSrc(html: string): string | null {
+    const srcMatch = html.match(/src\s*=\s*["']([^"']+)["']/i);
+    if (!srcMatch) return null;
+    try {
+        const url = new URL(srcMatch[1]);
+        if (url.protocol !== "https:") return null;
+        return IFRAME_ALLOWED_DOMAINS.some((d) => url.hostname === d) ? srcMatch[1] : null;
+    } catch {
+        return null;
+    }
+}
 
 function findNextSpecial(s: string): number {
     for (let i = 0; i < s.length; i++) {
@@ -26,17 +111,22 @@ function renderInline(text: string): React.ReactNode {
 
         const linkMatch = remaining.match(/^\[([^\]]+)\]\(([^)]+)\)/);
         if (linkMatch) {
-            tokens.push(
-                <a
-                    key={key++}
-                    href={linkMatch[2]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-accent hover:underline underline-offset-2"
-                >
-                    {renderInline(linkMatch[1])}
-                </a>
-            );
+            if (isSafeLinkUrl(linkMatch[2])) {
+                tokens.push(
+                    <a
+                        key={key++}
+                        href={linkMatch[2]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-accent hover:underline underline-offset-2"
+                    >
+                        {renderInline(linkMatch[1])}
+                    </a>
+                );
+            } else {
+                // 不允许的协议渲染为纯文本
+                tokens.push(<span key={key++}>{linkMatch[1]}</span>);
+            }
             remaining = remaining.slice(linkMatch[0].length);
             continue;
         }
@@ -168,11 +258,14 @@ export function renderMarkdown(content: string): React.ReactNode {
             try {
                 if (codeLanguage && hljs.getLanguage(codeLanguage)) {
                     highlighted = hljs.highlight(code, { language: codeLanguage }).value;
+                } else if (codeLanguage) {
+                    // 未注册语言按转义后的纯文本渲染
+                    highlighted = escapeHtml(code);
                 } else {
                     highlighted = hljs.highlightAuto(code).value;
                 }
             } catch {
-                highlighted = code;
+                highlighted = escapeHtml(code);
             }
             elements.push(
                 <pre
@@ -194,44 +287,29 @@ export function renderMarkdown(content: string): React.ReactNode {
     const flushIframe = () => {
         if (inIframe && iframeLines.length > 0) {
             const iframeHtml = iframeLines.join("\n").trim();
-            const srcMatch = iframeHtml.match(/src=["']([^"']+)["']/i);
-            const allowedDomains = [
-                "embed.music.apple.com",
-                "open.spotify.com",
-                "bandcamp.com",
-                "www.youtube.com",
-                "youtube.com",
-                "player.bilibili.com",
-                "music.163.com",
-                "y.qq.com",
-                "platform.twitter.com",
-                "twitter.com",
-                "x.com",
-                "www.instagram.com",
-                "instagram.com",
-            ];
-            const isAllowed = srcMatch
-                ? allowedDomains.some((d) => {
-                      try {
-                          const url = new URL(srcMatch[1]);
-                          return url.hostname === d;
-                      } catch {
-                          return false;
-                      }
-                  })
-                : false;
+            const safeSrc = getAllowedIframeSrc(iframeHtml);
 
-            if (isAllowed) {
+            if (safeSrc) {
+                // 校验通过后重建一个干净的 iframe，剥离所有事件属性和其他内容
                 elements.push(
                     <div key={`iframe-${elements.length}`} className="iframe-wrapper">
-                        <div dangerouslySetInnerHTML={{ __html: iframeHtml }} />
+                        <iframe
+                            src={safeSrc}
+                            className="w-full aspect-video rounded-xl border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            title="嵌入内容"
+                        />
                     </div>
                 );
             } else {
+                // 校验失败的 iframe 按普通文本段落渲染
                 elements.push(
-                    <pre key={`iframe-${elements.length}`} className="rounded-xl bg-foreground/5 p-4 overflow-x-auto text-sm text-muted">
-                        <code>{iframeHtml}</code>
-                    </pre>
+                    <p key={`iframe-${elements.length}`} className="text-muted leading-relaxed">
+                        {iframeHtml}
+                    </p>
                 );
             }
             iframeLines = [];
@@ -267,6 +345,10 @@ export function renderMarkdown(content: string): React.ReactNode {
             flushQuote();
             inIframe = true;
             iframeLines.push(line);
+            // 单行写法立即 flush，避免吞掉后续正文
+            if (trimmed.toLowerCase().includes("</iframe>")) {
+                flushIframe();
+            }
             continue;
         }
         if (inIframe) {
@@ -418,7 +500,7 @@ export function renderMarkdown(content: string): React.ReactNode {
         flushQuote();
 
         const imageMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-        if (imageMatch) {
+        if (imageMatch && isSafeMediaUrl(imageMatch[2])) {
             const [, imgAlt, imgUrl] = imageMatch;
             const isVideo = /\.(mp4|webm|mov|avi|mkv)($|\?)/i.test(imgUrl);
             elements.push(
@@ -459,7 +541,7 @@ export function renderMarkdown(content: string): React.ReactNode {
         }
 
         const standaloneLinkMatch = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-        if (standaloneLinkMatch) {
+        if (standaloneLinkMatch && isSafeLinkUrl(standaloneLinkMatch[2])) {
             const [, cardText, cardUrl] = standaloneLinkMatch;
             elements.push(
                 <a

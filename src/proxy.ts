@@ -13,10 +13,13 @@ export function proxy(request: NextRequest) {
         }
     }
 
-    if (pathname.startsWith("/admin/blog/edit/")) {
+    // First line of defense only: check cookie presence here. The real
+    // token validation happens in the API routes (proxy runs in a restricted
+    // runtime and cannot access the database).
+    if (pathname.startsWith("/admin/")) {
         const session = request.cookies.get("admin-session");
         if (!session) {
-            return NextResponse.redirect(new URL("/blog", request.url));
+            return NextResponse.redirect(new URL("/admin", request.url));
         }
     }
 

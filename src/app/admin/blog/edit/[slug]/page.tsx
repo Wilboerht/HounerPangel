@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { useToast } from "@/components/toast";
@@ -27,6 +27,13 @@ export default function EditBlogPost() {
   const tagManager = useTagManager([]);
   const [formDirty, setFormDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(false);
+  const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (navTimerRef.current) clearTimeout(navTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/check")
@@ -112,7 +119,7 @@ export default function EditBlogPost() {
         setFormDirty(false);
         tagManager.setInput("");
         toast.success("文章已保存");
-        setTimeout(() => router.push("/admin/blog"), 600);
+        navTimerRef.current = setTimeout(() => router.push("/admin/blog"), 600);
       } else {
         const data = await res.json();
         toast.error(data.error || "保存失败");

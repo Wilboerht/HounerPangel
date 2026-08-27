@@ -5,7 +5,7 @@ import { verifySessionToken } from "@/lib/session";
 import { blogPostUpdateSchema, slugParamSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
-function isAdmin(request: NextRequest): boolean {
+async function isAdmin(request: NextRequest): Promise<boolean> {
     const session = request.cookies.get("admin-session");
     if (!session) return false;
     return verifySessionToken(session.value);
@@ -18,7 +18,7 @@ interface Params {
 export async function GET(request: NextRequest, { params }: Params) {
     try {
         const { slug } = await params;
-        const includeUnpublished = isAdmin(request);
+        const includeUnpublished = await isAdmin(request);
         const post = await getBlogPostBySlug(slug, includeUnpublished);
         if (!post) {
             return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 }
 
 export async function PUT(request: NextRequest, { params }: Params) {
-    const authError = checkAuth(request);
+    const authError = await checkAuth(request);
     if (authError) return authError;
 
     const limit = rateLimit(getRateLimitKey(request) + ":blog:update");
@@ -45,21 +45,22 @@ export async function PUT(request: NextRequest, { params }: Params) {
         const parseResult = blogPostUpdateSchema.safeParse(body);
 
         if (!parseResult.success) {
-            return NextResponse.json(
-                { error: "Invalid input", details: parseResult.error.issues },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: "Invalid input" }, { status: 400 });
         }
 
         const { title, content, date, tags, published } = parseResult.data;
 
-        await updateBlogPost(slug, {
+        const updated = await updateBlogPost(slug, {
             title,
             content,
             date,
             tags,
             published,
         });
+
+        if (!updated) {
+            return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {
@@ -69,7 +70,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
-    const authError = checkAuth(request);
+    const authError = await checkAuth(request);
     if (authError) return authError;
 
     const limit = rateLimit(getRateLimitKey(request) + ":blog:delete");

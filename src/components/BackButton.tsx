@@ -14,7 +14,10 @@ export default function BackButton({ label = "返回", fallbackHref = "/" }: Bac
   return (
     <button
       onClick={() => {
-        if (window.history.length > 1) {
+        const hasSameOriginReferrer =
+          document.referrer !== "" &&
+          new URL(document.referrer).origin === window.location.origin;
+        if (hasSameOriginReferrer) {
           router.back();
         } else {
           router.push(fallbackHref);

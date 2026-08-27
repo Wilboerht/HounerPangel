@@ -16,9 +16,6 @@ const EXT_TO_MIME: Record<string, string> = {
     jpeg: "image/jpeg",
     gif: "image/gif",
     webp: "image/webp",
-    svg: "image/svg+xml",
-    heic: "image/heic",
-    heif: "image/heif",
     mp4: "video/mp4",
     webm: "video/webm",
     mov: "video/quicktime",
@@ -26,12 +23,12 @@ const EXT_TO_MIME: Record<string, string> = {
 };
 
 const ALLOWED_EXTENSIONS: Record<string, string[]> = {
-    image: ["png", "jpg", "jpeg", "gif", "webp", "svg", "heic", "heif"],
+    image: ["png", "jpg", "jpeg", "gif", "webp"],
     video: ["mp4", "webm", "mov", "avi"],
 };
 
 export async function POST(request: NextRequest) {
-    const authError = checkAuth(request);
+    const authError = await checkAuth(request);
     if (authError) return authError;
 
     const limit = rateLimit(getRateLimitKey(request) + ":upload-url", UPLOAD_RATE_LIMIT);
@@ -51,8 +48,8 @@ export async function POST(request: NextRequest) {
         const { fileName, size } = parsed.data;
         let { contentType } = parsed.data;
 
+        const ext = fileName.split(".").pop()?.toLowerCase() || "";
         if (!contentType) {
-            const ext = fileName.split(".").pop()?.toLowerCase() || "";
             contentType = EXT_TO_MIME[ext] || "";
             if (!contentType) {
                 return NextResponse.json({ error: `Cannot determine file type from extension: "${ext}"` }, { status: 400 });
@@ -72,9 +69,8 @@ export async function POST(request: NextRequest) {
         }
 
         const category = isVideo ? "video" : "image";
-        const ext = fileName.split(".").pop()?.toLowerCase() || "png";
         if (!ALLOWED_EXTENSIONS[category].includes(ext)) {
-            return NextResponse.json({ error: `Unsupported ${category} format` }, { status: 400 });
+            return NextResponse.json({ error: `Unsupported ${category} format: .${ext}` }, { status: 400 });
         }
 
         const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;

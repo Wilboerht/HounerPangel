@@ -23,9 +23,10 @@ export default function ErrorPage({
                 </div>
                 <div className="space-y-2">
                     <h1 className="text-xl font-semibold text-foreground">出错了</h1>
-                    <p className="text-sm text-muted">
-                        {error.message || "页面加载时发生了意外错误。"}
-                    </p>
+                    <p className="text-sm text-muted">页面加载时发生了意外错误，请稍后重试。</p>
+                    {error.digest && (
+                        <p className="text-xs text-muted/60">错误 ID：{error.digest}</p>
+                    )}
                 </div>
                 <div className="flex items-center gap-3">
                     <button

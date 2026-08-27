@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { createSessionToken } from "@/lib/session";
 import { loginSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { env } from "@/lib/env";
+
+function passwordsMatch(password: string, adminPassword: string): boolean {
+    // Hash both sides so timingSafeEqual never leaks length information
+    const passwordHash = createHash("sha256").update(password).digest();
+    const adminHash = createHash("sha256").update(adminPassword).digest();
+    return timingSafeEqual(passwordHash, adminHash);
+}
 
 export async function POST(request: NextRequest) {
     const limit = rateLimit(getRateLimitKey(request) + ":login");
@@ -15,20 +23,16 @@ export async function POST(request: NextRequest) {
         const parseResult = loginSchema.safeParse(body);
 
         if (!parseResult.success) {
-            return NextResponse.json(
-                { error: "Invalid input", details: parseResult.error.issues },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: "Invalid input" }, { status: 400 });
         }
 
         const { password } = parseResult.data;
-        const adminPassword = env.ADMIN_PASSWORD;
 
-        if (password !== adminPassword) {
+        if (!passwordsMatch(password, env.ADMIN_PASSWORD)) {
             return NextResponse.json({ error: "密码错误" }, { status: 401 });
         }
 
-        const token = createSessionToken();
+        const token = await createSessionToken();
         const response = NextResponse.json({ success: true });
         response.cookies.set("admin-session", token, {
             httpOnly: true,

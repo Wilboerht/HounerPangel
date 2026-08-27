@@ -1,11 +1,12 @@
+import "server-only";
 import { z } from "zod";
 
 const envSchema = z.object({
-    NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
-    NEXT_PUBLIC_SUPABASE_URL: z.string().url().min(1, "NEXT_PUBLIC_SUPABASE_URL is required"),
+    NEXT_PUBLIC_SITE_URL: z.url().optional(),
+    NEXT_PUBLIC_SUPABASE_URL: z.url(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, "SUPABASE_SERVICE_ROLE_KEY is required"),
-    ADMIN_PASSWORD: z.string().min(1, "ADMIN_PASSWORD is required"),
-    SESSION_SECRET: z.string().min(1, "SESSION_SECRET is required"),
+    ADMIN_PASSWORD: z.string().min(12, "ADMIN_PASSWORD must be at least 12 characters"),
+    SESSION_SECRET: z.string().min(32, "SESSION_SECRET must be at least 32 characters"),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 

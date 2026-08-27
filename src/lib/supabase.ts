@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createClient } from "@supabase/supabase-js";
 import type { BlogPost } from "./types/blog";
 import { env } from "./env";
@@ -44,38 +46,6 @@ export async function getBlogPostBySlug(slug: string, includeUnpublished = false
     return data ? { ...data, tags: data.tags ?? [], published: data.published ?? false } : null;
 }
 
-export async function getAdjacentPosts(slug: string, includeUnpublished = false): Promise<{ prev: BlogPost | null; next: BlogPost | null }> {
-    const current = await getBlogPostBySlug(slug, includeUnpublished);
-    if (!current) return { prev: null, next: null };
-
-    const baseQuery = () => {
-        let q = supabase
-            .from("blog_posts")
-            .select("slug, title, content, date, tags, published");
-        if (!includeUnpublished) q = q.eq("published", true);
-        return q;
-    };
-
-    const [{ data: prevData }, { data: nextData }] = await Promise.all([
-        baseQuery()
-            .lt("date", current.date)
-            .order("date", { ascending: false })
-            .limit(1),
-        baseQuery()
-            .gt("date", current.date)
-            .order("date", { ascending: true })
-            .limit(1),
-    ]);
-
-    const mapPost = (post: typeof prevData extends (infer U)[] | null ? U : never) =>
-        post ? { ...post, tags: post.tags ?? [], published: post.published ?? false } : null;
-
-    return {
-        prev: prevData?.[0] ? mapPost(prevData[0]) : null,
-        next: nextData?.[0] ? mapPost(nextData[0]) : null,
-    };
-}
-
 export async function createBlogPost(
     post: Omit<BlogPost, "tags"> & { tags: string[] }
 ): Promise<void> {
@@ -86,9 +56,15 @@ export async function createBlogPost(
 export async function updateBlogPost(
     slug: string,
     post: Omit<BlogPost, "tags" | "slug"> & { tags: string[] }
-): Promise<void> {
-    const { error } = await supabase.from("blog_posts").update(post).eq("slug", slug);
+): Promise<BlogPost | null> {
+    const { data, error } = await supabase
+        .from("blog_posts")
+        .update(post)
+        .eq("slug", slug)
+        .select("slug, title, content, date, tags, published")
+        .maybeSingle();
     if (error) throw error;
+    return data ? { ...data, tags: data.tags ?? [], published: data.published ?? false } : null;
 }
 
 function extractStoragePaths(content: string): string[] {
@@ -97,8 +73,10 @@ function extractStoragePaths(content: string): string[] {
 
     const prefix = `${baseUrl}/storage/v1/object/public/images/`;
     const paths = new Set<string>();
+    // Common image extensions plus video formats inserted by the editor.
+    const mediaExt = /\.(png|jpe?g|gif|webp|avif|svg|mp4|webm|mov)$/i;
     const regexes = [
-        /!\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown image: ![alt](url)
+        /!\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown image/video: ![alt](url)
         /(?:src|poster)\s*=\s*["']([^"']+)["']/g, // HTML img/video src
     ];
 
@@ -106,7 +84,7 @@ function extractStoragePaths(content: string): string[] {
         let match: RegExpExecArray | null;
         while ((match = regex.exec(content)) !== null) {
             const url = match[1].split("?")[0].split("#")[0];
-            if (url.startsWith(prefix)) {
+            if (mediaExt.test(url) && url.startsWith(prefix)) {
                 const path = decodeURIComponent(url.slice(prefix.length));
                 if (path) paths.add(path);
             }

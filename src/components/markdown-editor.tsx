@@ -196,7 +196,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    handleFileUpload(file, (url) => `<video src="${url}" controls></video>`);
+    handleFileUpload(file, (url) => `![video](${url})`);
     if (videoInputRef.current) videoInputRef.current.value = "";
   };
 

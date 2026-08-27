@@ -45,9 +45,16 @@ export default function AdminBlogList() {
     slug: "",
     title: "",
     content: "",
-    date: new Date().toISOString().split("T")[0],
+    date: "",
     published: false,
   });
+
+  // Set after mount to avoid SSR/client hydration mismatch on the date value.
+  useEffect(() => {
+    setNewForm((prev) =>
+      prev.date ? prev : { ...prev, date: new Date().toISOString().split("T")[0] }
+    );
+  }, []);
   const tagManager = useTagManager([]);
 
   const [deleteTarget, setDeleteTarget] = useState<BlogPost | null>(null);
@@ -67,20 +74,22 @@ export default function AdminBlogList() {
       )
     : posts;
 
-  const loadPosts = () => {
-    fetch("/api/blog")
+  const loadPosts = (signal?: AbortSignal) => {
+    fetch("/api/blog", { signal })
       .then((res) => res.json())
       .then((data) => {
         setPosts(data);
         setLoading(false);
       })
       .catch(() => {
+        if (signal?.aborted) return;
         setLoading(false);
       });
   };
 
   useEffect(() => {
-    fetch("/api/admin/check")
+    const controller = new AbortController();
+    fetch("/api/admin/check", { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => {
         if (!data.authenticated) {
@@ -88,12 +97,14 @@ export default function AdminBlogList() {
           setLoading(false);
           return;
         }
-        loadPosts();
+        loadPosts(controller.signal);
       })
       .catch(() => {
+        if (controller.signal.aborted) return;
         setAuthError(true);
         setLoading(false);
       });
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {

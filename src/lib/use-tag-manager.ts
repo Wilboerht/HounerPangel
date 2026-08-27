@@ -7,15 +7,14 @@ export function useTagManager(initialTags: string[] = []) {
   const addTag = useCallback((inputVal: string) => {
     const trimmed = inputVal.trim();
     if (!trimmed) return false;
-    let wasAdded = false;
+    if (tags.length >= 20 || tags.includes(trimmed)) return false;
     setTags((prev) => {
       if (prev.length >= 20 || prev.includes(trimmed)) return prev;
-      wasAdded = true;
       return [...prev, trimmed];
     });
-    if (wasAdded) setInput("");
-    return wasAdded;
-  }, []);
+    setInput("");
+    return true;
+  }, [tags]);
 
   const removeTag = useCallback((tag: string) => {
     setTags((prev) => prev.filter((t) => t !== tag));

@@ -1,44 +1,48 @@
-import { createHmac, timingSafeEqual } from "crypto";
-import { env } from "./env";
+import "server-only";
+import { createHash, randomBytes } from "node:crypto";
+import { supabase } from "./supabase";
 
-function getSecret(): string {
-    return env.SESSION_SECRET;
+// Session lifetime: 30 days (matches the cookie maxAge)
+const SESSION_TTL_MS = 60 * 60 * 24 * 30 * 1000;
+
+function hashToken(token: string): string {
+    return createHash("sha256").update(token).digest("hex");
 }
 
-function sign(data: string, secret: string): string {
-    return createHmac("sha256", secret).update(data).digest("hex");
+export async function createSessionToken(): Promise<string> {
+    const token = randomBytes(32).toString("base64url");
+    const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
+    const { error } = await supabase
+        .from("admin_sessions")
+        .insert({ token_hash: hashToken(token), expires_at: expiresAt });
+    if (error) throw error;
+    return token;
 }
 
-export function createSessionToken(): string {
-    const secret = getSecret();
-    const timestamp = Date.now().toString();
-    const signature = sign(timestamp, secret);
-    return `${timestamp}:${signature}`;
-}
-
-export function verifySessionToken(token: string): boolean {
+export async function verifySessionToken(token: string): Promise<boolean> {
     try {
-        const secret = getSecret();
-        const [timestampStr, signature] = token.split(":");
+        const now = new Date().toISOString();
+        // Opportunistically clean up expired sessions
+        await supabase.from("admin_sessions").delete().lt("expires_at", now);
 
-        if (!timestampStr || !signature) return false;
+        const { data, error } = await supabase
+            .from("admin_sessions")
+            .select("id")
+            .eq("token_hash", hashToken(token))
+            .gt("expires_at", now)
+            .maybeSingle();
 
-        const timestamp = parseInt(timestampStr, 10);
-        if (isNaN(timestamp)) return false;
-
-        // Check expiration (30 days)
-        const maxAge = 60 * 60 * 24 * 30 * 1000;
-        if (Date.now() - timestamp > maxAge) return false;
-
-        // Verify signature using constant-time comparison
-        const expectedSignature = sign(timestampStr, secret);
-        const expectedBuf = Buffer.from(expectedSignature, "hex");
-        const actualBuf = Buffer.from(signature, "hex");
-
-        if (expectedBuf.length !== actualBuf.length) return false;
-
-        return timingSafeEqual(expectedBuf, actualBuf);
+        if (error) return false;
+        return data !== null;
     } catch {
         return false;
     }
+}
+
+export async function revokeSessionToken(token: string): Promise<void> {
+    const { error } = await supabase
+        .from("admin_sessions")
+        .delete()
+        .eq("token_hash", hashToken(token));
+    if (error) throw error;
 }
