@@ -22,10 +22,12 @@ const contentSecurityPolicy = [
   // 'unsafe-inline' is required for Next hydration; 'unsafe-eval' only for dev HMR
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co https://*.basemaps.cartocdn.com",
+  "img-src 'self' data: blob: https://*.supabase.co https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com",
   "media-src https://*.supabase.co",
-  "connect-src 'self' https://*.supabase.co https://*.basemaps.cartocdn.com",
+  "connect-src 'self' https://*.supabase.co https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com",
+  // worker-src 覆盖大多数浏览器，child-src 兼容旧版 Safari 的 worker 回退
   "worker-src 'self' blob:",
+  "child-src blob:",
   "font-src 'self' data:",
   `frame-src ${iframeAllowedDomains.map((d) => `https://${d}`).join(" ")}`,
   "frame-ancestors 'none'",
