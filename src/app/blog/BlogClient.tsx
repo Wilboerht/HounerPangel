@@ -53,17 +53,17 @@ export default function BlogClient({ posts }: Props) {
                                             <Link
                                                 key={post.slug}
                                                 href={`/blog/${post.slug}`}
-                                                className="group flex items-baseline gap-4 sm:gap-6"
+                                                className="group flex items-baseline gap-3"
                                             >
+                                                <span className="min-w-0 text-base text-foreground group-hover:text-accent transition-colors duration-200">
+                                                    {post.title}
+                                                </span>
                                                 <time
                                                     dateTime={post.date}
-                                                    className="text-sm text-muted shrink-0 w-20 sm:w-24"
+                                                    className="text-sm text-muted shrink-0"
                                                 >
                                                     {formatDate(post.date)}
                                                 </time>
-                                                <span className="text-base text-foreground group-hover:text-accent transition-colors duration-200">
-                                                    {post.title}
-                                                </span>
                                             </Link>
                                         ))}
                                     </div>
