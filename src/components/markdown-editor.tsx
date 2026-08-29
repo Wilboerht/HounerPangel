@@ -40,6 +40,12 @@ function getMimeType(file: File): string {
 
 const CONVERT_EXTENSIONS = new Set(["heic", "heif"]);
 
+// 与服务端 /api/admin/upload-url 的白名单和大小限制保持一致，上传前先本地拦截
+const ALLOWED_IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp", "heic", "heif"]);
+const ALLOWED_VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "avi"]);
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+
 export function MarkdownEditor({ value, onChange, rows = 12, required = false, id }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [uploading, setUploading] = useState(false);
@@ -172,7 +178,18 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     return publicUrl as string;
   };
 
-  const handleFileUpload = async (file: File, getMarkdown: (url: string) => string) => {
+  const handleFileUpload = async (file: File, getMarkdown: (url: string) => string, kind: "image" | "video") => {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    const allowed = kind === "image" ? ALLOWED_IMAGE_EXTENSIONS : ALLOWED_VIDEO_EXTENSIONS;
+    const maxSize = kind === "image" ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
+    if (!allowed.has(ext)) {
+      toast.error(`不支持的${kind === "image" ? "图片" : "视频"}格式: .${ext || "未知"}`);
+      return;
+    }
+    if (file.size > maxSize) {
+      toast.error(`文件过大，${kind === "image" ? "图片" : "视频"}最大 ${kind === "image" ? "10MB" : "100MB"}`);
+      return;
+    }
     setUploading(true);
     setUploadProgress("");
     try {
@@ -189,14 +206,14 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    handleFileUpload(file, (url) => `![](${url})`);
+    handleFileUpload(file, (url) => `![](${url})`, "image");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    handleFileUpload(file, (url) => `![video](${url})`);
+    handleFileUpload(file, (url) => `![video](${url})`, "video");
     if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
@@ -304,14 +321,14 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept=".png,.jpg,.jpeg,.gif,.webp,.heic,.heif"
               onChange={handleImageUpload}
               className="hidden"
             />
             <input
               ref={videoInputRef}
               type="file"
-              accept="video/*"
+              accept=".mp4,.webm,.mov,.avi"
               onChange={handleVideoUpload}
               className="hidden"
             />
@@ -328,6 +345,17 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           rows={rows}
           defaultValue={value}
           onInput={(e) => onChange(e.currentTarget.value)}
+          onKeyDown={(e) => {
+            if (!(e.ctrlKey || e.metaKey)) return;
+            const key = e.key.toLowerCase();
+            if (key === "b") {
+              e.preventDefault();
+              insertText("**", "**", "粗体");
+            } else if (key === "i") {
+              e.preventDefault();
+              insertText("*", "*", "斜体");
+            }
+          }}
           placeholder={"## 开头\n\n写点什么..."}
           className="w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px]"
         />

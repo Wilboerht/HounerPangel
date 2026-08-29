@@ -99,6 +99,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <p className="text-sm flex-1 leading-relaxed">{t.message}</p>
                 <button
                   onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
+                  aria-label="关闭通知"
                   className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
                 >
                   <X className="w-4 h-4" />

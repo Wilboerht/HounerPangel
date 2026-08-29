@@ -79,6 +79,19 @@ export default function EditBlogPost() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [formDirty]);
 
+  // beforeunload 管不到 SPA 内的浏览器前进/后退，用 popstate + pushState 占位拦截
+  useEffect(() => {
+    if (!formDirty) return;
+    history.pushState(null, "", window.location.href);
+    const onPopState = () => {
+      // 重新占位留在当前页，把去留交给确认对话框
+      history.pushState(null, "", window.location.href);
+      setPendingClose(true);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [formDirty]);
+
   const goBack = useCallback(() => {
     if (formDirty) {
       setPendingClose(true);
@@ -178,6 +191,12 @@ export default function EditBlogPost() {
           <form
             onSubmit={handleSubmit}
             onKeyDown={(e) => {
+              // Ctrl/Cmd+S 快捷保存
+              if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+                e.preventDefault();
+                e.currentTarget.requestSubmit();
+                return;
+              }
               // 防止在输入框里按 Enter 误提交整个表单（标签输入框有自己的 Enter 处理）
               if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
                 e.preventDefault();
@@ -249,7 +268,7 @@ export default function EditBlogPost() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">
+              <label htmlFor="edit-tags" className="text-sm font-medium text-foreground">
                 标签 <span className="text-muted">({tagManager.tags.length}/20)</span>
               </label>
               <div className="flex flex-wrap gap-2 mb-1">
@@ -271,6 +290,7 @@ export default function EditBlogPost() {
               </div>
               <div className="flex gap-2">
                 <input
+                  id="edit-tags"
                   type="text"
                   value={tagManager.input}
                   onChange={(e) => tagManager.setInput(e.target.value)}
@@ -290,8 +310,9 @@ export default function EditBlogPost() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">正文（Markdown）</label>
+              <label htmlFor="edit-content" className="text-sm font-medium text-foreground">正文（Markdown）</label>
               <MarkdownEditor
+                id="edit-content"
                 value={form.content}
                 onChange={(v) => {
                   setForm({ ...form, content: v });

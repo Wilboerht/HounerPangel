@@ -126,6 +126,19 @@ export default function AdminBlogList() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [formDirty]);
 
+  // beforeunload 管不到 SPA 内的浏览器前进/后退，用 popstate + pushState 占位拦截
+  useEffect(() => {
+    if (!formDirty) return;
+    history.pushState(null, "", window.location.href);
+    const onPopState = () => {
+      // 重新占位留在当前页，把去留交给确认对话框
+      history.pushState(null, "", window.location.href);
+      setPendingClose(true);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [formDirty]);
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
@@ -298,6 +311,7 @@ export default function AdminBlogList() {
                   id="admin-password"
                   type="password"
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="请输入密码"
@@ -371,7 +385,7 @@ export default function AdminBlogList() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                   <input
-                    type="text"
+                    type="search"
                     placeholder="搜索文章标题、slug 或标签..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -493,6 +507,12 @@ export default function AdminBlogList() {
                   <form
                     onSubmit={handleCreate}
                     onKeyDown={(e) => {
+                      // Ctrl/Cmd+S 快捷保存
+                      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+                        e.preventDefault();
+                        e.currentTarget.requestSubmit();
+                        return;
+                      }
                       // 防止在输入框里按 Enter 误提交整个表单（标签输入框有自己的 Enter 处理）
                       if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
                         e.preventDefault();
@@ -509,6 +529,7 @@ export default function AdminBlogList() {
                         type="text"
                         required
                         maxLength={500}
+                        autoFocus
                         value={newForm.title}
                         onChange={(e) => handleTitleChange(e.target.value)}
                         placeholder="文章标题"
@@ -575,7 +596,7 @@ export default function AdminBlogList() {
                     </div>
 
                      <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-foreground">
+                      <label htmlFor="new-tags" className="text-sm font-medium text-foreground">
                         标签 <span className="text-muted">({tagManager.tags.length}/20)</span>
                       </label>
                       <div className="flex flex-wrap gap-2 mb-1">
@@ -597,6 +618,7 @@ export default function AdminBlogList() {
                       </div>
                       <div className="flex gap-2">
                         <input
+                          id="new-tags"
                           type="text"
                           value={tagManager.input}
                           onChange={(e) => tagManager.setInput(e.target.value)}
@@ -616,8 +638,9 @@ export default function AdminBlogList() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-foreground">正文（Markdown）</label>
+                      <label htmlFor="new-content" className="text-sm font-medium text-foreground">正文（Markdown）</label>
                       <MarkdownEditor
+                        id="new-content"
                         value={newForm.content}
                         onChange={(v) => {
                           setNewForm({ ...newForm, content: v });

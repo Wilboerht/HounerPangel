@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
+import { useState } from "react";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 
@@ -26,6 +27,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const reduce = useSafeMotion();
   const trapRef = useFocusTrap(isOpen, onClose);
+  const [pending, setPending] = useState(false);
 
   return (
     <AnimatePresence>
@@ -75,12 +77,17 @@ export function ConfirmDialog({
                   取消
                 </button>
                 <button
+                  type="button"
+                  disabled={pending}
                   onClick={async () => {
+                    if (pending) return;
+                    setPending(true);
                     try {
                       await onConfirm();
                     } catch {
                       // onConfirm handles its own errors
                     } finally {
+                      setPending(false);
                       onClose();
                     }
                   }}
