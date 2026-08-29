@@ -50,14 +50,16 @@ BEGIN
 END
 $$;
 
--- 5. Clean storage: empty and delete all buckets using the Storage API
+-- 5. Clean storage: empty and delete all buckets.
+-- Use direct deletes instead of storage.empty_bucket()/delete_bucket(),
+-- which only exist in newer Supabase Storage versions.
 DO $$
 DECLARE
   b RECORD;
 BEGIN
   FOR b IN SELECT id FROM storage.buckets LOOP
-    PERFORM storage.empty_bucket(b.id);
-    PERFORM storage.delete_bucket(b.id);
+    DELETE FROM storage.objects WHERE bucket_id = b.id;
+    DELETE FROM storage.buckets WHERE id = b.id;
   END LOOP;
 END
 $$;
