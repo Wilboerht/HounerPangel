@@ -23,6 +23,23 @@ async function fetchPost(slug: string): Promise<BlogPost | null> {
     return null;
 }
 
+// 去掉 markdown 语法，生成纯文本摘要
+function plainTextExcerpt(content: string, max = 160): string {
+    return content
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/[#>*`_~]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, max);
+}
+
+// 提取正文中第一张图片作为 og:image（兼容 =WxH 尺寸标注）
+function firstImageUrl(content: string): string | undefined {
+    const match = content.match(/^!\[[^\]]*\]\((\S+?)(?:\s+=\d+x\d+)?\)\s*$/m);
+    return match?.[1];
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const post = await fetchPost(slug);
@@ -31,8 +48,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return { title: "Not Found - Hank Wong's Web" };
     }
 
+    const description = plainTextExcerpt(post.content);
+    const ogImage = firstImageUrl(post.content);
+
     return {
         title: `${post.title} - Hank Wong's Web`,
+        description,
+        openGraph: {
+            title: post.title,
+            description,
+            type: "article",
+            publishedTime: post.date,
+            ...(ogImage ? { images: [ogImage] } : {}),
+        },
     };
 }
 
@@ -50,9 +78,10 @@ export default async function BlogPostPage({ params }: Props) {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         headline: post.title,
-        description: post.content.slice(0, 160),
+        description: plainTextExcerpt(post.content),
         datePublished: post.date,
         dateModified: post.date,
+        ...(firstImageUrl(post.content) ? { image: [firstImageUrl(post.content)] } : {}),
         author: {
             "@type": "Person",
             name: "Hank Wong",

@@ -36,6 +36,23 @@ function getMimeType(file: File): string {
   return file.type || "";
 }
 
+// 本地读取图片原始尺寸，用于在 markdown 里记录宽高（=WxH），前台据此预留宽高比避免 CLS
+function getImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      URL.revokeObjectURL(objectUrl);
+    };
+    img.onerror = () => {
+      resolve(null);
+      URL.revokeObjectURL(objectUrl);
+    };
+    img.src = objectUrl;
+  });
+}
+
 // 与服务端 /api/admin/upload-url 的白名单和大小限制保持一致，上传前先本地拦截
 const ALLOWED_IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
 const ALLOWED_VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "avi"]);
@@ -168,7 +185,14 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     setUploadProgress("");
     try {
       const url = await uploadToStorage(file);
-      insertText(getMarkdown(url) + "\n");
+      let markdown = getMarkdown(url);
+      // 记录图片原始尺寸（=WxH），前台据此预留宽高比，避免加载时页面跳动
+      if (kind === "image") {
+        const dims = await getImageDimensions(file);
+        if (dims) markdown = getMarkdown(`${url} =${dims.width}x${dims.height}`);
+      }
+      // 用 insertBlock 保证媒体语法独占一行，否则前台解析器不会把它渲染成图片/视频
+      insertBlock(markdown);
       toast.success(kind === "image" ? "图片已插入" : "视频已插入");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "上传失败");
@@ -188,7 +212,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    handleFileUpload(file, (url) => `![video](${url})`, "video");
+    handleFileUpload(file, (url) => `![](${url})`, "video");
     if (videoInputRef.current) videoInputRef.current.value = "";
   };
 

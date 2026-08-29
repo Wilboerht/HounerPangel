@@ -1,4 +1,5 @@
 import hljs from "highlight.js/lib/core";
+import Image from "next/image";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
 import python from "highlight.js/lib/languages/python";
@@ -500,9 +501,18 @@ export function renderMarkdown(content: string): React.ReactNode {
         flushQuote();
 
         const imageMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-        if (imageMatch && isSafeMediaUrl(imageMatch[2])) {
-            const [, imgAlt, imgUrl] = imageMatch;
+        if (imageMatch) {
+            const [, imgAlt, imgSrcRaw] = imageMatch;
+            // 支持可选的 =WxH 尺寸标注（上传时自动写入），用于预留宽高比防止 CLS
+            const sizeMatch = imgSrcRaw.match(/^(\S+)\s+=(\d+)x(\d+)$/);
+            const imgUrl = sizeMatch ? sizeMatch[1] : imgSrcRaw;
+            const imgWidth = sizeMatch ? parseInt(sizeMatch[2], 10) : undefined;
+            const imgHeight = sizeMatch ? parseInt(sizeMatch[3], 10) : undefined;
+            if (isSafeMediaUrl(imgUrl)) {
             const isVideo = /\.(mp4|webm|mov|avi|mkv)($|\?)/i.test(imgUrl);
+            // 只有配置了 remotePatterns 的 Supabase 存储图才走 next/image 优化，外链图用裸 img
+            const useNextImage = !isVideo && imgWidth !== undefined && imgHeight !== undefined
+                && imgUrl.includes(".supabase.co/");
             elements.push(
                 isVideo ? (
                     <figure key={`vid-${index}`} className="">
@@ -522,13 +532,25 @@ export function renderMarkdown(content: string): React.ReactNode {
                     </figure>
                 ) : (
                     <figure key={`img-${index}`} className="">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                            src={imgUrl}
-                            alt={imgAlt || ""}
-                            className="rounded-xl w-full"
-                            loading="lazy"
-                        />
+                        {useNextImage ? (
+                            <Image
+                                src={imgUrl}
+                                alt={imgAlt || ""}
+                                width={imgWidth}
+                                height={imgHeight}
+                                sizes="(max-width: 768px) 100vw, 672px"
+                                className="rounded-xl block mx-auto max-w-full h-auto"
+                            />
+                        ) : (
+                            /* 未知尺寸的外链图：不拉伸小图，保持原始尺寸居中 */
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                                src={imgUrl}
+                                alt={imgAlt || ""}
+                                className="rounded-xl block mx-auto max-w-full"
+                                loading="lazy"
+                            />
+                        )}
                         {imgAlt && (
                             <figcaption className="text-sm text-muted text-center mt-2">
                                 {imgAlt}
@@ -538,6 +560,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                 )
             );
             continue;
+            }
         }
 
         const standaloneLinkMatch = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
