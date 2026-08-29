@@ -32,7 +32,7 @@ BEGIN
 END
 $$;
 
--- 3. Drop all functions in public schema (except the set_updated_at helper we will recreate)
+-- 3. Drop the set_updated_at helper function (we recreate it below)
 DROP FUNCTION IF EXISTS public.set_updated_at() CASCADE;
 
 -- 4. Drop all tables in public schema
@@ -89,11 +89,25 @@ BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = '';
 
 CREATE TRIGGER set_blog_posts_updated_at
   BEFORE UPDATE ON public.blog_posts
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+-- Admin sessions table (server-side, revocable admin sessions)
+CREATE TABLE public.admin_sessions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  token_hash text UNIQUE NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL
+);
+
+-- Index for expired-session cleanup and expiry checks
+CREATE INDEX admin_sessions_expires_at_idx ON public.admin_sessions (expires_at);
+
+-- Enable RLS with no policies: only the service role can access this table.
+ALTER TABLE public.admin_sessions ENABLE ROW LEVEL SECURITY;
 
 -- Images storage bucket
 INSERT INTO storage.buckets (id, name, public, avif_autodetection)

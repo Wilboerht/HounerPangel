@@ -1,5 +1,6 @@
 import { getAllBlogPosts } from "@/lib/blog-db";
-import { env } from "@/lib/env";
+import { SITE_URL } from "@/lib/site";
+import { plainTextExcerpt } from "@/lib/markdown";
 import type { BlogPost } from "@/lib/types/blog";
 
 const escapeXml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
@@ -7,7 +8,7 @@ const escapeXml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").
 // Safely embed text in CDATA by splitting any "]]>" sequence.
 const cdata = (s: string) => `<![CDATA[${s.replace(/]]>/g, "]]]]><![CDATA[>")}]]>`;
 
-const siteUrl = env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
+const siteUrl = SITE_URL;
 
 export async function GET() {
     let posts: BlogPost[];
@@ -25,7 +26,7 @@ export async function GET() {
       <link>${siteUrl}/blog/${escapeXml(post.slug)}</link>
       <guid>${siteUrl}/blog/${escapeXml(post.slug)}</guid>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-      <description>${cdata(post.content.slice(0, 160))}</description>
+      <description>${cdata(plainTextExcerpt(post.content))}</description>
       ${post.tags.map((t) => `<category>${escapeXml(t)}</category>`).join("")}
     </item>`).join("");
 

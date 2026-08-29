@@ -85,8 +85,12 @@ function extractStoragePaths(content: string): string[] {
         while ((match = regex.exec(content)) !== null) {
             const url = match[1].split("?")[0].split("#")[0];
             if (mediaExt.test(url) && url.startsWith(prefix)) {
-                const path = decodeURIComponent(url.slice(prefix.length));
-                if (path) paths.add(path);
+                try {
+                    const path = decodeURIComponent(url.slice(prefix.length));
+                    if (path) paths.add(path);
+                } catch {
+                    // Skip URLs with invalid percent-encoding
+                }
             }
         }
     }

@@ -12,6 +12,8 @@ function hashToken(token: string): string {
 export async function createSessionToken(): Promise<string> {
     const token = randomBytes(32).toString("base64url");
     const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
+    // Opportunistically clean up expired sessions on login
+    await supabase.from("admin_sessions").delete().lt("expires_at", new Date().toISOString());
     const { error } = await supabase
         .from("admin_sessions")
         .insert({ token_hash: hashToken(token), expires_at: expiresAt });
@@ -21,15 +23,11 @@ export async function createSessionToken(): Promise<string> {
 
 export async function verifySessionToken(token: string): Promise<boolean> {
     try {
-        const now = new Date().toISOString();
-        // Opportunistically clean up expired sessions
-        await supabase.from("admin_sessions").delete().lt("expires_at", now);
-
         const { data, error } = await supabase
             .from("admin_sessions")
             .select("id")
             .eq("token_hash", hashToken(token))
-            .gt("expires_at", now)
+            .gt("expires_at", new Date().toISOString())
             .maybeSingle();
 
         if (error) return false;

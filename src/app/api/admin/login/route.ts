@@ -18,8 +18,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Too many attempts, please try again later" }, { status: 429 });
     }
 
+    let body: unknown;
     try {
-        const body = await request.json();
+        body = await request.json();
+    } catch {
+        return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    try {
         const parseResult = loginSchema.safeParse(body);
 
         if (!parseResult.success) {
@@ -43,7 +49,8 @@ export async function POST(request: NextRequest) {
         });
 
         return response;
-    } catch {
-        return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    } catch (error) {
+        console.error("Login failed:", error);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

@@ -19,7 +19,16 @@ function computeBounds(cities: City[]): [number, number, number, number] | undef
 
 export function FootprintMap({ cities }: { cities: City[] }) {
     const [selected, setSelected] = useState<City | null>(null);
+    const [mapError, setMapError] = useState(false);
     const bounds = useMemo(() => computeBounds(cities), [cities]);
+
+    if (mapError) {
+        return (
+            <div className="flex h-full w-full items-center justify-center text-sm text-muted">
+                地图加载失败，请检查网络后刷新
+            </div>
+        );
+    }
 
     return (
         <Map
@@ -30,11 +39,12 @@ export function FootprintMap({ cities }: { cities: City[] }) {
             }
             style={{ width: "100%", height: "100%" }}
             mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+            onError={() => setMapError(true)}
         >
             <NavigationControl position="top-right" />
             {cities.map((city) => (
                 <Marker
-                    key={city.name}
+                    key={`${city.name}-${city.coordinates.join(",")}`}
                     longitude={city.coordinates[0]}
                     latitude={city.coordinates[1]}
                     anchor="bottom"
@@ -46,6 +56,9 @@ export function FootprintMap({ cities }: { cities: City[] }) {
                     <button
                         type="button"
                         aria-label={city.name}
+                        onKeyDown={(e) => {
+                            if (e.key === "Escape") setSelected(null);
+                        }}
                         className={`block cursor-pointer p-0 transition-colors duration-200 ${
                             city.status === "planned"
                                 ? selected?.name === city.name

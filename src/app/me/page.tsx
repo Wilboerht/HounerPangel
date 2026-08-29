@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "关于我 - Hank Wong's Web",
+    title: "关于我",
     description: "了解 Hank Wong (wilboerht) —— 开发者、旅行爱好者及超级个体。",
 };
 

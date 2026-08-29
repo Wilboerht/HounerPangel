@@ -5,7 +5,7 @@ import BlogClient from "./BlogClient";
 import type { BlogPost } from "@/lib/types/blog";
 
 export const metadata: Metadata = {
-    title: "博客 - Hank Wong's Web",
+    title: "博客",
     description: "Hank Wong 的思考、笔记与创作。",
 };
 
@@ -15,7 +15,8 @@ export default async function Blog() {
     let posts: BlogPost[];
     try {
         posts = await getAllBlogPosts();
-    } catch {
+    } catch (error) {
+        console.error("获取博客文章列表失败：", error);
         posts = [];
     }
 

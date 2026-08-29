@@ -39,6 +39,7 @@
     color-scheme: light;
     background: var(--background);
     -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
   }
 
   body {
@@ -47,7 +48,6 @@
     font-family: var(--font-serif-sc), var(--font-serif), "Noto Serif SC", "Noto Serif", "Songti SC", "SimSun", serif;
     line-height: 1.6;
     min-height: 100dvh;
-    overflow-x: hidden;
     position: relative;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -55,7 +55,7 @@
 
   ::selection {
     background: var(--accent);
-    color: white;
+    color: var(--primary-foreground);
   }
 
   a {
@@ -67,10 +67,6 @@
   button, a, [role="button"] {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-  }
-
-  input, textarea, select {
-    font-size: 16px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -92,6 +88,11 @@
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* Prevent iOS auto-zoom on focus: must win over Tailwind utilities (e.g. text-sm) */
+input, textarea, select {
+  font-size: 16px !important;
 }
 
 /* Safe area utility classes */

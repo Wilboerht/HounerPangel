@@ -12,7 +12,7 @@ export default function BlogClient({ posts }: Props) {
     const groupedPosts = useMemo(() => {
         const groups: Record<string, BlogPost[]> = {};
         posts.forEach((post) => {
-            const year = new Date(post.date).getFullYear().toString();
+            const year = new Date(post.date).getUTCFullYear().toString();
             if (!groups[year]) groups[year] = [];
             groups[year].push(post);
         });
@@ -22,10 +22,13 @@ export default function BlogClient({ posts }: Props) {
         return groups;
     }, [posts]);
 
+    // 数据库 date 是 'YYYY-MM-DD' 纯日期串，按 UTC 解析，格式化也固定用 UTC，
+    // 避免负时区用户本地格式化差一天、导致水合不匹配
     const formatDate = (date: string) =>
         new Date(date).toLocaleDateString("zh-CN", {
             month: "long",
             day: "numeric",
+            timeZone: "UTC",
         });
 
     return (

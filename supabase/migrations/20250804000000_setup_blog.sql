@@ -39,7 +39,7 @@ BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = '';
 
 DROP TRIGGER IF EXISTS set_blog_posts_updated_at ON public.blog_posts;
 CREATE TRIGGER set_blog_posts_updated_at

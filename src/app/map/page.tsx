@@ -5,13 +5,14 @@ import { FootprintMapLazy } from "@/components/footprint-map-lazy";
 import { cities } from "@/data/cities";
 
 export const metadata: Metadata = {
-    title: "足迹 - Hank Wong's Web",
+    title: "足迹",
     description: "Hank Wong (wilboerht) 走过的城市足迹地图。",
 };
 
 export default function Footprints() {
     return (
-        <main className="relative h-dvh w-screen">
+        <main className="relative h-dvh w-full">
+            <h1 className="sr-only">足迹地图</h1>
             {/* Warm up the connection to the CARTO basemap CDN and start the
                 style fetch while the map bundle is still downloading */}
             <link rel="preconnect" href="https://basemaps.cartocdn.com" crossOrigin="anonymous" />

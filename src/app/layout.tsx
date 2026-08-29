@@ -4,7 +4,7 @@ import "./globals.css";
 import "highlight.js/styles/github.css";
 import { Analytics } from "@vercel/analytics/react";
 import { ToastProvider } from "@/components/toast";
-import { env } from "@/lib/env";
+import { SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,11 +28,14 @@ const notoSerifSC = Noto_Serif_SC({
   weight: ["400", "700"],
 });
 
-const siteUrl = env.NEXT_PUBLIC_SITE_URL || "https://wilboerht.com";
+const siteUrl = SITE_URL;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Hank Wong's Web",
+  title: {
+    default: "Hank Wong's Web",
+    template: "%s - Hank Wong's Web",
+  },
   description: "Hank Wong (wilboerht)'s personal website. Building things on the internet. Developer, creator, and lifelong learner.",
   keywords: [
     "Hank Wong",
@@ -43,6 +46,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Hank Wong", url: "https://wilboerht.com" }],
   creator: "wilboerht",
+  alternates: {
+    types: {
+      "application/rss+xml": "/rss.xml",
+    },
+  },
   openGraph: {
     type: "website",
     locale: "zh_CN",

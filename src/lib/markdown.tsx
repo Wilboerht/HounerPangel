@@ -45,6 +45,23 @@ function escapeHtml(s: string): string {
         .replace(/'/g, "&#39;");
 }
 
+// 去掉 markdown 语法，生成纯文本摘要
+export function plainTextExcerpt(content: string, max = 160): string {
+    return content
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/[#>*`_~]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, max);
+}
+
+// 提取正文中第一张图片作为 og:image（兼容 =WxH 尺寸标注）
+export function firstImageUrl(content: string): string | undefined {
+    const match = content.match(/^!\[[^\]]*\]\((\S+?)(?:\s+=\d+x\d+)?\)\s*$/m);
+    return match?.[1];
+}
+
 // 链接协议白名单：仅允许 https?://、mailto:、以及 / 或 # 开头的相对路径
 function isSafeLinkUrl(url: string): boolean {
     const trimmed = url.trim();

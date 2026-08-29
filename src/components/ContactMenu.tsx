@@ -1,5 +1,3 @@
-"use client";
-
 import { Mail, Github, Instagram, Send, Linkedin } from "lucide-react";
 
 const XIcon = ({ className }: { className?: string }) => (
@@ -44,19 +42,22 @@ const socialLinks = [
 export function ContactMenu() {
     return (
         <div className="flex items-center gap-1">
-            {socialLinks.map((link) => (
-                <a
-                    key={link.name}
-                    href={link.href}
-                    target={link.name !== "Email" ? "_blank" : undefined}
-                    rel={link.name !== "Email" ? "noopener noreferrer" : undefined}
-                    title={link.name}
-                    aria-label={link.name}
-                    className="p-2.5 text-muted hover:text-foreground transition-colors duration-200 rounded-lg hover:bg-foreground/5"
-                >
-                    <link.icon className="w-[18px] h-[18px]" />
-                </a>
-            ))}
+            {socialLinks.map((link) => {
+                const isExternal = !link.href.startsWith("mailto:") && !link.href.startsWith("tel:");
+                return (
+                    <a
+                        key={link.name}
+                        href={link.href}
+                        target={isExternal ? "_blank" : undefined}
+                        rel={isExternal ? "noopener noreferrer" : undefined}
+                        title={link.name}
+                        aria-label={link.name}
+                        className="flex min-h-[44px] min-w-[44px] items-center justify-center p-2.5 text-muted hover:text-foreground transition-colors duration-200 rounded-lg hover:bg-foreground/5"
+                    >
+                        <link.icon className="w-[18px] h-[18px]" />
+                    </a>
+                );
+            })}
         </div>
     );
 }

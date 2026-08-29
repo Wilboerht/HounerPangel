@@ -29,7 +29,6 @@ Personal website of Hank Wong (wilboerht). A digital space for showcasing projec
    NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ADMIN_PASSWORD=your-admin-password
-   SESSION_SECRET=your-session-secret
    # optional, used for absolute URLs in sitemap/RSS/OG
    NEXT_PUBLIC_SITE_URL=https://your-domain.com
    ```
