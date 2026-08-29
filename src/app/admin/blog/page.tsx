@@ -63,7 +63,11 @@ export default function AdminBlogList() {
 
   const reduce = useSafeMotion();
   const closeModalRef = useRef<(() => void) | null>(null);
-  const newPostTrapRef = useFocusTrap(showNewModal, () => closeModalRef.current?.());
+  // 确认对话框打开时，Escape 交给对话框处理，避免两个监听器互相冲突导致弹窗关不掉
+  const newPostTrapRef = useFocusTrap(showNewModal, () => {
+    if (pendingClose) return;
+    closeModalRef.current?.();
+  });
 
   const filteredPosts = debouncedSearch
     ? posts.filter(
@@ -147,6 +151,15 @@ export default function AdminBlogList() {
     e.preventDefault();
     setSaving(true);
 
+    // 提交前把标签输入框里未确认的内容补进 tags，避免静默丢失
+    let tags = tagManager.tags;
+    const pendingTag = tagManager.input.trim();
+    if (pendingTag && !tags.includes(pendingTag) && tags.length < 20) {
+      tags = [...tags, pendingTag];
+      tagManager.setTags(tags);
+      tagManager.setInput("");
+    }
+
     try {
       const res = await fetch("/api/blog", {
         method: "POST",
@@ -156,7 +169,7 @@ export default function AdminBlogList() {
           title: newForm.title,
           content: newForm.content,
           date: newForm.date,
-          tags: tagManager.tags,
+          tags,
           published: newForm.published,
         }),
       });
@@ -476,8 +489,17 @@ export default function AdminBlogList() {
                   </h2>
                 </div>
 
-                <div className="px-6 sm:px-8 pb-8 overflow-y-auto no-scrollbar">
-                  <form onSubmit={handleCreate} className="flex flex-col gap-6">
+                <div className="px-6 sm:px-8 pb-8 overflow-y-auto">
+                  <form
+                    onSubmit={handleCreate}
+                    onKeyDown={(e) => {
+                      // 防止在输入框里按 Enter 误提交整个表单（标签输入框有自己的 Enter 处理）
+                      if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="flex flex-col gap-6"
+                  >
                     <div className="flex flex-col gap-2">
                       <label htmlFor="new-title" className="text-sm font-medium text-foreground">
                         标题 <span className="text-muted">({newForm.title.length}/500)</span>
@@ -530,13 +552,13 @@ export default function AdminBlogList() {
                           setNewForm({ ...newForm, date: e.target.value });
                           setFormDirty(true);
                         }}
-                        className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors [color-scheme:dark]"
+                        className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors"
                       />
                     </div>
 
                     <div className="flex items-center gap-3">
                       <label htmlFor="new-published" className="text-sm font-medium text-foreground">发布状态</label>
-                      <div className="relative inline-flex items-center cursor-pointer">
+                      <label className="relative inline-flex items-center cursor-pointer">
                         <input
                           id="new-published"
                           type="checkbox"
@@ -548,7 +570,7 @@ export default function AdminBlogList() {
                           className="sr-only peer"
                         />
                         <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-                      </div>
+                      </label>
                       <span className="text-xs text-muted">{newForm.published ? "已发布" : "草稿"}</span>
                     </div>
 

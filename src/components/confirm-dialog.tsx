@@ -36,14 +36,14 @@ export function ConfirmDialog({
             animate={{ opacity: 1 }}
             exit={safeAnimate(reduce, { opacity: 0 })}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[110]"
           />
           <motion.div
             initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
             transition={springModal}
-            className="fixed inset-0 flex items-center justify-center z-[101] p-6"
+            className="fixed inset-0 flex items-center justify-center z-[111] p-6"
           >
             <div
               ref={trapRef}

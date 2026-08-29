@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { useToast } from "@/components/toast";
@@ -27,13 +27,6 @@ export default function EditBlogPost() {
   const tagManager = useTagManager([]);
   const [formDirty, setFormDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(false);
-  const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (navTimerRef.current) clearTimeout(navTimerRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     fetch("/api/admin/check")
@@ -102,6 +95,15 @@ export default function EditBlogPost() {
     e.preventDefault();
     setSaving(true);
 
+    // 提交前把标签输入框里未确认的内容补进 tags，避免静默丢失
+    let tags = tagManager.tags;
+    const pendingTag = tagManager.input.trim();
+    if (pendingTag && !tags.includes(pendingTag) && tags.length < 20) {
+      tags = [...tags, pendingTag];
+      tagManager.setTags(tags);
+      tagManager.setInput("");
+    }
+
     try {
       const res = await fetch(`/api/blog/${slug}`, {
         method: "PUT",
@@ -110,7 +112,7 @@ export default function EditBlogPost() {
           title: form.title,
           content: form.content,
           date: form.date,
-          tags: tagManager.tags,
+          tags,
           published: form.published,
         }),
       });
@@ -119,7 +121,6 @@ export default function EditBlogPost() {
         setFormDirty(false);
         tagManager.setInput("");
         toast.success("文章已保存");
-        navTimerRef.current = setTimeout(() => router.push("/admin/blog"), 600);
       } else {
         const data = await res.json();
         toast.error(data.error || "保存失败");
@@ -174,7 +175,16 @@ export default function EditBlogPost() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <form
+            onSubmit={handleSubmit}
+            onKeyDown={(e) => {
+              // 防止在输入框里按 Enter 误提交整个表单（标签输入框有自己的 Enter 处理）
+              if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
+                e.preventDefault();
+              }
+            }}
+            className="flex flex-col gap-6"
+          >
             <div className="flex flex-col gap-2">
               <label htmlFor="edit-slug" className="text-sm font-medium text-foreground">Slug</label>
               <input
@@ -216,13 +226,13 @@ export default function EditBlogPost() {
                   setForm({ ...form, date: e.target.value });
                   markDirty();
                 }}
-                className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors [color-scheme:dark]"
+                className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors"
               />
             </div>
 
             <div className="flex items-center gap-3">
               <label htmlFor="edit-published" className="text-sm font-medium text-foreground">发布状态</label>
-              <div className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   id="edit-published"
                   type="checkbox"
@@ -234,7 +244,7 @@ export default function EditBlogPost() {
                   className="sr-only peer"
                 />
                 <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-              </div>
+              </label>
               <span className="text-xs text-muted">{form.published ? "已发布" : "草稿"}</span>
             </div>
 
