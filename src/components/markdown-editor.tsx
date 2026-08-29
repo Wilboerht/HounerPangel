@@ -23,8 +23,6 @@ const MIME_MAP: Record<string, string> = {
   gif: "image/gif",
   webp: "image/webp",
   svg: "image/svg+xml",
-  heic: "image/heic",
-  heif: "image/heif",
   mp4: "video/mp4",
   webm: "video/webm",
   mov: "video/quicktime",
@@ -38,10 +36,8 @@ function getMimeType(file: File): string {
   return file.type || "";
 }
 
-const CONVERT_EXTENSIONS = new Set(["heic", "heif"]);
-
 // 与服务端 /api/admin/upload-url 的白名单和大小限制保持一致，上传前先本地拦截
-const ALLOWED_IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp", "heic", "heif"]);
+const ALLOWED_IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
 const ALLOWED_VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "avi"]);
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -110,28 +106,6 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   };
 
   const uploadToStorage = async (file: File): Promise<string> => {
-    const ext = file.name.split(".").pop()?.toLowerCase() || "";
-    const isHeic = CONVERT_EXTENSIONS.has(ext);
-
-    if (isHeic) {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/admin/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        let message = "上传失败";
-        try { const d = await res.json(); if (d.error) message = d.error; } catch {}
-        throw new Error(message);
-      }
-
-      const { url } = await res.json();
-      return url as string;
-    }
-
     const contentType = getMimeType(file);
     const res = await fetch("/api/admin/upload-url", {
       method: "POST",
@@ -195,6 +169,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     try {
       const url = await uploadToStorage(file);
       insertText(getMarkdown(url) + "\n");
+      toast.success(kind === "image" ? "图片已插入" : "视频已插入");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "上传失败");
     } finally {
@@ -321,7 +296,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             <input
               ref={fileInputRef}
               type="file"
-              accept=".png,.jpg,.jpeg,.gif,.webp,.heic,.heif"
+              accept=".png,.jpg,.jpeg,.gif,.webp"
               onChange={handleImageUpload}
               className="hidden"
             />
@@ -335,31 +310,31 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           </div>
         )}
       </div>
-      {tab === "edit" ? (
-        <textarea
-          ref={textareaRef}
-          id={id || "md-editor-panel"}
-          role="tabpanel"
-          aria-labelledby="tab-edit"
-          required={required}
-          rows={rows}
-          defaultValue={value}
-          onInput={(e) => onChange(e.currentTarget.value)}
-          onKeyDown={(e) => {
-            if (!(e.ctrlKey || e.metaKey)) return;
-            const key = e.key.toLowerCase();
-            if (key === "b") {
-              e.preventDefault();
-              insertText("**", "**", "粗体");
-            } else if (key === "i") {
-              e.preventDefault();
-              insertText("*", "*", "斜体");
-            }
-          }}
-          placeholder={"## 开头\n\n写点什么..."}
-          className="w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px]"
-        />
-      ) : (
+      {/* textarea 常驻挂载：切预览不丢光标/撤销历史，上传完成时插入目标也不会被卸载 */}
+      <textarea
+        ref={textareaRef}
+        id={id || "md-editor-panel"}
+        role="tabpanel"
+        aria-labelledby="tab-edit"
+        required={required}
+        rows={rows}
+        defaultValue={value}
+        onInput={(e) => onChange(e.currentTarget.value)}
+        onKeyDown={(e) => {
+          if (!(e.ctrlKey || e.metaKey)) return;
+          const key = e.key.toLowerCase();
+          if (key === "b") {
+            e.preventDefault();
+            insertText("**", "**", "粗体");
+          } else if (key === "i") {
+            e.preventDefault();
+            insertText("*", "*", "斜体");
+          }
+        }}
+        placeholder={"## 开头\n\n写点什么..."}
+        className={`w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px] ${tab === "edit" ? "" : "hidden"}`}
+      />
+      {tab === "preview" && (
         <div id="md-preview-panel" role="tabpanel" aria-labelledby="tab-preview" className="px-4 py-3 bg-foreground/[0.02] min-h-[300px] text-sm leading-relaxed">
           {value ? (
             <div className="prose prose-sm max-w-none space-y-4 text-foreground">
