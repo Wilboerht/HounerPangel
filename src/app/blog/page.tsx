@@ -3,10 +3,30 @@ import type { Metadata } from "next";
 import { getAllBlogPosts } from "@/lib/blog-db";
 import BlogClient from "./BlogClient";
 import type { BlogPost } from "@/lib/types/blog";
+import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 export const metadata: Metadata = {
     title: "博客",
     description: "Hank Wong 的思考、笔记与创作。",
+    alternates: {
+        canonical: `${SITE_URL}/blog`,
+    },
+    openGraph: {
+        title: "博客 - Hank Wong's Web",
+        description: "Hank Wong 的思考、笔记与创作。",
+        url: `${SITE_URL}/blog`,
+        type: "website",
+        siteName: "Hank Wong",
+        locale: "zh_CN",
+        images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "博客 - Hank Wong's Web",
+        description: "Hank Wong 的思考、笔记与创作。",
+        creator: "@wilboerht",
+        images: [DEFAULT_OG_IMAGE.url],
+    },
 };
 
 export const dynamic = "force-dynamic";

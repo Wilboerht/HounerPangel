@@ -1,10 +1,30 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
+import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 export const metadata: Metadata = {
     title: "关于我",
     description: "了解 Hank Wong (wilboerht) —— 开发者、旅行爱好者及超级个体。",
+    alternates: {
+        canonical: `${SITE_URL}/me`,
+    },
+    openGraph: {
+        title: "关于我 - Hank Wong's Web",
+        description: "了解 Hank Wong (wilboerht) —— 开发者、旅行爱好者及超级个体。",
+        url: `${SITE_URL}/me`,
+        type: "website",
+        siteName: "Hank Wong",
+        locale: "zh_CN",
+        images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "关于我 - Hank Wong's Web",
+        description: "了解 Hank Wong (wilboerht) —— 开发者、旅行爱好者及超级个体。",
+        creator: "@wilboerht",
+        images: [DEFAULT_OG_IMAGE.url],
+    },
 };
 
 export default function AboutMe() {

@@ -54,16 +54,24 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "zh_CN",
-    alternateLocale: "en_US",
     title: "Hank Wong's Web",
     description: "Hank Wong (wilboerht)'s personal website. Building things on the internet.",
     siteName: "Hank Wong",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Hank Wong's Web",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Hank Wong's Web",
     description: "Hank Wong (wilboerht)'s personal website. Building things on the internet.",
     creator: "@wilboerht",
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,

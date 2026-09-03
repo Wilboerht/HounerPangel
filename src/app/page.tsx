@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { FileText, MapPin, User } from "lucide-react";
+import type { Metadata } from "next";
 import { ContactMenu } from "@/components/ContactMenu";
+import { SITE_URL } from "@/lib/site";
+
+export const metadata: Metadata = {
+    alternates: {
+        canonical: SITE_URL,
+    },
+};
 
 const navLinks = [
   { name: "关于", href: "/me", icon: User },
@@ -8,9 +16,39 @@ const navLinks = [
   { name: "足迹", href: "/map", icon: MapPin },
 ];
 
+const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Person",
+            name: "Hank Wong",
+            alternateName: "wilboerht",
+            url: SITE_URL,
+            jobTitle: "Developer",
+            sameAs: [
+                "https://github.com/wilboerht",
+                "https://www.linkedin.com/in/wilboerht/",
+                "https://x.com/wilboerht",
+                "https://www.instagram.com/wilboerht",
+                "https://t.me/wilboerht",
+            ],
+        },
+        {
+            "@type": "WebSite",
+            name: "Hank Wong's Web",
+            url: SITE_URL,
+            inLanguage: "zh-CN",
+        },
+    ],
+};
+
 export default function Home() {
   return (
     <main className="min-h-dvh flex items-center justify-center px-6 py-12 pt-safe pb-safe">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <div className="max-w-2xl w-full flex flex-col md:flex-row md:items-center gap-12">
         <section className="flex-1 space-y-6">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">

@@ -3,7 +3,7 @@ import { Calendar, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug } from "@/lib/blog-db";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
 import { firstImageUrl, plainTextExcerpt, renderMarkdown } from "@/lib/markdown";
 import type { BlogPost } from "@/lib/types/blog";
 
@@ -33,16 +33,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const description = plainTextExcerpt(post.content);
     const ogImage = firstImageUrl(post.content);
+    const url = `${SITE_URL}/blog/${post.slug}`;
+    const images = ogImage
+        ? [{ url: ogImage, alt: post.title }]
+        : [DEFAULT_OG_IMAGE];
 
     return {
         title: post.title,
         description,
+        alternates: {
+            canonical: url,
+        },
         openGraph: {
             title: post.title,
             description,
             type: "article",
+            url,
             publishedTime: post.date,
-            ...(ogImage ? { images: [ogImage] } : {}),
+            siteName: "Hank Wong",
+            locale: "zh_CN",
+            images,
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: post.title,
+            description,
+            creator: "@wilboerht",
+            images: images.map((image) => image.url),
         },
     };
 }

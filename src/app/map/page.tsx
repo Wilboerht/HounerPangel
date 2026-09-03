@@ -3,10 +3,30 @@ import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { FootprintMapLazy } from "@/components/footprint-map-lazy";
 import { cities } from "@/data/cities";
+import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 export const metadata: Metadata = {
     title: "足迹",
     description: "Hank Wong (wilboerht) 走过的城市足迹地图。",
+    alternates: {
+        canonical: `${SITE_URL}/map`,
+    },
+    openGraph: {
+        title: "足迹 - Hank Wong's Web",
+        description: "Hank Wong (wilboerht) 走过的城市足迹地图。",
+        url: `${SITE_URL}/map`,
+        type: "website",
+        siteName: "Hank Wong",
+        locale: "zh_CN",
+        images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "足迹 - Hank Wong's Web",
+        description: "Hank Wong (wilboerht) 走过的城市足迹地图。",
+        creator: "@wilboerht",
+        images: [DEFAULT_OG_IMAGE.url],
+    },
 };
 
 export default function Footprints() {
