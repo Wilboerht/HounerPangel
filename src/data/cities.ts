@@ -36,7 +36,7 @@ export const cities: City[] = [
     { name: "井冈山", coordinates: [114.2892, 26.7480] },
     { name: "武汉", coordinates: [114.3055, 30.5928] },
     { name: "香港", coordinates: [114.1694, 22.3193], status: "planned" },
-    { name: "南京", coordinates: [118.7969, 32.0603], status: "planned" },
+    { name: "南京", coordinates: [118.7969, 32.0603] },
     { name: "景德镇", coordinates: [117.1784, 29.2688], status: "planned" },
     { name: "深圳", coordinates: [114.0579, 22.5431], status: "planned" },
     { name: "南通", coordinates: [120.8943, 31.9802], status: "planned" },
