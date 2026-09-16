@@ -43,6 +43,7 @@ export const cities: City[] = [
     { name: "首尔", coordinates: [126.9780, 37.5665], status: "planned" },
     { name: "金华", coordinates: [119.6475, 29.0790], status: "planned" },
     { name: "澳门", coordinates: [113.5439, 22.1987], status: "planned" },
+    { name: "泰安", coordinates: [117.0876, 36.1958], status: "planned" },
     // { name: "台州", coordinates: [121.4208, 28.6564], status: "planned" },
     // { name: "福州", coordinates: [119.2965, 26.0745], status: "planned" },
     // { name: "厦门", coordinates: [118.0894, 24.4798], status: "planned" },
