@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getBlogPostBySlug, updateBlogPost, deleteBlogPost } from "@/lib/blog-db";
 import { checkAuth } from "@/lib/auth";
 import { verifySessionToken } from "@/lib/session";
@@ -34,7 +35,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const authError = await checkAuth(request);
     if (authError) return authError;
 
-    const limit = rateLimit(getRateLimitKey(request) + ":blog:update");
+    const limit = await rateLimit(getRateLimitKey(request) + ":blog:update");
     if (!limit.success) {
         return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
@@ -62,6 +63,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
             return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
 
+        // 刷新该文章详情页和列表页的 ISR 缓存
+        revalidatePath("/blog");
+        revalidatePath(`/blog/${slug}`);
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Failed to update blog post:", error);
@@ -73,7 +78,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     const authError = await checkAuth(request);
     if (authError) return authError;
 
-    const limit = rateLimit(getRateLimitKey(request) + ":blog:delete");
+    const limit = await rateLimit(getRateLimitKey(request) + ":blog:delete");
     if (!limit.success) {
         return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
@@ -85,6 +90,11 @@ export async function DELETE(request: NextRequest, { params }: Params) {
             return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
         }
         await deleteBlogPost(slug);
+
+        // 刷新列表页和被删文章详情页的 ISR 缓存（使其变为 404）
+        revalidatePath("/blog");
+        revalidatePath(`/blog/${slug}`);
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Failed to delete blog post:", error);

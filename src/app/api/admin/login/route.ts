@@ -13,7 +13,7 @@ function passwordsMatch(password: string, adminPassword: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
-    const limit = rateLimit(getRateLimitKey(request) + ":login");
+    const limit = await rateLimit(getRateLimitKey(request) + ":login");
     if (!limit.success) {
         return NextResponse.json({ error: "Too many attempts, please try again later" }, { status: 429 });
     }

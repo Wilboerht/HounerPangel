@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Pencil, Trash2, ArrowLeft, LogOut, X, Save, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
@@ -10,7 +10,7 @@ import { useFocusTrap } from "@/lib/focus-trap";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { MarkdownEditor } from "@/components/markdown-editor";
-import type { BlogPost } from "@/lib/types/blog";
+import type { BlogPostSummary } from "@/lib/types/blog";
 import { useTagManager } from "@/lib/use-tag-manager";
 
 function slugify(text: string): string {
@@ -28,7 +28,7 @@ const VALID_SLUG_RE = /^[a-z0-9\-]+$/;
 export default function AdminBlogList() {
   const router = useRouter();
   const toast = useToast();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [search, setSearch] = useState("");
@@ -57,7 +57,7 @@ export default function AdminBlogList() {
   }, []);
   const tagManager = useTagManager([]);
 
-  const [deleteTarget, setDeleteTarget] = useState<BlogPost | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<BlogPostSummary | null>(null);
   const [formDirty, setFormDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(false);
 
@@ -78,18 +78,23 @@ export default function AdminBlogList() {
       )
     : posts;
 
-  const loadPosts = (signal?: AbortSignal) => {
+  const loadPosts = useCallback((signal?: AbortSignal) => {
     fetch("/api/blog", { signal })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
+        if (!Array.isArray(data)) throw new Error("Unexpected response shape");
         setPosts(data);
         setLoading(false);
       })
       .catch(() => {
         if (signal?.aborted) return;
+        toast.error("加载文章列表失败，请刷新重试");
         setLoading(false);
       });
-  };
+  }, [toast]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -109,7 +114,7 @@ export default function AdminBlogList() {
         setLoading(false);
       });
     return () => controller.abort();
-  }, []);
+  }, [loadPosts]);
 
   useEffect(() => {
     if (showNewModal) return;
@@ -145,7 +150,8 @@ export default function AdminBlogList() {
       const res = await fetch(`/api/blog/${deleteTarget.slug}`, { method: "DELETE" });
       if (res.status === 401) {
         toast.error("登录已过期，请重新登录");
-        router.push("/blog");
+        setAuthError(true);
+        setDeleteTarget(null);
         return;
       }
       if (res.ok) {
@@ -201,6 +207,9 @@ export default function AdminBlogList() {
         setFormDirty(false);
         loadPosts();
         toast.success("文章创建成功");
+      } else if (res.status === 401) {
+        toast.error("登录已过期，请重新登录");
+        setAuthError(true);
       } else {
         const data = await res.json();
         toast.error(data.error || "保存失败");

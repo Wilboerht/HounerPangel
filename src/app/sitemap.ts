@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
-import { getAllBlogPosts } from "@/lib/blog-db";
+import { getAllBlogPostSummaries } from "@/lib/blog-db";
 import { SITE_URL } from "@/lib/site";
 
 const siteUrl = SITE_URL;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    let posts: Awaited<ReturnType<typeof getAllBlogPosts>> = [];
+    let posts: Awaited<ReturnType<typeof getAllBlogPostSummaries>> = [];
     try {
-        posts = await getAllBlogPosts();
+        posts = await getAllBlogPostSummaries();
     } catch {
         // If Supabase is unavailable during build, skip blog posts
     }

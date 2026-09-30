@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllBlogPosts, createBlogPost } from "@/lib/blog-db";
+import { revalidatePath } from "next/cache";
+import { getAllBlogPostSummaries, createBlogPost } from "@/lib/blog-db";
 import { checkAuth } from "@/lib/auth";
 import { verifySessionToken } from "@/lib/session";
 import { blogPostSchema } from "@/lib/validation";
@@ -18,7 +19,7 @@ function isUniqueViolation(error: unknown): boolean {
 export async function GET(request: NextRequest) {
     try {
         const includeUnpublished = await isAdmin(request);
-        const posts = await getAllBlogPosts(includeUnpublished);
+        const posts = await getAllBlogPostSummaries(includeUnpublished);
         return NextResponse.json(posts);
     } catch (error) {
         console.error("Failed to fetch blog posts:", error);
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     const authError = await checkAuth(request);
     if (authError) return authError;
 
-    const limit = rateLimit(getRateLimitKey(request) + ":blog:create");
+    const limit = await rateLimit(getRateLimitKey(request) + ":blog:create");
     if (!limit.success) {
         return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
@@ -61,6 +62,9 @@ export async function POST(request: NextRequest) {
             }
             throw error;
         }
+
+        // 新建文章后立即刷新博客列表页的 ISR 缓存
+        revalidatePath("/blog");
 
         return NextResponse.json({ success: true }, { status: 201 });
     } catch (error) {

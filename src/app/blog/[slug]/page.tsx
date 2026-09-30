@@ -11,7 +11,8 @@ interface Props {
     params: Promise<{ slug: string }>;
 }
 
-export const dynamic = "force-dynamic";
+// ISR：60s 内复用缓存；管理端更新/删除文章后通过 revalidatePath 立即刷新
+export const revalidate = 60;
 
 async function fetchPost(slug: string): Promise<BlogPost | null> {
     try {

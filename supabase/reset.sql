@@ -114,3 +114,8 @@ ALTER TABLE public.admin_sessions ENABLE ROW LEVEL SECURITY;
 -- Images storage bucket
 INSERT INTO storage.buckets (id, name, public, avif_autodetection)
 VALUES ('images', 'images', true, false);
+
+-- Public read access to the images bucket (mirrors 20250804000000_setup_blog.sql;
+-- storage policies are not restored by recreating the bucket)
+CREATE POLICY "Allow public read images" ON storage.objects
+  FOR SELECT USING (bucket_id = 'images');

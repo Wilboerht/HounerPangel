@@ -22,11 +22,11 @@ const MIME_MAP: Record<string, string> = {
   jpeg: "image/jpeg",
   gif: "image/gif",
   webp: "image/webp",
-  svg: "image/svg+xml",
   mp4: "video/mp4",
   webm: "video/webm",
   mov: "video/quicktime",
   avi: "video/x-msvideo",
+  mkv: "video/x-matroska",
 };
 
 function getMimeType(file: File): string {
@@ -55,7 +55,7 @@ function getImageDimensions(file: File): Promise<{ width: number; height: number
 
 // 与服务端 /api/admin/upload-url 的白名单和大小限制保持一致，上传前先本地拦截
 const ALLOWED_IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
-const ALLOWED_VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "avi"]);
+const ALLOWED_VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "avi", "mkv"]);
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 

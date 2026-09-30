@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import type { BlogPost } from "@/lib/types/blog";
+import type { BlogPostSummary } from "@/lib/types/blog";
 
 interface Props {
-    posts: BlogPost[];
+    posts: BlogPostSummary[];
 }
 
 export default function BlogClient({ posts }: Props) {
     const groupedPosts = useMemo(() => {
-        const groups: Record<string, BlogPost[]> = {};
+        const groups: Record<string, BlogPostSummary[]> = {};
         posts.forEach((post) => {
             const year = new Date(post.date).getUTCFullYear().toString();
             if (!groups[year]) groups[year] = [];

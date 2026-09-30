@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
-import type { BlogPost } from "./types/blog";
+import type { BlogPost, BlogPostSummary } from "./types/blog";
 import { env } from "./env";
 
 export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
@@ -15,6 +15,24 @@ export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogP
     let query = supabase
         .from("blog_posts")
         .select("slug, title, content, date, tags, published")
+        .order("date", { ascending: false });
+
+    if (!includeUnpublished) query = query.eq("published", true);
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    return (data || []).map((row) => ({
+        ...row,
+        tags: row.tags ?? [],
+        published: row.published ?? false,
+    }));
+}
+
+export async function getAllBlogPostSummaries(includeUnpublished = false): Promise<BlogPostSummary[]> {
+    let query = supabase
+        .from("blog_posts")
+        .select("slug, title, date, tags, published")
         .order("date", { ascending: false });
 
     if (!includeUnpublished) query = query.eq("published", true);
@@ -74,7 +92,7 @@ function extractStoragePaths(content: string): string[] {
     const prefix = `${baseUrl}/storage/v1/object/public/images/`;
     const paths = new Set<string>();
     // Common image extensions plus video formats inserted by the editor.
-    const mediaExt = /\.(png|jpe?g|gif|webp|avif|svg|mp4|webm|mov)$/i;
+    const mediaExt = /\.(png|jpe?g|gif|webp|avif|svg|mp4|webm|mov|mkv)$/i;
     const regexes = [
         /!\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown image/video: ![alt](url)
         /(?:src|poster)\s*=\s*["']([^"']+)["']/g, // HTML img/video src

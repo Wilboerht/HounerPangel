@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+// Derive the Supabase storage hostname from env so switching projects only
+// requires updating NEXT_PUBLIC_SUPABASE_URL.
+const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+  : "";
+
 // Keep in sync with IFRAME_ALLOWED_DOMAINS in src/lib/markdown.tsx
 const iframeAllowedDomains = [
   "embed.music.apple.com",
@@ -32,6 +38,8 @@ const contentSecurityPolicy = [
   `frame-src ${iframeAllowedDomains.map((d) => `https://${d}`).join(" ")}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
+  "object-src 'none'",
+  "form-action 'self'",
 ].join("; ");
 
 const nextConfig: NextConfig = {
@@ -40,12 +48,14 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "hyuqehvxhjfmihkzireg.supabase.co",
-      },
-    ],
+    remotePatterns: supabaseHostname
+      ? [
+          {
+            protocol: "https",
+            hostname: supabaseHostname,
+          },
+        ]
+      : [],
   },
   async headers() {
     return [

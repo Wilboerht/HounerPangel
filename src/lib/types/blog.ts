@@ -6,3 +6,5 @@ export interface BlogPost {
     content: string;
     published: boolean;
 }
+
+export type BlogPostSummary = Omit<BlogPost, "content">;

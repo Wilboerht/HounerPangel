@@ -33,14 +33,15 @@ export default function EditBlogPost() {
       .then((res) => res.json())
       .then((data) => {
         if (!data.authenticated) {
-          router.push("/blog");
+          // 回到管理列表页，那里会渲染登录表单
+          router.push("/admin/blog");
           return;
         }
         setIsAuth(true);
         setAuthChecking(false);
       })
       .catch(() => {
-        router.push("/blog");
+        router.push("/admin/blog");
       });
   }, [router]);
 
@@ -134,6 +135,9 @@ export default function EditBlogPost() {
         setFormDirty(false);
         tagManager.setInput("");
         toast.success("文章已保存");
+      } else if (res.status === 401) {
+        toast.error("登录已过期，请重新登录");
+        router.push("/admin/blog");
       } else {
         const data = await res.json();
         toast.error(data.error || "保存失败");

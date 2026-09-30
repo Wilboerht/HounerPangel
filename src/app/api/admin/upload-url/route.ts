@@ -20,18 +20,19 @@ const EXT_TO_MIME: Record<string, string> = {
     webm: "video/webm",
     mov: "video/quicktime",
     avi: "video/x-msvideo",
+    mkv: "video/x-matroska",
 };
 
 const ALLOWED_EXTENSIONS: Record<string, string[]> = {
     image: ["png", "jpg", "jpeg", "gif", "webp"],
-    video: ["mp4", "webm", "mov", "avi"],
+    video: ["mp4", "webm", "mov", "avi", "mkv"],
 };
 
 export async function POST(request: NextRequest) {
     const authError = await checkAuth(request);
     if (authError) return authError;
 
-    const limit = rateLimit(getRateLimitKey(request) + ":upload-url", UPLOAD_RATE_LIMIT);
+    const limit = await rateLimit(getRateLimitKey(request) + ":upload-url", UPLOAD_RATE_LIMIT);
     if (!limit.success) {
         return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }

@@ -1,8 +1,8 @@
 import BackButton from "@/components/BackButton";
 import type { Metadata } from "next";
-import { getAllBlogPosts } from "@/lib/blog-db";
+import { getAllBlogPostSummaries } from "@/lib/blog-db";
 import BlogClient from "./BlogClient";
-import type { BlogPost } from "@/lib/types/blog";
+import type { BlogPostSummary } from "@/lib/types/blog";
 import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -29,12 +29,13 @@ export const metadata: Metadata = {
     },
 };
 
-export const dynamic = "force-dynamic";
+// ISR：60s 内复用缓存；管理端增删改文章后通过 revalidatePath 立即刷新
+export const revalidate = 60;
 
 export default async function Blog() {
-    let posts: BlogPost[];
+    let posts: BlogPostSummary[];
     try {
-        posts = await getAllBlogPosts();
+        posts = await getAllBlogPostSummaries();
     } catch (error) {
         console.error("获取博客文章列表失败：", error);
         posts = [];
