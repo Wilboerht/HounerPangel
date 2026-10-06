@@ -112,10 +112,11 @@ function extractStoragePaths(content: string): string[] {
 
     const prefix = `${baseUrl}/storage/v1/object/public/images/`;
     const paths = new Set<string>();
-    // Common image extensions plus video formats inserted by the editor.
-    const mediaExt = /\.(png|jpe?g|gif|webp|avif|svg|mp4|webm|mov|mkv)$/i;
+    // 编辑器插入的图片/视频/附件扩展名（附件是 [文件名](url) 链接形式）
+    const mediaExt = /\.(png|jpe?g|gif|webp|avif|svg|mp4|webm|mov|mkv|pdf|txt|md|csv|zip|docx?|xlsx?|pptx?)$/i;
     const regexes = [
         /!\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown image/video: ![alt](url)
+        /(?<!!)\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown link/attachment: [name](url)
         /(?:src|poster)\s*=\s*["']([^"']+)["']/g, // HTML img/video src
     ];
 

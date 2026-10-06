@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import {
   Eye, Edit3, Bold, Italic, Heading2, Heading3,
-  Link, Code, Code2, List, Image as ImageIcon, Video,
+  Link, Code, Code2, List, Image as ImageIcon, Video, Paperclip,
 } from "lucide-react";
 import { useToast } from "@/components/toast";
 
@@ -33,10 +33,21 @@ const MIME_MAP: Record<string, string> = {
   mov: "video/quicktime",
   avi: "video/x-msvideo",
   mkv: "video/x-matroska",
+  pdf: "application/pdf",
+  txt: "text/plain",
+  md: "text/markdown",
+  csv: "text/csv",
+  zip: "application/zip",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xls: "application/vnd.ms-excel",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ppt: "application/vnd.ms-powerpoint",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 };
 
 function getMimeType(file: File): string {
-  if (file.type) return file.type;
+  // 扩展名映射优先，与服务端 EXT_TO_MIME 保持一致；浏览器上报的 MIME 可能是非标值
   const ext = file.name.split(".").pop()?.toLowerCase();
   if (ext && MIME_MAP[ext]) return MIME_MAP[ext];
   return file.type || "";
@@ -62,8 +73,30 @@ function getImageDimensions(file: File): Promise<{ width: number; height: number
 // 与服务端 /api/admin/upload-url 的白名单和大小限制保持一致，上传前先本地拦截
 const ALLOWED_IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
 const ALLOWED_VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "avi", "mkv"]);
+const ALLOWED_ATTACHMENT_EXTENSIONS = new Set(["pdf", "txt", "md", "csv", "zip", "doc", "docx", "xls", "xlsx", "ppt", "pptx"]);
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024;
+
+type UploadKind = "image" | "video" | "attachment";
+
+const KIND_LABEL: Record<UploadKind, string> = { image: "图片", video: "视频", attachment: "附件" };
+const KIND_ALLOWED: Record<UploadKind, Set<string>> = {
+  image: ALLOWED_IMAGE_EXTENSIONS,
+  video: ALLOWED_VIDEO_EXTENSIONS,
+  attachment: ALLOWED_ATTACHMENT_EXTENSIONS,
+};
+const KIND_MAX_SIZE: Record<UploadKind, number> = {
+  image: MAX_IMAGE_SIZE,
+  video: MAX_VIDEO_SIZE,
+  attachment: MAX_ATTACHMENT_SIZE,
+};
+const KIND_MAX_LABEL: Record<UploadKind, string> = { image: "10MB", video: "100MB", attachment: "50MB" };
+
+// 文件名里去掉会破坏 markdown 链接语法的字符
+function sanitizeLinkText(name: string): string {
+  return name.replace(/[[\]()]/g, "").trim() || "附件";
+}
 
 export function MarkdownEditor({ value, onChange, rows = 12, required = false, id }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
@@ -72,6 +105,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
 
   // Sync external value changes (initial load, form reset, toolbar actions from parent)
@@ -175,16 +209,14 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     return publicUrl as string;
   };
 
-  const handleFileUpload = async (file: File, getMarkdown: (url: string) => string, kind: "image" | "video") => {
+  const handleFileUpload = async (file: File, getMarkdown: (url: string) => string, kind: UploadKind) => {
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
-    const allowed = kind === "image" ? ALLOWED_IMAGE_EXTENSIONS : ALLOWED_VIDEO_EXTENSIONS;
-    const maxSize = kind === "image" ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
-    if (!allowed.has(ext)) {
-      toast.error(`不支持的${kind === "image" ? "图片" : "视频"}格式: .${ext || "未知"}`);
+    if (!KIND_ALLOWED[kind].has(ext)) {
+      toast.error(`不支持的${KIND_LABEL[kind]}格式: .${ext || "未知"}`);
       return;
     }
-    if (file.size > maxSize) {
-      toast.error(`文件过大，${kind === "image" ? "图片" : "视频"}最大 ${kind === "image" ? "10MB" : "100MB"}`);
+    if (file.size > KIND_MAX_SIZE[kind]) {
+      toast.error(`文件过大，${KIND_LABEL[kind]}最大 ${KIND_MAX_LABEL[kind]}`);
       return;
     }
     setUploading(true);
@@ -197,9 +229,9 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         const dims = await getImageDimensions(file);
         if (dims) markdown = getMarkdown(`${url} =${dims.width}x${dims.height}`);
       }
-      // 用 insertBlock 保证媒体语法独占一行，否则前台解析器不会把它渲染成图片/视频
+      // 用 insertBlock 保证媒体/附件语法独占一行，否则前台解析器不会把它渲染成对应卡片
       insertBlock(markdown);
-      toast.success(kind === "image" ? "图片已插入" : "视频已插入");
+      toast.success(`${KIND_LABEL[kind]}已插入`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "上传失败");
     } finally {
@@ -222,11 +254,20 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
-  // 粘贴/拖拽进来的文件按 MIME 或扩展名自动判断走图片还是视频分支
-  const detectFileKind = (file: File): "image" | "video" | null => {
+  const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // 附件用链接语法插入，前台渲染成下载卡片
+    handleFileUpload(file, (url) => `[${sanitizeLinkText(file.name)}](${url})`, "attachment");
+    if (attachmentInputRef.current) attachmentInputRef.current.value = "";
+  };
+
+  // 粘贴/拖拽进来的文件按 MIME 或扩展名自动判断走图片/视频/附件分支
+  const detectFileKind = (file: File): UploadKind | null => {
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
     if (ALLOWED_IMAGE_EXTENSIONS.has(ext) || file.type.startsWith("image/")) return "image";
     if (ALLOWED_VIDEO_EXTENSIONS.has(ext) || file.type.startsWith("video/")) return "video";
+    if (ALLOWED_ATTACHMENT_EXTENSIONS.has(ext)) return "attachment";
     return null;
   };
 
@@ -238,10 +279,13 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       const kind = detectFileKind(file);
       if (!kind) continue;
       hasMedia = true;
-      await handleFileUpload(file, (url) => `![](${url})`, kind);
+      const getMarkdown = kind === "attachment"
+        ? (url: string) => `[${sanitizeLinkText(file.name)}](${url})`
+        : (url: string) => `![](${url})`;
+      await handleFileUpload(file, getMarkdown, kind);
     }
     if (!hasMedia) {
-      toast.error("仅支持粘贴或拖拽图片/视频文件");
+      toast.error("仅支持粘贴或拖拽图片/视频/附件文件");
     }
   };
 
@@ -346,6 +390,16 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             >
               <Video className="w-4 h-4" />
             </button>
+            <button
+              type="button"
+              onClick={() => attachmentInputRef.current?.click()}
+              disabled={uploading}
+              title="上传附件（PDF、文档、压缩包等）"
+              aria-label="上传附件"
+              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50 flex-shrink-0"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
             <input
               ref={fileInputRef}
               type="file"
@@ -358,6 +412,13 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
               type="file"
               accept=".mp4,.webm,.mov,.avi,.mkv"
               onChange={handleVideoUpload}
+              className="hidden"
+            />
+            <input
+              ref={attachmentInputRef}
+              type="file"
+              accept=".pdf,.txt,.md,.csv,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+              onChange={handleAttachmentUpload}
               className="hidden"
             />
           </div>

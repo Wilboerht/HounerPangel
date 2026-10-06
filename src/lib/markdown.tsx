@@ -74,6 +74,9 @@ function isSafeMediaUrl(url: string): boolean {
     return /^(https?:\/\/|\/|#)/i.test(trimmed);
 }
 
+// 编辑器附件上传支持的扩展名，与 /api/admin/upload-url 的白名单保持一致
+const ATTACHMENT_EXT_RE = /\.(pdf|txt|md|csv|zip|docx?|xlsx?|pptx?)$/i;
+
 const IFRAME_ALLOWED_DOMAINS = [
     "embed.music.apple.com",
     "open.spotify.com",
@@ -611,6 +614,37 @@ export function renderMarkdown(content: string): React.ReactNode {
         const standaloneLinkMatch = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
         if (standaloneLinkMatch && isSafeLinkUrl(standaloneLinkMatch[2])) {
             const [, cardText, cardUrl] = standaloneLinkMatch;
+            // 附件（pdf、文档、压缩包等）渲染成下载卡片；其他链接保持外链卡片
+            const isAttachment = ATTACHMENT_EXT_RE.test(cardUrl.split("?")[0].split("#")[0]);
+            if (isAttachment) {
+                elements.push(
+                    <a
+                        key={`attach-${index}`}
+                        href={cardUrl}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 p-5 rounded-2xl border border-border bg-card/50 hover:border-accent/40 hover:bg-card hover:shadow-lg transition-all duration-300 group"
+                    >
+                        <svg
+                            className="w-5 h-5 text-muted group-hover:text-accent transition-colors flex-shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        <div className="min-w-0">
+                            <span className="block text-sm font-semibold text-foreground tracking-wide truncate">
+                                {cardText}
+                            </span>
+                            <span className="block text-xs text-muted mt-0.5">点击下载附件</span>
+                        </div>
+                    </a>
+                );
+                continue;
+            }
             elements.push(
                 <a
                     key={`card-${index}`}

@@ -21,11 +21,35 @@ const EXT_TO_MIME: Record<string, string> = {
     mov: "video/quicktime",
     avi: "video/x-msvideo",
     mkv: "video/x-matroska",
+    pdf: "application/pdf",
+    txt: "text/plain",
+    md: "text/markdown",
+    csv: "text/csv",
+    zip: "application/zip",
+    doc: "application/msword",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    xls: "application/vnd.ms-excel",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ppt: "application/vnd.ms-powerpoint",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 };
 
 const ALLOWED_EXTENSIONS: Record<string, string[]> = {
     image: ["png", "jpg", "jpeg", "gif", "webp"],
     video: ["mp4", "webm", "mov", "avi", "mkv"],
+    attachment: ["pdf", "txt", "md", "csv", "zip", "doc", "docx", "xls", "xlsx", "ppt", "pptx"],
+};
+
+const MAX_SIZE: Record<string, number> = {
+    image: 10 * 1024 * 1024,
+    video: 100 * 1024 * 1024,
+    attachment: 50 * 1024 * 1024,
+};
+
+const MAX_SIZE_LABEL: Record<string, string> = {
+    image: "10MB",
+    video: "100MB",
+    attachment: "50MB",
 };
 
 export async function POST(request: NextRequest) {
@@ -59,17 +83,19 @@ export async function POST(request: NextRequest) {
 
         const isVideo = contentType.startsWith("video/");
         const isImage = contentType.startsWith("image/");
-        if (!isImage && !isVideo) {
+        // 附件按扩展名归类，contentType 以服务端映射为准，不信任客户端上报
+        const isAttachment = !isImage && !isVideo && ALLOWED_EXTENSIONS.attachment.includes(ext);
+        if (isAttachment) contentType = EXT_TO_MIME[ext];
+        if (!isImage && !isVideo && !isAttachment) {
             console.error("upload-url invalid content type:", { fileName, contentType, size });
-            return NextResponse.json({ error: `Only image and video files allowed, got: "${contentType}"` }, { status: 400 });
+            return NextResponse.json({ error: `Only image, video and attachment files allowed, got: "${contentType}"` }, { status: 400 });
         }
 
-        const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
-        if (size > maxSize) {
-            return NextResponse.json({ error: `File too large (max ${isVideo ? "100MB" : "10MB"})` }, { status: 400 });
+        const category = isVideo ? "video" : isImage ? "image" : "attachment";
+        if (size > MAX_SIZE[category]) {
+            return NextResponse.json({ error: `File too large (max ${MAX_SIZE_LABEL[category]})` }, { status: 400 });
         }
 
-        const category = isVideo ? "video" : "image";
         if (!ALLOWED_EXTENSIONS[category].includes(ext)) {
             return NextResponse.json({ error: `Unsupported ${category} format: .${ext}` }, { status: 400 });
         }
