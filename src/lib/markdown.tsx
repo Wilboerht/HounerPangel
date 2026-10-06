@@ -614,26 +614,18 @@ export function renderMarkdown(content: string): React.ReactNode {
         const standaloneLinkMatch = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
         if (standaloneLinkMatch && isSafeLinkUrl(standaloneLinkMatch[2])) {
             const [, cardText, cardUrl] = standaloneLinkMatch;
-            // 附件（pdf、文档、压缩包等）渲染成下载卡片；PDF 内嵌预览、Office 文档走微软 viewer 预览；其他链接保持外链卡片
+            // 附件（pdf、文档、压缩包等）渲染成下载卡片，不做内嵌预览；其他链接保持外链卡片
             const cleanUrl = cardUrl.split("?")[0].split("#")[0];
             const isAttachment = ATTACHMENT_EXT_RE.test(cleanUrl);
             // 卡片共用轻量样式：无下划线（覆盖 .article-body a 的全局规则）、无重阴影、hover 只提亮背景
             const cardClass =
                 "no-underline flex items-center gap-3 px-4 py-3 rounded-xl border border-border/50 bg-foreground/[0.02] hover:bg-foreground/[0.05] transition-colors duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
             if (isAttachment) {
-                // 桌面浏览器可内嵌渲染 PDF；iOS Safari 等不支持 iframe PDF 的环境走下载卡片兜底
-                const isPdf = /\.pdf$/i.test(cleanUrl);
-                // Office 文档浏览器无法原生预览，用微软 viewer（需要公网绝对地址）
-                const isOfficeDoc = /\.(docx?|xlsx?|pptx?)$/i.test(cleanUrl) && /^https?:\/\//i.test(cardUrl);
-                const previewSrc = isPdf
-                    ? cardUrl
-                    : isOfficeDoc
-                        ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(cardUrl)}`
-                        : null;
                 // 文件类型徽标（PDF / DOCX...），下载前给用户明确的格式预期
                 const extLabel = cleanUrl.match(/\.([a-z0-9]+)$/i)?.[1]?.toUpperCase() ?? "FILE";
-                const downloadCard = (
+                elements.push(
                     <a
+                        key={`attach-${index}`}
                         href={cardUrl}
                         download
                         target="_blank"
@@ -657,20 +649,6 @@ export function renderMarkdown(content: string): React.ReactNode {
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                         </svg>
                     </a>
-                );
-                elements.push(
-                    previewSrc ? (
-                        <figure key={`attach-${index}`} className="space-y-3">
-                            <iframe
-                                src={previewSrc}
-                                title={cardText}
-                                className="w-full h-[75vh] rounded-xl border border-border/50 bg-foreground/[0.02]"
-                            />
-                            {downloadCard}
-                        </figure>
-                    ) : (
-                        <div key={`attach-${index}`}>{downloadCard}</div>
-                    )
                 );
                 continue;
             }
