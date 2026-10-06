@@ -1,5 +1,5 @@
 import BackButton from "@/components/BackButton";
-import { Calendar, Tag } from "lucide-react";
+import { Calendar } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug } from "@/lib/blog-db";
@@ -122,18 +122,15 @@ export default async function BlogPostPage({ params }: Props) {
                                 </time>
                             </div>
                             {post.tags.length > 0 && (
-                                <div className="flex items-center gap-1.5">
-                                    <Tag className="w-3.5 h-3.5" />
-                                    <div className="flex flex-wrap gap-2">
-                                        {post.tags.map((tag) => (
-                                            <span
-                                                key={tag}
-                                                className="text-xs px-2 py-0.5 rounded-full bg-foreground/5 text-muted"
-                                            >
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
+                                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                                    {post.tags.map((tag) => (
+                                        <span
+                                            key={tag}
+                                            className="text-sm text-muted/70"
+                                        >
+                                            #{tag}
+                                        </span>
+                                    ))}
                                 </div>
                             )}
                         </div>
