@@ -97,7 +97,7 @@ export default async function BlogPostPage({ params }: Props) {
     };
 
     return (
-        <main className="min-h-dvh flex flex-col items-center px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-content">
+        <main className="min-h-dvh flex flex-col items-center px-6 pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
