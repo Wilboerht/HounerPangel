@@ -42,7 +42,7 @@ export default async function Blog() {
     }
 
     return (
-        <main className="min-h-dvh flex flex-col items-center justify-center px-6 pt-content pb-content">
+        <main className="min-h-dvh flex flex-col items-center px-6 pt-content pb-content">
             <div className="max-w-2xl mx-auto w-full flex flex-col gap-10">
                 {/* Navigation */}
                 <nav>
