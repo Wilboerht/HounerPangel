@@ -81,7 +81,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div
         aria-live="polite"
-        className="fixed top-4 right-4 z-[200] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+        className="fixed top-4 left-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none sm:left-auto sm:w-full sm:max-w-sm"
         style={{ top: `calc(1rem + env(safe-area-inset-top, 0px))` }}
       >
         <AnimatePresence>
@@ -100,7 +100,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <button
                   onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
                   aria-label="关闭通知"
-                  className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
+                  className="flex-shrink-0 -m-1.5 min-w-[28px] min-h-[28px] flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity"
                 >
                   <X className="w-4 h-4" />
                 </button>

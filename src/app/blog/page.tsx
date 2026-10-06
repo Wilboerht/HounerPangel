@@ -42,7 +42,7 @@ export default async function Blog() {
     }
 
     return (
-        <main className="min-h-dvh flex flex-col items-center px-6 pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
+        <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
             <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-10">
                 {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
                 <nav className="-mt-3">

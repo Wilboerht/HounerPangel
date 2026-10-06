@@ -293,7 +293,8 @@ export function PostForm({
         />
       </div>
 
-      <div className="flex items-center gap-4 pt-2">
+      {/* sticky 底部操作栏：长表单下保存/取消始终可达；含底部安全区避让 */}
+      <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background/85 backdrop-blur-sm flex items-center gap-4">
         <button
           type="submit"
           disabled={saving || (slugEditable && !!form.slug && !slugValid)}

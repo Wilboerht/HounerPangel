@@ -110,6 +110,11 @@ input, textarea, select {
 }
 
 /* Content page safe-area padding: base spacing + dynamic safe area */
+.px-content {
+  padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
+  padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
+}
+
 .pt-content {
   padding-top: calc(4rem + env(safe-area-inset-top, 0px));
 }
