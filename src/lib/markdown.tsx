@@ -260,7 +260,7 @@ export function renderMarkdown(content: string): React.ReactNode {
     const flushUnordered = () => {
         if (inUnorderedList && unorderedItems.length > 0) {
             elements.push(
-                <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2 text-muted leading-relaxed">
+                <ul key={`ul-${elements.length}`} className="list-disc pl-5 text-muted">
                     {unorderedItems}
                 </ul>
             );
@@ -272,7 +272,7 @@ export function renderMarkdown(content: string): React.ReactNode {
     const flushOrdered = () => {
         if (inOrderedList && orderedItems.length > 0) {
             elements.push(
-                <ol key={`ol-${elements.length}`} className="list-decimal pl-5 space-y-2 text-muted leading-relaxed">
+                <ol key={`ol-${elements.length}`} className="list-decimal pl-5 text-muted">
                     {orderedItems}
                 </ol>
             );
@@ -289,7 +289,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                     className="border-l-2 border-accent/40"
                 >
                     {quoteLines.map((q, i) => (
-                        <p key={i} className="leading-relaxed">
+                        <p key={i}>
                             {renderInline(q)}
                         </p>
                     ))}
@@ -356,7 +356,7 @@ export function renderMarkdown(content: string): React.ReactNode {
             } else {
                 // 校验失败的 iframe 按普通文本段落渲染
                 elements.push(
-                    <p key={`iframe-${elements.length}`} className="text-muted leading-relaxed">
+                    <p key={`iframe-${elements.length}`} className="text-muted">
                         {iframeHtml}
                     </p>
                 );
@@ -529,7 +529,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                 );
             } else {
                 elements.push(
-                    <p key={index} className="text-muted leading-relaxed">
+                    <p key={index} className="text-muted">
                         {renderInline(trimmed)}
                     </p>
                 );
@@ -683,7 +683,7 @@ export function renderMarkdown(content: string): React.ReactNode {
         }
 
         elements.push(
-            <p key={index} className="text-muted leading-relaxed">
+            <p key={index} className="text-muted">
                 {renderInline(trimmed)}
             </p>
         );

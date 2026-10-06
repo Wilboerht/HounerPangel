@@ -8,8 +8,9 @@ export default function MarkdownPreview({ value }: { value: string }) {
   if (!value) {
     return <span className="text-muted/50">预览区域 — 开始 Markdown 内容</span>;
   }
+  // 与前台文章页共用 .article-body，保证预览所见即所得
   return (
-    <div className="prose prose-sm max-w-none space-y-4 text-foreground">
+    <div className="article-body">
       {renderMarkdown(value)}
     </div>
   );
