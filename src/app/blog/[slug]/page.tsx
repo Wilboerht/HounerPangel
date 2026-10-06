@@ -102,7 +102,7 @@ export default async function BlogPostPage({ params }: Props) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
             />
-            <div className="max-w-2xl mx-auto w-full flex flex-col gap-10">
+            <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-10">
                 {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
                 <nav className="-mt-3">
                     <BackButton label="返回博客" fallbackHref="/blog" />
@@ -145,7 +145,7 @@ export default async function BlogPostPage({ params }: Props) {
                     </article>
                 </section>
 
-                <footer className="pt-6 text-sm text-muted">
+                <footer className="mt-auto text-sm text-muted">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
             </div>

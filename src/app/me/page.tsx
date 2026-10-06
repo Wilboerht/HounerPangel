@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 export default function AboutMe() {
     return (
         <main className="min-h-dvh flex flex-col items-center px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-content">
-            <div className="max-w-2xl w-full flex flex-col gap-10">
+            <div className="max-w-2xl w-full flex-1 flex flex-col gap-10">
                 {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
                 <nav className="-mt-3">
                     <Link
@@ -62,7 +62,7 @@ export default function AboutMe() {
                 </section>
 
                 {/* Footer */}
-                <footer className="text-sm text-muted">
+                <footer className="mt-auto text-sm text-muted">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
             </div>
