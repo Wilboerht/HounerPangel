@@ -617,6 +617,9 @@ export function renderMarkdown(content: string): React.ReactNode {
             // 附件（pdf、文档、压缩包等）渲染成下载卡片；PDF 内嵌预览、Office 文档走微软 viewer 预览；其他链接保持外链卡片
             const cleanUrl = cardUrl.split("?")[0].split("#")[0];
             const isAttachment = ATTACHMENT_EXT_RE.test(cleanUrl);
+            // 卡片共用轻量样式：无下划线（覆盖 .article-body a 的全局规则）、无重阴影、hover 只提亮背景
+            const cardClass =
+                "no-underline flex items-center gap-3 px-4 py-3 rounded-xl border border-border/50 bg-foreground/[0.02] hover:bg-foreground/[0.05] transition-colors duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
             if (isAttachment) {
                 // 桌面浏览器可内嵌渲染 PDF；iOS Safari 等不支持 iframe PDF 的环境走下载卡片兜底
                 const isPdf = /\.pdf$/i.test(cleanUrl);
@@ -627,16 +630,25 @@ export function renderMarkdown(content: string): React.ReactNode {
                     : isOfficeDoc
                         ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(cardUrl)}`
                         : null;
+                // 文件类型徽标（PDF / DOCX...），下载前给用户明确的格式预期
+                const extLabel = cleanUrl.match(/\.([a-z0-9]+)$/i)?.[1]?.toUpperCase() ?? "FILE";
                 const downloadCard = (
                     <a
                         href={cardUrl}
                         download
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-4 p-5 rounded-2xl border border-border bg-card/50 hover:border-accent/40 hover:bg-card hover:shadow-lg transition-all duration-300 group"
+                        aria-label={`下载附件：${cardText}`}
+                        className={cardClass}
                     >
+                        <span className="flex-shrink-0 min-w-9 px-1.5 py-1 rounded-md bg-foreground/5 text-center text-[10px] font-mono font-medium leading-none text-muted uppercase">
+                            {extLabel}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+                            {cardText}
+                        </span>
                         <svg
-                            className="w-5 h-5 text-muted group-hover:text-accent transition-colors flex-shrink-0"
+                            className="w-4 h-4 flex-shrink-0 text-muted group-hover:text-foreground transition-colors"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
@@ -644,21 +656,15 @@ export function renderMarkdown(content: string): React.ReactNode {
                         >
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                         </svg>
-                        <div className="min-w-0">
-                            <span className="block text-sm font-semibold text-foreground tracking-wide truncate">
-                                {cardText}
-                            </span>
-                            <span className="block text-xs text-muted mt-0.5">点击下载附件</span>
-                        </div>
                     </a>
                 );
                 elements.push(
                     previewSrc ? (
-                        <figure key={`attach-${index}`} className="space-y-2">
+                        <figure key={`attach-${index}`} className="space-y-3">
                             <iframe
                                 src={previewSrc}
                                 title={cardText}
-                                className="w-full h-[75vh] rounded-xl border border-border bg-foreground/5"
+                                className="w-full h-[75vh] rounded-xl border border-border/50 bg-foreground/[0.02]"
                             />
                             {downloadCard}
                         </figure>
@@ -674,25 +680,25 @@ export function renderMarkdown(content: string): React.ReactNode {
                     href={cardUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-5 rounded-2xl border border-border bg-card/50 hover:border-accent/40 hover:bg-card hover:shadow-lg transition-all duration-300 group"
+                    className={`${cardClass} justify-between`}
                 >
-                    <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-foreground tracking-wide">
+                    <div className="min-w-0">
+                        <span className="block text-sm text-foreground truncate">
                             {cardText}
                         </span>
-                        <svg
-                            className="w-4 h-4 text-muted group-hover:text-accent transition-colors"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M7 17L17 7M17 7H7M17 7V17" />
-                        </svg>
+                        <span className="block text-xs text-muted mt-0.5 truncate">
+                            {cardUrl}
+                        </span>
                     </div>
-                    <p className="text-sm text-muted leading-relaxed mt-1 truncate">
-                        {cardUrl}
-                    </p>
+                    <svg
+                        className="w-4 h-4 flex-shrink-0 text-muted group-hover:text-foreground transition-colors"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <path d="M7 17L17 7M17 7H7M17 7V17" />
+                    </svg>
                 </a>
             );
             continue;

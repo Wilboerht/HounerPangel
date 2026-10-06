@@ -178,13 +178,14 @@ input, textarea, select {
   margin-bottom: 1.25rem;
 }
 
-.article-body a {
+/* 卡片类链接带 no-underline，跳过正文链接的下划线/强调色规则 */
+.article-body a:not(.no-underline) {
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.article-body a:hover {
+.article-body a:not(.no-underline):hover {
   color: var(--foreground);
 }
 
