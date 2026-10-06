@@ -48,13 +48,13 @@ export default function AboutMe() {
                         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                             关于我
                         </h1>
-                        <p className="text-lg text-muted leading-relaxed">
+                        <p className="text-muted leading-[1.8]">
                             嗨，欢迎访达我的主页，很高兴能在互联网的茫茫大海里与你相遇。
                         </p>
-                        <p className="text-lg text-muted leading-relaxed">
+                        <p className="text-muted leading-[1.8]">
                             我喜欢科技、旅行、美食和户外运动，也是 city walk 轻度爱好者。已经走遍了 20 余个城市，并用相机记录下了许多美好的瞬间，你可以查看我的社交平台账号，希望能与你分享这些美好。
                         </p>
-                        <p className="text-lg text-muted leading-relaxed">
+                        <p className="text-muted leading-[1.8]">
                             Genius programmer @ Vanto & @ Moidas.
                         </p>
                         </div>
