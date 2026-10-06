@@ -97,13 +97,14 @@ export default async function BlogPostPage({ params }: Props) {
     };
 
     return (
-        <main className="min-h-dvh flex flex-col items-center px-6 pt-content pb-content">
+        <main className="min-h-dvh flex flex-col items-center px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-content">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
             />
             <div className="max-w-2xl mx-auto w-full flex flex-col gap-10">
-                <nav>
+                {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
+                <nav className="-mt-3">
                     <BackButton label="返回博客" fallbackHref="/blog" />
                 </nav>
 
