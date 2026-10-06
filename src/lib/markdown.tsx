@@ -211,6 +211,34 @@ function renderInline(text: string): React.ReactNode {
     return tokens;
 }
 
+// 按未转义且不在行内代码 span 内的 | 切分表格单元格，最后把 \| 还原为 |
+function splitTableRow(line: string): string[] {
+    const cells: string[] = [];
+    let current = "";
+    let inCode = false;
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === "\\" && line[i + 1] === "|") {
+            current += "|";
+            i++;
+            continue;
+        }
+        if (ch === "`") {
+            inCode = !inCode;
+            current += ch;
+            continue;
+        }
+        if (ch === "|" && !inCode) {
+            cells.push(current);
+            current = "";
+            continue;
+        }
+        current += ch;
+    }
+    cells.push(current);
+    return cells.filter((c) => c.trim()).map((c) => c.trim());
+}
+
 export function renderMarkdown(content: string): React.ReactNode {
     const lines = content.split("\n");
     const elements: React.ReactNode[] = [];
@@ -458,7 +486,7 @@ export function renderMarkdown(content: string): React.ReactNode {
             flushUnordered();
             flushOrdered();
             flushQuote();
-            const headerCells = trimmed.split("|").filter(c => c.trim()).map(c => c.trim());
+            const headerCells = splitTableRow(trimmed);
             const nextLine = index + 1 < lines.length ? lines[index + 1].trim() : "";
             const isSeparator = /^\|[\s\-:|]+\|$/.test(nextLine);
             if (isSeparator && headerCells.length > 0) {
@@ -467,7 +495,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                 while (index + 1 < lines.length) {
                     const nextTrimmed = lines[index + 1].trim();
                     if (!nextTrimmed.startsWith("|")) break;
-                    bodyRows.push(nextTrimmed.split("|").filter(c => c.trim()).map(c => c.trim()));
+                    bodyRows.push(splitTableRow(nextTrimmed));
                     index++;
                 }
                 elements.push(

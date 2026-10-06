@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   Eye, Edit3, Bold, Italic, Heading2, Heading3,
   Link, Code, Code2, List, Image as ImageIcon, Video,
 } from "lucide-react";
-import { renderMarkdown } from "@/lib/markdown";
 import { useToast } from "@/components/toast";
+
+// 预览渲染器（含 highlight.js）体积较大，懒加载：只有切到预览 tab 时才下载
+const MarkdownPreview = dynamic(() => import("./markdown-preview"), {
+  ssr: false,
+  loading: () => <span className="text-muted/50">加载预览...</span>,
+});
 
 interface MarkdownEditorProps {
   value: string;
@@ -216,6 +222,29 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
+  // 粘贴/拖拽进来的文件按 MIME 或扩展名自动判断走图片还是视频分支
+  const detectFileKind = (file: File): "image" | "video" | null => {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    if (ALLOWED_IMAGE_EXTENSIONS.has(ext) || file.type.startsWith("image/")) return "image";
+    if (ALLOWED_VIDEO_EXTENSIONS.has(ext) || file.type.startsWith("video/")) return "video";
+    return null;
+  };
+
+  const handleDroppedFiles = async (files: FileList | File[]) => {
+    const list = Array.from(files);
+    if (list.length === 0) return;
+    let hasMedia = false;
+    for (const file of list) {
+      const kind = detectFileKind(file);
+      if (!kind) continue;
+      hasMedia = true;
+      await handleFileUpload(file, (url) => `![](${url})`, kind);
+    }
+    if (!hasMedia) {
+      toast.error("仅支持粘贴或拖拽图片/视频文件");
+    }
+  };
+
   const insertCodeBlock = () => {
     const ta = textareaRef.current;
     if (!ta) return;
@@ -327,7 +356,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             <input
               ref={videoInputRef}
               type="file"
-              accept=".mp4,.webm,.mov,.avi"
+              accept=".mp4,.webm,.mov,.avi,.mkv"
               onChange={handleVideoUpload}
               className="hidden"
             />
@@ -344,6 +373,20 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         rows={rows}
         defaultValue={value}
         onInput={(e) => onChange(e.currentTarget.value)}
+        onPaste={(e) => {
+          // 剪贴板里有文件（截图等）时上传并插入，否则走默认文本粘贴
+          if (e.clipboardData.files.length > 0) {
+            e.preventDefault();
+            handleDroppedFiles(e.clipboardData.files);
+          }
+        }}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          if (e.dataTransfer.files.length > 0) {
+            e.preventDefault();
+            handleDroppedFiles(e.dataTransfer.files);
+          }
+        }}
         onKeyDown={(e) => {
           if (!(e.ctrlKey || e.metaKey)) return;
           const key = e.key.toLowerCase();
@@ -360,13 +403,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       />
       {tab === "preview" && (
         <div id="md-preview-panel" role="tabpanel" aria-labelledby="tab-preview" className="px-4 py-3 bg-foreground/[0.02] min-h-[300px] text-sm leading-relaxed">
-          {value ? (
-            <div className="prose prose-sm max-w-none space-y-4 text-foreground">
-              {renderMarkdown(value)}
-            </div>
-          ) : (
-            <span className="text-muted/50">预览区域 — 开始 Markdown 内容</span>
-          )}
+          <MarkdownPreview value={value} />
         </div>
       )}
     </div>

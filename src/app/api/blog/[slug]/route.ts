@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getBlogPostBySlug, updateBlogPost, deleteBlogPost } from "@/lib/blog-db";
-import { checkAuth } from "@/lib/auth";
-import { verifySessionToken } from "@/lib/session";
+import { checkAuth, isAdminRequest } from "@/lib/auth";
 import { blogPostUpdateSchema, slugParamSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
-
-async function isAdmin(request: NextRequest): Promise<boolean> {
-    const session = request.cookies.get("admin-session");
-    if (!session) return false;
-    return verifySessionToken(session.value);
-}
 
 interface Params {
     params: Promise<{ slug: string }>;
@@ -19,7 +12,7 @@ interface Params {
 export async function GET(request: NextRequest, { params }: Params) {
     try {
         const { slug } = await params;
-        const includeUnpublished = await isAdmin(request);
+        const includeUnpublished = await isAdminRequest(request);
         const post = await getBlogPostBySlug(slug, includeUnpublished);
         if (!post) {
             return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -66,6 +59,8 @@ export async function PUT(request: NextRequest, { params }: Params) {
         // 刷新该文章详情页和列表页的 ISR 缓存
         revalidatePath("/blog");
         revalidatePath(`/blog/${slug}`);
+        revalidatePath("/rss.xml");
+        revalidatePath("/sitemap.xml");
 
         return NextResponse.json({ success: true });
     } catch (error) {
@@ -94,6 +89,8 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         // 刷新列表页和被删文章详情页的 ISR 缓存（使其变为 404）
         revalidatePath("/blog");
         revalidatePath(`/blog/${slug}`);
+        revalidatePath("/rss.xml");
+        revalidatePath("/sitemap.xml");
 
         return NextResponse.json({ success: true });
     } catch (error) {

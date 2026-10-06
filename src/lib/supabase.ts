@@ -14,7 +14,7 @@ export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_
 export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogPost[]> {
     let query = supabase
         .from("blog_posts")
-        .select("slug, title, content, date, tags, published")
+        .select("slug, title, content, date, updated_at, tags, published")
         .order("date", { ascending: false });
 
     if (!includeUnpublished) query = query.eq("published", true);
@@ -24,6 +24,7 @@ export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogP
     if (error) throw error;
     return (data || []).map((row) => ({
         ...row,
+        updatedAt: row.updated_at,
         tags: row.tags ?? [],
         published: row.published ?? false,
     }));
@@ -32,7 +33,7 @@ export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogP
 export async function getAllBlogPostSummaries(includeUnpublished = false): Promise<BlogPostSummary[]> {
     let query = supabase
         .from("blog_posts")
-        .select("slug, title, date, tags, published")
+        .select("slug, title, date, updated_at, tags, published")
         .order("date", { ascending: false });
 
     if (!includeUnpublished) query = query.eq("published", true);
@@ -42,6 +43,7 @@ export async function getAllBlogPostSummaries(includeUnpublished = false): Promi
     if (error) throw error;
     return (data || []).map((row) => ({
         ...row,
+        updatedAt: row.updated_at,
         tags: row.tags ?? [],
         published: row.published ?? false,
     }));
@@ -50,7 +52,7 @@ export async function getAllBlogPostSummaries(includeUnpublished = false): Promi
 export async function getBlogPostBySlug(slug: string, includeUnpublished = false): Promise<BlogPost | null> {
     let query = supabase
         .from("blog_posts")
-        .select("slug, title, content, date, tags, published")
+        .select("slug, title, content, date, updated_at, tags, published")
         .eq("slug", slug);
 
     if (!includeUnpublished) query = query.eq("published", true);
@@ -61,11 +63,11 @@ export async function getBlogPostBySlug(slug: string, includeUnpublished = false
         if (error.code === "PGRST116") return null;
         throw error;
     }
-    return data ? { ...data, tags: data.tags ?? [], published: data.published ?? false } : null;
+    return data ? { ...data, updatedAt: data.updated_at, tags: data.tags ?? [], published: data.published ?? false } : null;
 }
 
 export async function createBlogPost(
-    post: Omit<BlogPost, "tags"> & { tags: string[] }
+    post: Omit<BlogPost, "tags" | "updatedAt"> & { tags: string[] }
 ): Promise<void> {
     const { error } = await supabase.from("blog_posts").insert(post);
     if (error) throw error;
@@ -73,16 +75,35 @@ export async function createBlogPost(
 
 export async function updateBlogPost(
     slug: string,
-    post: Omit<BlogPost, "tags" | "slug"> & { tags: string[] }
+    post: Omit<BlogPost, "tags" | "slug" | "updatedAt"> & { tags: string[] }
 ): Promise<BlogPost | null> {
+    const { data: oldPost, error: fetchError } = await supabase
+        .from("blog_posts")
+        .select("content")
+        .eq("slug", slug)
+        .maybeSingle();
+    if (fetchError) throw fetchError;
+
     const { data, error } = await supabase
         .from("blog_posts")
         .update(post)
         .eq("slug", slug)
-        .select("slug, title, content, date, tags, published")
+        .select("slug, title, content, date, updated_at, tags, published")
         .maybeSingle();
     if (error) throw error;
-    return data ? { ...data, tags: data.tags ?? [], published: data.published ?? false } : null;
+
+    if (data && oldPost) {
+        const newPaths = new Set(extractStoragePaths(data.content));
+        const stalePaths = extractStoragePaths(oldPost.content).filter((p) => !newPaths.has(p));
+        if (stalePaths.length > 0) {
+            const { error: storageError } = await supabase.storage.from("images").remove(stalePaths);
+            if (storageError) {
+                console.error("Failed to delete unreferenced media:", storageError);
+            }
+        }
+    }
+
+    return data ? { ...data, updatedAt: data.updated_at, tags: data.tags ?? [], published: data.published ?? false } : null;
 }
 
 function extractStoragePaths(content: string): string[] {

@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
 
     // 静态路由的 lastModified 用最新文章的日期；没有文章时省略，避免每次请求都变
-    const latestPostDate = posts.length > 0 ? new Date(posts[0].date) : undefined;
+    const latestPostDate = posts.length > 0 ? new Date(posts[0].updatedAt || posts[0].date) : undefined;
 
     const routes: MetadataRoute.Sitemap = [
         ...staticRoutes.map((route) => ({
@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         })),
         ...posts.map((post) => ({
             url: `${siteUrl}/blog/${post.slug}`,
-            lastModified: new Date(post.date),
+            lastModified: new Date(post.updatedAt || post.date),
             changeFrequency: "monthly" as const,
             priority: 0.6,
         })),

@@ -18,9 +18,9 @@ export async function GET() {
         posts = [];
     }
 
-    const lastDate = posts.length > 0 ? new Date(posts[0].date).toUTCString() : new Date().toUTCString();
+    const lastDate = posts.length > 0 ? new Date(posts[0].updatedAt || posts[0].date).toUTCString() : new Date().toUTCString();
 
-    const items = posts.map((post) => `
+    const items = posts.slice(0, 20).map((post) => `
     <item>
       <title>${cdata(post.title)}</title>
       <link>${siteUrl}/blog/${escapeXml(post.slug)}</link>

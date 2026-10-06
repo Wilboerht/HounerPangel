@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAllBlogPostSummaries, createBlogPost } from "@/lib/blog-db";
-import { checkAuth } from "@/lib/auth";
-import { verifySessionToken } from "@/lib/session";
+import { checkAuth, isAdminRequest } from "@/lib/auth";
 import { blogPostSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
-
-async function isAdmin(request: NextRequest): Promise<boolean> {
-    const session = request.cookies.get("admin-session");
-    if (!session) return false;
-    return verifySessionToken(session.value);
-}
 
 function isUniqueViolation(error: unknown): boolean {
     return typeof error === "object" && error !== null && (error as { code?: string }).code === "23505";
@@ -18,7 +11,7 @@ function isUniqueViolation(error: unknown): boolean {
 
 export async function GET(request: NextRequest) {
     try {
-        const includeUnpublished = await isAdmin(request);
+        const includeUnpublished = await isAdminRequest(request);
         const posts = await getAllBlogPostSummaries(includeUnpublished);
         return NextResponse.json(posts);
     } catch (error) {
@@ -65,6 +58,8 @@ export async function POST(request: NextRequest) {
 
         // 新建文章后立即刷新博客列表页的 ISR 缓存
         revalidatePath("/blog");
+        revalidatePath("/rss.xml");
+        revalidatePath("/sitemap.xml");
 
         return NextResponse.json({ success: true }, { status: 201 });
     } catch (error) {
