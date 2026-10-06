@@ -108,7 +108,7 @@ export default async function BlogPostPage({ params }: Props) {
                 </nav>
 
                 <section className="space-y-10">
-                    <header className="space-y-5">
+                    <header className="space-y-3">
                         <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                             <div className="inline-flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5" />
