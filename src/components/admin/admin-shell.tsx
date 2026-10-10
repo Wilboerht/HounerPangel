@@ -16,6 +16,7 @@ import {
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 import { useToast } from "@/components/toast";
+import { IconButton } from "@/components/admin/icon-button";
 
 interface NavItem {
   href: string;
@@ -52,13 +53,13 @@ interface SidebarContentProps {
 
 function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose }: SidebarContentProps) {
   const itemCls =
-    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors";
+    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors";
   const activeCls = `${itemCls} bg-foreground/5 text-foreground font-medium`;
   const inactiveCls = `${itemCls} text-muted hover:text-foreground hover:bg-foreground/[0.03]`;
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-5 pt-6 pb-4 pt-safe">
+      <div className="flex items-center justify-between px-5 pb-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))]">
         <Link
           href="/admin"
           onClick={onNavigate}
@@ -67,13 +68,9 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
           管理面板
         </Link>
         {onClose && (
-          <button
-            onClick={onClose}
-            aria-label="关闭导航菜单"
-            className="inline-flex items-center justify-center p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-          >
+          <IconButton label="关闭导航菜单" onClick={onClose}>
             <X className="w-4 h-4" />
-          </button>
+          </IconButton>
         )}
       </div>
 
@@ -96,7 +93,7 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
         })}
       </nav>
 
-      <div className="flex flex-col gap-0.5 border-t border-border/50 px-3 py-4 pb-safe">
+      <div className="flex flex-col gap-0.5 border-t border-border/50 px-3 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
         <Link href="/" onClick={onNavigate} className={inactiveCls}>
           <Globe className="w-4 h-4 flex-shrink-0" />
           查看站点
@@ -153,14 +150,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* 移动端顶栏 */}
-      <header className="lg:hidden sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border/50 bg-background/80 px-4 backdrop-blur pt-safe pl-safe pr-safe">
-        <button
-          onClick={() => setDrawerOpen(true)}
-          aria-label="打开导航菜单"
-          className="inline-flex items-center justify-center p-2 -ml-2 rounded-lg text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-        >
+      <header className="lg:hidden sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border/50 bg-background/80 backdrop-blur pt-[env(safe-area-inset-top,0px)] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))]">
+        <IconButton label="打开导航菜单" onClick={() => setDrawerOpen(true)} className="-ml-2">
           <Menu className="w-5 h-5" />
-        </button>
+        </IconButton>
         <span className="text-sm font-semibold text-foreground">{pageTitle(pathname)}</span>
       </header>
 
@@ -196,7 +189,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         )}
       </AnimatePresence>
 
-      <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8 pl-safe pr-safe">
+      <main className="py-6 lg:py-8 pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] sm:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] sm:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))]">
         <div className="mx-auto max-w-5xl">{children}</div>
       </main>
     </div>

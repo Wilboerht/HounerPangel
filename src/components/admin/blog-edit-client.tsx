@@ -6,6 +6,8 @@ import { ArrowLeft, Eye } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PostForm, type PostFormValues, type PostFormDraft } from "@/components/admin/post-form";
+import { Badge } from "@/components/admin/badge";
+import { PageHeader } from "@/components/admin/page-header";
 import { useDirtyGuard } from "@/lib/use-dirty-guard";
 import { useLocalDraft } from "@/lib/use-local-draft";
 import { useAuthExpired } from "@/lib/use-auth-expired";
@@ -153,7 +155,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <nav>
         <button
           onClick={goBack}
@@ -164,26 +166,22 @@ export function BlogEditClient({ slug }: { slug: string }) {
         </button>
       </nav>
 
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">编辑文章</h1>
-          {!currentPublished && (
-            <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
-              草稿
-            </span>
-          )}
-        </div>
-        {/* 草稿也能预览：/blog/[slug] 对 admin 放行未发布文章 */}
-        <a
-          href={`/blog/${slug}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-        >
-          <Eye className="w-4 h-4" />
-          预览
-        </a>
-      </div>
+      <PageHeader
+        title="编辑文章"
+        accessory={!currentPublished && <Badge variant="warning">草稿</Badge>}
+        actions={
+          // 草稿也能预览：/blog/[slug] 对 admin 放行未发布文章
+          <a
+            href={`/blog/${slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+          >
+            <Eye className="w-4 h-4" />
+            预览
+          </a>
+        }
+      />
 
       {initial && (
         <PostForm

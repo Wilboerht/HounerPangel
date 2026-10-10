@@ -44,7 +44,7 @@ const jsonLd = {
 
 export default function Home() {
   return (
-    <main className="min-h-dvh flex items-center justify-center px-6 py-12 pt-safe pb-safe">
+    <main className="min-h-dvh flex items-center justify-center px-6 pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-[calc(3rem+env(safe-area-inset-bottom,0px))]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}

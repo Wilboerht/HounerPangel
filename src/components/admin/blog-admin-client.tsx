@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Pencil, Trash2, X, Search } from "lucide-react";
@@ -10,6 +9,9 @@ import { useFocusTrap } from "@/lib/focus-trap";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PostForm, type PostFormValues, type PostFormDraft } from "@/components/admin/post-form";
+import { Badge } from "@/components/admin/badge";
+import { PageHeader } from "@/components/admin/page-header";
+import { IconButton } from "@/components/admin/icon-button";
 import { useDirtyGuard } from "@/lib/use-dirty-guard";
 import { useLocalDraft } from "@/lib/use-local-draft";
 import { useAuthExpired } from "@/lib/use-auth-expired";
@@ -227,20 +229,20 @@ export function BlogAdminClient() {
   }, [searchParams, router]);
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">博客</h1>
-          <p className="text-sm text-muted mt-1">管理你的博客文章</p>
-        </div>
-        <button
-          onClick={openNewModal}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          新建文章
-        </button>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="博客"
+        description="管理你的博客文章"
+        actions={
+          <button
+            onClick={openNewModal}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            新建文章
+          </button>
+        }
+      />
 
       {loading ? (
         <div className="flex flex-col gap-2" aria-busy="true" aria-label="加载中">
@@ -284,11 +286,7 @@ export function BlogAdminClient() {
                   <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2 min-w-0">
                       <h3 className="text-sm font-medium text-foreground truncate">{post.title}</h3>
-                      {!post.published && (
-                        <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                          草稿
-                        </span>
-                      )}
+                      {!post.published && <Badge variant="warning">草稿</Badge>}
                     </div>
                     <p className="text-xs text-muted flex flex-wrap items-center gap-x-2">
                       <span>{post.date}</span>
@@ -298,20 +296,17 @@ export function BlogAdminClient() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <Link
-                      href={`/admin/blog/edit/${post.slug}`}
-                      className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors min-h-[36px] min-w-[36px]"
-                      title="编辑"
-                    >
+                    <IconButton href={`/admin/blog/edit/${post.slug}`} label="编辑" title="编辑">
                       <Pencil className="w-4 h-4" />
-                    </Link>
-                    <button
+                    </IconButton>
+                    <IconButton
                       onClick={() => setDeleteTarget(post)}
-                      className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-500 transition-colors min-h-[36px] min-w-[36px]"
+                      label="删除"
                       title="删除"
+                      variant="danger"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </IconButton>
                   </div>
                 </div>
               ))}
@@ -354,16 +349,12 @@ export function BlogAdminClient() {
                 className="relative w-full max-w-3xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[90vh] flex flex-col max-sm:rounded-none max-sm:max-h-none max-sm:h-dvh"
               >
                 <div className="absolute top-4 right-4 z-10">
-                  <button
-                    onClick={closeNewModal}
-                    aria-label="关闭新建窗口"
-                    className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors min-h-[44px] min-w-[44px]"
-                  >
+                  <IconButton label="关闭新建窗口" onClick={closeNewModal} size="lg">
                     <X className="w-4 h-4" />
-                  </button>
+                  </IconButton>
                 </div>
 
-                <div className="px-6 sm:px-8 pt-8 pb-4 flex-shrink-0 pr-14 sm:pr-16">
+                <div className="px-6 sm:px-8 pt-8 pb-4 flex-shrink-0 pr-16">
                   <h2 id="new-post-title" className="text-xl font-bold text-foreground">
                     新建文章
                   </h2>

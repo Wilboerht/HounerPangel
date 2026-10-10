@@ -309,7 +309,7 @@ export function PostForm({
         <button
           type="submit"
           disabled={saving || (slugEditable && !!form.slug && !slugValid)}
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
         >
           <Save className="w-4 h-4" />
           {saving ? "保存中..." : "保存"}

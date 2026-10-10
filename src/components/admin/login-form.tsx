@@ -43,7 +43,7 @@ export function LoginForm() {
 
   return (
     <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
-      <div className="max-w-2xl mx-auto w-full flex flex-col gap-10">
+      <div className="max-w-2xl mx-auto w-full flex flex-col gap-6">
         {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
         <nav className="-mt-3">
           <Link
@@ -55,7 +55,7 @@ export function LoginForm() {
           </Link>
         </nav>
 
-        <section className="space-y-8 max-w-sm">
+        <section className="flex flex-col gap-6 max-w-sm">
           <div className="space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground">管理后台</h1>
             <p className="text-lg text-muted leading-relaxed">请输入密码以继续</p>
@@ -74,13 +74,13 @@ export function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="请输入密码"
                 autoFocus
-                className="w-full px-4 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
               />
             </div>
             <button
               type="submit"
               disabled={loginLoading}
-              className="w-full px-4 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="w-full px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {loginLoading ? "登录中..." : "登录"}
             </button>
