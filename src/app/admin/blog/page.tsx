@@ -1,10 +1,10 @@
-import { AdminGuard } from "@/lib/admin-guard";
+import { Suspense } from "react";
 import { BlogAdminClient } from "@/components/admin/blog-admin-client";
 
 export default function AdminBlogPage() {
   return (
-    <AdminGuard>
+    <Suspense>
       <BlogAdminClient />
-    </AdminGuard>
+    </Suspense>
   );
 }

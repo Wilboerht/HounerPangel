@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, ArrowLeft, LogOut, X, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
@@ -44,6 +44,7 @@ function draftHasContent(draft: PostFormDraft): boolean {
 
 export function BlogAdminClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -213,141 +214,120 @@ export function BlogAdminClient() {
     }
   };
 
+  // 支持 /admin/blog?new=1（如仪表盘"新建文章"入口）直接打开新建弹窗，打开后清掉参数
+  const autoOpenHandledRef = useRef(false);
+  useEffect(() => {
+    if (autoOpenHandledRef.current) return;
+    if (searchParams.get("new") === "1") {
+      autoOpenHandledRef.current = true;
+      openNewModal();
+      router.replace("/admin/blog");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, router]);
+
   return (
-    <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
-      <div className="max-w-3xl w-full flex-1 flex flex-col gap-10">
-        {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
-        <nav className="-mt-3">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-            <span>返回主页</span>
-          </Link>
-        </nav>
-
-        <section className="space-y-10">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                博客管理
-              </h1>
-              <p className="text-lg text-muted leading-relaxed mt-2">
-                管理你的博客文章
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={async () => {
-                  try {
-                    const res = await fetch("/api/admin/logout", { method: "POST" });
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    router.push("/blog");
-                  } catch {
-                    toast.error("退出失败，请重试");
-                  }
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                退出
-              </button>
-              <button
-                onClick={openNewModal}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                新建文章
-              </button>
-            </div>
-          </div>
-
-          {loading ? (
-            <p className="text-muted text-center py-20">加载中...</p>
-          ) : (
-            <>
-              {posts.length > 0 && (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                  <input
-                    type="search"
-                    placeholder="搜索文章标题、slug 或标签..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
-                  />
-                  {search && (
-                    <button
-                      onClick={() => setSearch("")}
-                      aria-label="清除搜索"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              )}
-              {filteredPosts.length > 0 ? (
-                <div className="flex flex-col gap-4">
-                  {filteredPosts.map((post) => (
-                    <div
-                      key={post.slug}
-                      className="flex items-center justify-between gap-4 p-4 rounded-xl border border-border/50 hover:bg-foreground/[0.02] transition-colors"
-                    >
-                      <div className="flex flex-col gap-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <h3 className="font-semibold text-foreground truncate">{post.title}</h3>
-                          {!post.published && (
-                            <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                              草稿
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted flex flex-wrap items-center gap-x-2">
-                          <span>{post.date}</span>
-                          {post.tags.length > 0 && (
-                            <span className="truncate">{post.tags.join(" · ")}</span>
-                          )}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <Link
-                          href={`/admin/blog/edit/${post.slug}`}
-                          className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors min-h-[44px] min-w-[44px]"
-                          title="编辑"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => setDeleteTarget(post)}
-                          className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-500 transition-colors min-h-[44px] min-w-[44px]"
-                          title="删除"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : search ? (
-                <div className="py-20 text-center">
-                  <p className="text-sm text-muted mb-3">无匹配结果</p>
-                  <button onClick={() => setSearch("")} className="text-sm text-accent hover:underline">
-                    清除搜索
-                  </button>
-                </div>
-              ) : (
-                <p className="py-20 text-center text-sm text-muted">暂无文章</p>
-              )}
-            </>
-          )}
-        </section>
-
-        <footer className="mt-auto text-sm text-muted">
-          <p>&copy; {new Date().getFullYear()} wilboerht</p>
-        </footer>
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">博客</h1>
+          <p className="text-sm text-muted mt-1">管理你的博客文章</p>
+        </div>
+        <button
+          onClick={openNewModal}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          新建文章
+        </button>
       </div>
+
+      {loading ? (
+        <div className="flex flex-col gap-2" aria-busy="true" aria-label="加载中">
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-[62px] rounded-lg border border-border/50 bg-foreground/[0.03] animate-pulse"
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {posts.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+              <input
+                type="search"
+                placeholder="搜索文章标题、slug 或标签..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-10 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  aria-label="清除搜索"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+          {filteredPosts.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {filteredPosts.map((post) => (
+                <div
+                  key={post.slug}
+                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-border/50 hover:bg-foreground/[0.02] transition-colors"
+                >
+                  <div className="flex flex-col gap-1 min-w-0 flex-1">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h3 className="text-sm font-medium text-foreground truncate">{post.title}</h3>
+                      {!post.published && (
+                        <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                          草稿
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted flex flex-wrap items-center gap-x-2">
+                      <span>{post.date}</span>
+                      {post.tags.length > 0 && (
+                        <span className="truncate">{post.tags.join(" · ")}</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Link
+                      href={`/admin/blog/edit/${post.slug}`}
+                      className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors min-h-[36px] min-w-[36px]"
+                      title="编辑"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => setDeleteTarget(post)}
+                      className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-500 transition-colors min-h-[36px] min-w-[36px]"
+                      title="删除"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : search ? (
+            <div className="py-16 text-center">
+              <p className="text-sm text-muted mb-3">无匹配结果</p>
+              <button onClick={() => setSearch("")} className="text-sm text-accent hover:underline">
+                清除搜索
+              </button>
+            </div>
+          ) : (
+            <p className="py-16 text-center text-sm text-muted">暂无文章</p>
+          )}
+        </div>
+      )}
 
       <AnimatePresence>
         {showNewModal && (
@@ -442,6 +422,6 @@ export function BlogAdminClient() {
         confirmLabel="确认删除"
         danger={true}
       />
-    </main>
+    </div>
   );
 }

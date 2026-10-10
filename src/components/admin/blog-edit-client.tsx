@@ -146,70 +146,59 @@ export function BlogEditClient({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <main className="min-h-dvh flex items-center justify-center">
-        <p className="text-muted">加载中...</p>
-      </main>
+      <div className="flex items-center justify-center py-32">
+        <p className="text-sm text-muted">加载中...</p>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
-      <div className="max-w-3xl w-full flex-1 flex flex-col gap-10">
-        {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
-        <nav className="-mt-3">
-          <button
-            onClick={goBack}
-            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-            <span>返回管理</span>
-          </button>
-        </nav>
+    <div className="flex flex-col gap-5">
+      <nav>
+        <button
+          onClick={goBack}
+          className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[36px]"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
+          <span>返回列表</span>
+        </button>
+      </nav>
 
-        <section className="space-y-10">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                编辑文章
-              </h1>
-              {!currentPublished && (
-                <span className="flex-shrink-0 px-2 py-1 rounded text-xs font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                  草稿
-                </span>
-              )}
-            </div>
-            {/* 草稿也能预览：/blog/[slug] 对 admin 放行未发布文章 */}
-            <a
-              href={`/blog/${slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-            >
-              <Eye className="w-4 h-4" />
-              预览
-            </a>
-          </div>
-
-          {initial && (
-            <PostForm
-              key={formKey}
-              idPrefix="edit"
-              initialValues={initial}
-              initialTagInput={initialTagInput}
-              slugEditable={false}
-              contentRows={20}
-              onSubmit={handleSave}
-              onDirty={() => setFormDirty(true)}
-              onValuesChange={handleValuesChange}
-              onCancel={goBack}
-            />
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">编辑文章</h1>
+          {!currentPublished && (
+            <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
+              草稿
+            </span>
           )}
-        </section>
-
-        <footer className="mt-auto text-sm text-muted">
-          <p>&copy; {new Date().getFullYear()} wilboerht</p>
-        </footer>
+        </div>
+        {/* 草稿也能预览：/blog/[slug] 对 admin 放行未发布文章 */}
+        <a
+          href={`/blog/${slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+        >
+          <Eye className="w-4 h-4" />
+          预览
+        </a>
       </div>
+
+      {initial && (
+        <PostForm
+          key={formKey}
+          idPrefix="edit"
+          initialValues={initial}
+          initialTagInput={initialTagInput}
+          slugEditable={false}
+          contentRows={20}
+          onSubmit={handleSave}
+          onDirty={() => setFormDirty(true)}
+          onValuesChange={handleValuesChange}
+          onCancel={goBack}
+        />
+      )}
 
       <ConfirmDialog
         isOpen={pendingClose}
@@ -234,6 +223,6 @@ export function BlogEditClient({ slug }: { slug: string }) {
         confirmLabel="恢复"
         danger={false}
       />
-    </main>
+    </div>
   );
 }
