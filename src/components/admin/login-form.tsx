@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { useToast } from "@/components/toast";
 
 // admin 页面在服务端校验会话，未登录时原地渲染此表单（不做 redirect，避免循环）
@@ -42,50 +42,55 @@ export function LoginForm() {
   };
 
   return (
-    <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
-      <div className="max-w-2xl mx-auto w-full flex flex-col gap-6">
-        {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
-        <nav className="-mt-3">
+    <main className="min-h-dvh flex items-center justify-center px-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+      <div className="w-full max-w-sm flex flex-col gap-6">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-foreground/5 border border-border/50">
+            <Lock className="w-5 h-5 text-muted" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <h1 className="text-xl font-semibold tracking-tight text-foreground">管理面板</h1>
+            <p className="text-sm text-muted">输入密码以继续</p>
+          </div>
+        </div>
+
+        <form
+          onSubmit={handleLogin}
+          className="flex flex-col gap-4 rounded-2xl border border-border/50 p-6"
+        >
+          <div className="flex flex-col gap-2">
+            <label htmlFor="admin-password" className="text-sm font-medium text-foreground">密码</label>
+            <input
+              ref={inputRef}
+              id="admin-password"
+              type="password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="请输入密码"
+              autoFocus
+              className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loginLoading}
+            className="w-full px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            {loginLoading ? "登录中..." : "登录"}
+          </button>
+        </form>
+
+        <div className="flex justify-center">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
+            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
             <span>返回主页</span>
           </Link>
-        </nav>
-
-        <section className="flex flex-col gap-6 max-w-sm">
-          <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground">管理后台</h1>
-            <p className="text-lg text-muted leading-relaxed">请输入密码以继续</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="admin-password" className="text-sm font-medium text-foreground">密码</label>
-              <input
-                ref={inputRef}
-                id="admin-password"
-                type="password"
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="请输入密码"
-                autoFocus
-                className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loginLoading}
-              className="w-full px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              {loginLoading ? "登录中..." : "登录"}
-            </button>
-          </form>
-        </section>
+        </div>
       </div>
     </main>
   );
