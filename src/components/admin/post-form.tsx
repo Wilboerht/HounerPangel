@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Save, X } from "lucide-react";
 import { MarkdownEditor } from "@/components/markdown-editor";
-import { useTagManager } from "@/lib/use-tag-manager";
+import { useTagManager, type TagRejectReason } from "@/lib/use-tag-manager";
+import { useToast } from "@/components/toast";
 
 // \w 只匹配 ASCII，纯中文标题会得到空串，调用方需做兜底
 export function slugify(text: string): string {
@@ -67,7 +68,12 @@ export function PostForm({
     published: initialValues.published,
     content: initialValues.content,
   });
-  const tagManager = useTagManager(initialValues.tags);
+  const toast = useToast();
+  // 达上限/重复被拒绝时给出提示，避免输入框里的内容被静默忽略
+  const handleTagReject = useCallback((reason: TagRejectReason) => {
+    if (reason === "limit") toast.error("标签最多 20 个");
+  }, [toast]);
+  const tagManager = useTagManager(initialValues.tags, handleTagReject);
   const [saving, setSaving] = useState(false);
 
   // 恢复草稿时把输入框里未确认的标签内容也还原
@@ -118,17 +124,22 @@ export function PostForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
-    setSaving(true);
 
     // 提交前把标签输入框里未确认的内容补进 tags，避免静默丢失
     let tags = tagManager.tags;
     const pendingTag = tagManager.input.trim();
-    if (pendingTag && !tags.includes(pendingTag) && tags.length < 20) {
+    if (pendingTag && !tags.includes(pendingTag)) {
+      if (tags.length >= 20) {
+        // 达上限时不丢弃输入框内容：中止提交并提示
+        toast.error("标签最多 20 个，请先删除部分标签");
+        return;
+      }
       tags = [...tags, pendingTag];
       tagManager.setTags(tags);
       tagManager.setInput("");
     }
 
+    setSaving(true);
     try {
       const ok = await onSubmit({ ...form, tags });
       if (ok) tagManager.setInput("");

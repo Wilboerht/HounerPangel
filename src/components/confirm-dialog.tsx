@@ -8,8 +8,10 @@ import { useFocusTrap } from "@/lib/focus-trap";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
+  // 取消/点遮罩/Escape 时调用；onConfirm 之后不会再触发
   onClose: () => void;
-  onConfirm: () => void;
+  // 确认时调用；不会自动关弹窗，由调用方在 onConfirm 里把 isOpen 置为 false
+  onConfirm: () => void | Promise<void>;
   title: string;
   message: string;
   confirmLabel?: string;
@@ -88,7 +90,6 @@ export function ConfirmDialog({
                       // onConfirm handles its own errors
                     } finally {
                       setPending(false);
-                      onClose();
                     }
                   }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 ${

@@ -30,16 +30,21 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
     const limit = await rateLimit(getRateLimitKey(request) + ":blog:update");
     if (!limit.success) {
-        return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+        return NextResponse.json({ error: "请求过于频繁，请稍后再试" }, { status: 429 });
     }
 
     try {
         const { slug } = await params;
+        const slugResult = slugParamSchema.safeParse({ slug });
+        if (!slugResult.success) {
+            return NextResponse.json({ error: "Slug 不合法" }, { status: 400 });
+        }
+
         const body = await request.json();
         const parseResult = blogPostUpdateSchema.safeParse(body);
 
         if (!parseResult.success) {
-            return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+            return NextResponse.json({ error: "输入不合法" }, { status: 400 });
         }
 
         const { title, content, date, tags, published } = parseResult.data;
@@ -53,7 +58,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
         });
 
         if (!updated) {
-            return NextResponse.json({ error: "Not found" }, { status: 404 });
+            return NextResponse.json({ error: "文章不存在" }, { status: 404 });
         }
 
         // 刷新该文章详情页和列表页的 ISR 缓存
@@ -65,7 +70,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Failed to update blog post:", error);
-        return NextResponse.json({ error: "Failed to update blog post" }, { status: 500 });
+        return NextResponse.json({ error: "更新文章失败" }, { status: 500 });
     }
 }
 
@@ -75,14 +80,14 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
     const limit = await rateLimit(getRateLimitKey(request) + ":blog:delete");
     if (!limit.success) {
-        return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+        return NextResponse.json({ error: "请求过于频繁，请稍后再试" }, { status: 429 });
     }
 
     try {
         const { slug } = await params;
         const parseResult = slugParamSchema.safeParse({ slug });
         if (!parseResult.success) {
-            return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
+            return NextResponse.json({ error: "Slug 不合法" }, { status: 400 });
         }
         await deleteBlogPost(slug);
 
@@ -95,6 +100,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Failed to delete blog post:", error);
-        return NextResponse.json({ error: "Failed to delete blog post" }, { status: 500 });
+        return NextResponse.json({ error: "删除文章失败" }, { status: 500 });
     }
 }

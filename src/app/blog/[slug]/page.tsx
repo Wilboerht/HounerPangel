@@ -2,7 +2,10 @@ import BackButton from "@/components/BackButton";
 import { Calendar } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
+import { cache } from "react";
 import { getBlogPostBySlug } from "@/lib/blog-db";
+import { verifySessionToken } from "@/lib/session";
 import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
 import { firstImageUrl, plainTextExcerpt, renderMarkdown } from "@/lib/markdown";
 import type { BlogPost } from "@/lib/types/blog";
@@ -11,12 +14,20 @@ interface Props {
     params: Promise<{ slug: string }>;
 }
 
-// ISR：60s 内复用缓存；管理端更新/删除文章后通过 revalidatePath 立即刷新
-export const revalidate = 60;
+// 本页读取 cookies 判断 admin 身份（用于预览草稿），因此是动态渲染，不走 ISR 缓存，
+// 未发布文章不会被公开缓存。管理端更新/删除文章后仍通过 revalidatePath 刷新其它缓存页。
+// cache() 让 generateMetadata 和页面渲染共享同一次会话校验
+const isAdmin = cache(async (): Promise<boolean> => {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin-session")?.value;
+    return token ? verifySessionToken(token) : false;
+});
 
 async function fetchPost(slug: string): Promise<BlogPost | null> {
     try {
-        const post = await getBlogPostBySlug(slug);
+        // admin 可预览未发布的草稿；公众访问未发布文章得到 404
+        const includeUnpublished = await isAdmin();
+        const post = await getBlogPostBySlug(slug, includeUnpublished);
         if (post) return post;
     } catch {
         // ignore db errors and treat as not found

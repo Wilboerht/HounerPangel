@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import {
   Eye, Edit3, Bold, Italic, Heading2, Heading3,
-  Link, Code, Code2, List, Image as ImageIcon, Video, Paperclip,
+  Link, Code, Code2, List, Image as ImageIcon, Video, Paperclip, X,
 } from "lucide-react";
 import { useToast } from "@/components/toast";
 
@@ -106,7 +106,13 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
+  const uploadAbortRef = useRef<AbortController | null>(null);
   const toast = useToast();
+
+  // 卸载时中止进行中的上传，避免回调对卸载组件写状态
+  useEffect(() => () => {
+    uploadAbortRef.current?.abort();
+  }, []);
 
   // Sync external value changes (initial load, form reset, toolbar actions from parent)
   useEffect(() => {
@@ -162,7 +168,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     });
   };
 
-  const uploadToStorage = async (file: File): Promise<string> => {
+  const uploadToStorage = async (file: File, signal: AbortSignal): Promise<string> => {
     const contentType = getMimeType(file);
     const res = await fetch("/api/admin/upload-url", {
       method: "POST",
@@ -172,6 +178,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         contentType,
         size: file.size,
       }),
+      signal,
     });
 
     if (!res.ok) {
@@ -184,6 +191,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
 
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
+      signal.addEventListener("abort", () => xhr.abort(), { once: true });
       xhr.open("PUT", signedUrl);
       xhr.setRequestHeader("Content-Type", contentType);
 
@@ -203,6 +211,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       };
 
       xhr.onerror = () => reject(new Error("上传失败"));
+      xhr.onabort = () => reject(new DOMException("已取消", "AbortError"));
       xhr.send(file);
     });
 
@@ -221,20 +230,27 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     }
     setUploading(true);
     setUploadProgress("");
+    const controller = new AbortController();
+    uploadAbortRef.current = controller;
     try {
-      const url = await uploadToStorage(file);
+      const url = await uploadToStorage(file, controller.signal);
       let markdown = getMarkdown(url);
       // 记录图片原始尺寸（=WxH），前台据此预留宽高比，避免加载时页面跳动
       if (kind === "image") {
         const dims = await getImageDimensions(file);
         if (dims) markdown = getMarkdown(`${url} =${dims.width}x${dims.height}`);
       }
+      // 上传途中被取消或组件已卸载，不再插入内容
+      if (controller.signal.aborted) return;
       // 用 insertBlock 保证媒体/附件语法独占一行，否则前台解析器不会把它渲染成对应卡片
       insertBlock(markdown);
       toast.success(`${KIND_LABEL[kind]}已插入`);
     } catch (err) {
+      // 用户取消或组件卸载触发的 abort 不报错
+      if (controller.signal.aborted) return;
       toast.error(err instanceof Error ? err.message : "上传失败");
     } finally {
+      if (uploadAbortRef.current === controller) uploadAbortRef.current = null;
       setUploading(false);
       setUploadProgress("");
     }
@@ -289,6 +305,24 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     }
   };
 
+  // 链接单独处理：插入后把选区移到 url 占位符上，用户可以直接输入链接地址
+  const insertLink = () => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const current = ta.value;
+    const selected = current.slice(start, end);
+    const text = selected || "链接文字";
+    const newValue = current.slice(0, start) + `[${text}](url)` + current.slice(end);
+    updateValue(newValue);
+    requestAnimationFrame(() => {
+      ta.focus();
+      const urlStart = start + text.length + 3;
+      ta.setSelectionRange(urlStart, urlStart + 3);
+    });
+  };
+
   const insertCodeBlock = () => {
     const ta = textareaRef.current;
     if (!ta) return;
@@ -311,7 +345,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     { icon: Italic, label: "斜体 (Ctrl+I)", action: () => insertText("*", "*", "斜体") },
     { icon: Heading2, label: "二级标题", action: () => insertBlock("## ", "标题") },
     { icon: Heading3, label: "三级标题", action: () => insertBlock("### ", "标题") },
-    { icon: Link, label: "链接", action: () => insertText("[", "](url)", "链接文字") },
+    { icon: Link, label: "链接", action: insertLink },
     { icon: Code, label: "行内代码", action: () => insertText("`", "`", "code") },
     { icon: Code2, label: "代码块", action: insertCodeBlock },
     { icon: List, label: "无序列表", action: () => insertBlock("- ", "列表项") },
@@ -353,8 +387,16 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         {tab === "edit" && (
           <div className="flex items-center gap-0.5 flex-wrap -mx-1 px-1">
             {uploading && (
-              <span className="text-xs text-muted flex-shrink-0 mr-1">
+              <span className="text-xs text-muted flex-shrink-0 mr-1 inline-flex items-center gap-1">
                 {uploadProgress || "上传中..."}
+                <button
+                  type="button"
+                  onClick={() => uploadAbortRef.current?.abort()}
+                  aria-label="取消上传"
+                  className="p-1 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </span>
             )}
             {tools.map((tool) => (

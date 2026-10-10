@@ -4,7 +4,7 @@ import { verifySessionToken } from "./session";
 
 export async function checkAuth(request: NextRequest): Promise<NextResponse | null> {
     if (!(await isAdminRequest(request))) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "未登录或会话已过期" }, { status: 401 });
     }
     return null;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye } from "lucide-react";
 import { useToast } from "@/components/toast";
@@ -8,6 +8,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PostForm, type PostFormValues, type PostFormDraft } from "@/components/admin/post-form";
 import { useDirtyGuard } from "@/lib/use-dirty-guard";
 import { useLocalDraft } from "@/lib/use-local-draft";
+import { useAuthExpired } from "@/lib/use-auth-expired";
+import { useDraftRestore } from "@/lib/use-draft-restore";
 
 export function BlogEditClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -20,21 +22,34 @@ export function BlogEditClient({ slug }: { slug: string }) {
   const [formKey, setFormKey] = useState(0);
   const [formDirty, setFormDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(false);
-  const [draftPrompt, setDraftPrompt] = useState<PostFormDraft | null>(null);
-  // ConfirmDialog 在 onConfirm 后总会调 onClose，用 ref 区分"恢复"和"放弃"
-  const restoreAcceptedRef = useRef(false);
   // 头部"草稿"徽标跟随表单发布状态
   const [currentPublished, setCurrentPublished] = useState(false);
   const { scheduleSave: scheduleDraftSave, read: readDraft, clear: clearDraft } =
     useLocalDraft<PostFormDraft>(`draft:blog:${slug}`);
+  const draftRestore = useDraftRestore<PostFormDraft>({
+    apply: (d) => {
+      setInitial({
+        slug,
+        title: d.title ?? "",
+        content: d.content ?? "",
+        date: d.date ?? "",
+        published: d.published ?? false,
+        tags: d.tags ?? [],
+      });
+      setInitialTagInput(d.tagInput ?? "");
+      setFormKey((k) => k + 1);
+      setFormDirty(true);
+    },
+    discard: clearDraft,
+  });
+  const authExpired = useAuthExpired();
 
   useEffect(() => {
     fetch(`/api/blog/${slug}`)
       .then(async (res) => {
         if (res.status === 401) {
-          toast.error("登录已过期，请重新登录");
-          // 让服务端重新校验会话并渲染登录表单
-          router.refresh();
+          setLoading(false);
+          authExpired();
           return null;
         }
         return res.json();
@@ -71,7 +86,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
         if (same) {
           clearDraft();
         } else {
-          setDraftPrompt(saved);
+          draftRestore.setDraftPrompt(saved);
         }
       })
       .catch(() => {
@@ -111,8 +126,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
         toast.success("文章已保存");
         return true;
       } else if (res.status === 401) {
-        toast.error("登录已过期，请重新登录");
-        router.refresh();
+        authExpired();
         return false;
       } else {
         const data = await res.json();
@@ -129,22 +143,6 @@ export function BlogEditClient({ slug }: { slug: string }) {
     setCurrentPublished(values.published);
     scheduleDraftSave(values);
   }, [scheduleDraftSave]);
-
-  const restoreDraft = () => {
-    if (!draftPrompt) return;
-    restoreAcceptedRef.current = true;
-    setInitial({
-      slug,
-      title: draftPrompt.title ?? "",
-      content: draftPrompt.content ?? "",
-      date: draftPrompt.date ?? "",
-      published: draftPrompt.published ?? false,
-      tags: draftPrompt.tags ?? [],
-    });
-    setInitialTagInput(draftPrompt.tagInput ?? "");
-    setFormKey((k) => k + 1);
-    setFormDirty(true);
-  };
 
   if (loading) {
     return (
@@ -228,14 +226,9 @@ export function BlogEditClient({ slug }: { slug: string }) {
       />
 
       <ConfirmDialog
-        isOpen={draftPrompt !== null}
-        onClose={() => {
-          // 放弃恢复时删除草稿（确认恢复时保留，表单会继续自动保存覆盖）
-          if (!restoreAcceptedRef.current) clearDraft();
-          restoreAcceptedRef.current = false;
-          setDraftPrompt(null);
-        }}
-        onConfirm={restoreDraft}
+        isOpen={draftRestore.draftPrompt !== null}
+        onClose={draftRestore.cancelRestore}
+        onConfirm={draftRestore.confirmRestore}
         title="恢复草稿"
         message="检测到未保存的本地草稿，是否恢复？"
         confirmLabel="恢复"

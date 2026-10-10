@@ -74,7 +74,7 @@ CREATE TABLE public.blog_posts (
   content text NOT NULL DEFAULT '',
   date date NOT NULL,
   tags text[] NOT NULL DEFAULT '{}',
-  published boolean NOT NULL DEFAULT true,
+  published boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );

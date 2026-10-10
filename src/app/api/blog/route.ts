@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const limit = await rateLimit(getRateLimitKey(request) + ":blog:create");
     if (!limit.success) {
-        return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+        return NextResponse.json({ error: "请求过于频繁，请稍后再试" }, { status: 429 });
     }
 
     try {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         const parseResult = blogPostSchema.safeParse(body);
 
         if (!parseResult.success) {
-            return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+            return NextResponse.json({ error: "输入不合法" }, { status: 400 });
         }
 
         const { slug, title, content, date, tags, published } = parseResult.data;
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
             });
         } catch (error) {
             if (isUniqueViolation(error)) {
-                return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
+                return NextResponse.json({ error: "Slug 已存在" }, { status: 409 });
             }
             throw error;
         }
@@ -64,6 +64,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true }, { status: 201 });
     } catch (error) {
         console.error("Failed to create blog post:", error);
-        return NextResponse.json({ error: "Failed to create blog post" }, { status: 500 });
+        return NextResponse.json({ error: "创建文章失败" }, { status: 500 });
     }
 }

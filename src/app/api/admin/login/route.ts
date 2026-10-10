@@ -15,21 +15,21 @@ function passwordsMatch(password: string, adminPassword: string): boolean {
 export async function POST(request: NextRequest) {
     const limit = await rateLimit(getRateLimitKey(request) + ":login");
     if (!limit.success) {
-        return NextResponse.json({ error: "Too many attempts, please try again later" }, { status: 429 });
+        return NextResponse.json({ error: "尝试次数过多，请稍后再试" }, { status: 429 });
     }
 
     let body: unknown;
     try {
         body = await request.json();
     } catch {
-        return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+        return NextResponse.json({ error: "请求格式不合法" }, { status: 400 });
     }
 
     try {
         const parseResult = loginSchema.safeParse(body);
 
         if (!parseResult.success) {
-            return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+            return NextResponse.json({ error: "输入不合法" }, { status: 400 });
         }
 
         const { password } = parseResult.data;
@@ -51,6 +51,6 @@ export async function POST(request: NextRequest) {
         return response;
     } catch (error) {
         console.error("Login failed:", error);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ error: "服务器内部错误" }, { status: 500 });
     }
 }

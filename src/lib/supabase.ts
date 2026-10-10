@@ -95,12 +95,7 @@ export async function updateBlogPost(
     if (data && oldPost) {
         const newPaths = new Set(extractStoragePaths(data.content));
         const stalePaths = extractStoragePaths(oldPost.content).filter((p) => !newPaths.has(p));
-        if (stalePaths.length > 0) {
-            const { error: storageError } = await supabase.storage.from("images").remove(stalePaths);
-            if (storageError) {
-                console.error("Failed to delete unreferenced media:", storageError);
-            }
-        }
+        await removeUnreferencedMedia(stalePaths, slug);
     }
 
     return data ? { ...data, updatedAt: data.updated_at, tags: data.tags ?? [], published: data.published ?? false } : null;
@@ -112,8 +107,10 @@ function extractStoragePaths(content: string): string[] {
 
     const prefix = `${baseUrl}/storage/v1/object/public/images/`;
     const paths = new Set<string>();
-    // 编辑器插入的图片/视频/附件扩展名（附件是 [文件名](url) 链接形式）
-    const mediaExt = /\.(png|jpe?g|gif|webp|avif|svg|mp4|webm|mov|mkv|pdf|txt|md|csv|zip|docx?|xlsx?|pptx?)$/i;
+    // 编辑器插入的图片/视频/附件扩展名（附件是 [文件名](url) 链接形式）。
+    // 与 upload-url API 的 EXT_TO_MIME / bucket allowed_mime_types 白名单保持一致，
+    // 不含 avif/svg（上传通道不支持，列入会误删手工引用的同 bucket 文件）。
+    const mediaExt = /\.(png|jpe?g|gif|webp|mp4|webm|mov|mkv|pdf|txt|md|csv|zip|docx?|xlsx?|pptx?)$/i;
     const regexes = [
         /!\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown image/video: ![alt](url)
         /(?<!!)\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown link/attachment: [name](url)
@@ -138,6 +135,33 @@ function extractStoragePaths(content: string): string[] {
     return Array.from(paths);
 }
 
+// 删除 Storage 文件前，先排除仍被其它文章引用的路径（多篇文章可共用同一媒体文件）。
+// 删除失败仅 log，不中断主流程；查询失败时保守地什么都不删。
+async function removeUnreferencedMedia(candidatePaths: string[], excludeSlug: string): Promise<void> {
+    if (candidatePaths.length === 0) return;
+
+    const { data: others, error: listError } = await supabase
+        .from("blog_posts")
+        .select("content")
+        .neq("slug", excludeSlug);
+    if (listError) {
+        console.error("Failed to check media references in other posts, skipping cleanup:", listError);
+        return;
+    }
+
+    const stillReferenced = new Set<string>();
+    for (const row of others ?? []) {
+        for (const p of extractStoragePaths(row.content)) stillReferenced.add(p);
+    }
+    const orphaned = candidatePaths.filter((p) => !stillReferenced.has(p));
+    if (orphaned.length === 0) return;
+
+    const { error: storageError } = await supabase.storage.from("images").remove(orphaned);
+    if (storageError) {
+        console.error("Failed to delete unreferenced media:", storageError);
+    }
+}
+
 export async function deleteBlogPost(slug: string): Promise<void> {
     const { data: post, error: fetchError } = await supabase
         .from("blog_posts")
@@ -148,13 +172,7 @@ export async function deleteBlogPost(slug: string): Promise<void> {
     if (fetchError) throw fetchError;
 
     const paths = post ? extractStoragePaths(post.content) : [];
-
-    if (paths.length > 0) {
-        const { error: storageError } = await supabase.storage.from("images").remove(paths);
-        if (storageError) {
-            console.error("Failed to delete associated media:", storageError);
-        }
-    }
+    await removeUnreferencedMedia(paths, slug);
 
     const { error } = await supabase.from("blog_posts").delete().eq("slug", slug);
     if (error) throw error;

@@ -1,20 +1,29 @@
 import { useState, useCallback, useMemo } from "react";
 
-export function useTagManager(initialTags: string[] = []) {
+export type TagRejectReason = "limit" | "duplicate";
+
+export function useTagManager(initialTags: string[] = [], onReject?: (reason: TagRejectReason) => void) {
   const [tags, setTags] = useState<string[]>(initialTags);
   const [input, setInput] = useState("");
 
   const addTag = useCallback((inputVal: string) => {
     const trimmed = inputVal.trim();
     if (!trimmed) return false;
-    if (tags.length >= 20 || tags.includes(trimmed)) return false;
+    if (tags.length >= 20) {
+      onReject?.("limit");
+      return false;
+    }
+    if (tags.includes(trimmed)) {
+      onReject?.("duplicate");
+      return false;
+    }
     setTags((prev) => {
       if (prev.length >= 20 || prev.includes(trimmed)) return prev;
       return [...prev, trimmed];
     });
     setInput("");
     return true;
-  }, [tags]);
+  }, [tags, onReject]);
 
   const removeTag = useCallback((tag: string) => {
     setTags((prev) => prev.filter((t) => t !== tag));

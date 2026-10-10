@@ -12,6 +12,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PostForm, type PostFormValues, type PostFormDraft } from "@/components/admin/post-form";
 import { useDirtyGuard } from "@/lib/use-dirty-guard";
 import { useLocalDraft } from "@/lib/use-local-draft";
+import { useAuthExpired } from "@/lib/use-auth-expired";
+import { useDraftRestore } from "@/lib/use-draft-restore";
 import type { BlogPostSummary } from "@/lib/types/blog";
 
 const NEW_DRAFT_KEY = "draft:blog:new";
@@ -62,16 +64,30 @@ export function BlogAdminClient() {
   const [modalInitial, setModalInitial] = useState<PostFormValues>(() => blankValues(""));
   const [modalTagInput, setModalTagInput] = useState<string | undefined>(undefined);
   const [formKey, setFormKey] = useState(0);
-  const [draftPrompt, setDraftPrompt] = useState<PostFormDraft | null>(null);
-  // ConfirmDialog 在 onConfirm 后总会调 onClose，用 ref 区分"恢复"和"放弃"
-  const restoreAcceptedRef = useRef(false);
   const draft = useLocalDraft<PostFormDraft>(NEW_DRAFT_KEY);
+  const draftRestore = useDraftRestore<PostFormDraft>({
+    apply: (d) => {
+      setModalInitial({
+        slug: d.slug ?? "",
+        title: d.title ?? "",
+        date: d.date || todayLocal(),
+        published: d.published ?? false,
+        tags: d.tags ?? [],
+        content: d.content ?? "",
+      });
+      setModalTagInput(d.tagInput ?? "");
+      setFormKey((k) => k + 1);
+      setFormDirty(true);
+    },
+    discard: draft.clear,
+  });
+  const authExpired = useAuthExpired();
 
   const reduce = useSafeMotion();
   const closeModalRef = useRef<(() => void) | null>(null);
   // 确认对话框打开时，Escape 交给对话框处理，避免两个监听器互相冲突导致弹窗关不掉
   const newPostTrapRef = useFocusTrap(showNewModal, () => {
-    if (pendingClose || draftPrompt) return;
+    if (pendingClose || draftRestore.draftPrompt) return;
     closeModalRef.current?.();
   });
 
@@ -117,10 +133,8 @@ export function BlogAdminClient() {
     try {
       const res = await fetch(`/api/blog/${deleteTarget.slug}`, { method: "DELETE" });
       if (res.status === 401) {
-        toast.error("登录已过期，请重新登录");
         setDeleteTarget(null);
-        // 让服务端重新校验会话并渲染登录表单
-        router.refresh();
+        authExpired();
         return;
       }
       if (res.ok) {
@@ -159,8 +173,7 @@ export function BlogAdminClient() {
         toast.success("文章创建成功");
         return true;
       } else if (res.status === 401) {
-        toast.error("登录已过期，请重新登录");
-        router.refresh();
+        authExpired();
         return false;
       } else {
         const data = await res.json();
@@ -194,26 +207,10 @@ export function BlogAdminClient() {
     // 检测上次未保存的本地草稿，有实质内容才询问恢复
     const saved = draft.read();
     if (saved && draftHasContent(saved)) {
-      setDraftPrompt(saved);
+      draftRestore.setDraftPrompt(saved);
     } else if (saved) {
       draft.clear();
     }
-  };
-
-  const restoreDraft = () => {
-    if (!draftPrompt) return;
-    restoreAcceptedRef.current = true;
-    setModalInitial({
-      slug: draftPrompt.slug ?? "",
-      title: draftPrompt.title ?? "",
-      date: draftPrompt.date || todayLocal(),
-      published: draftPrompt.published ?? false,
-      tags: draftPrompt.tags ?? [],
-      content: draftPrompt.content ?? "",
-    });
-    setModalTagInput(draftPrompt.tagInput ?? "");
-    setFormKey((k) => k + 1);
-    setFormDirty(true);
   };
 
   return (
@@ -243,8 +240,13 @@ export function BlogAdminClient() {
             <div className="flex items-center gap-3">
               <button
                 onClick={async () => {
-                  await fetch("/api/admin/logout", { method: "POST" });
-                  router.push("/blog");
+                  try {
+                    const res = await fetch("/api/admin/logout", { method: "POST" });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    router.push("/blog");
+                  } catch {
+                    toast.error("退出失败，请重试");
+                  }
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
               >
@@ -303,7 +305,7 @@ export function BlogAdminClient() {
                           )}
                         </div>
                         <p className="text-sm text-muted flex flex-wrap items-center gap-x-2">
-                          <span>{new Date(post.date).toLocaleDateString("zh-CN")}</span>
+                          <span>{post.date}</span>
                           {post.tags.length > 0 && (
                             <span className="truncate">{post.tags.join(" · ")}</span>
                           )}
@@ -422,14 +424,9 @@ export function BlogAdminClient() {
       />
 
       <ConfirmDialog
-        isOpen={draftPrompt !== null}
-        onClose={() => {
-          // 放弃恢复时删除草稿（确认恢复时保留，表单会继续自动保存覆盖）
-          if (!restoreAcceptedRef.current) draft.clear();
-          restoreAcceptedRef.current = false;
-          setDraftPrompt(null);
-        }}
-        onConfirm={restoreDraft}
+        isOpen={draftRestore.draftPrompt !== null}
+        onClose={draftRestore.cancelRestore}
+        onConfirm={draftRestore.confirmRestore}
         title="恢复草稿"
         message="检测到未保存的本地草稿，是否恢复？"
         confirmLabel="恢复"

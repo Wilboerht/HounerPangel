@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { checkAuth } from "@/lib/auth";
 import { rateLimit, getRateLimitKey, UPLOAD_RATE_LIMIT } from "@/lib/rate-limit";
 import { supabase } from "@/lib/supabase";
@@ -52,13 +53,18 @@ const MAX_SIZE_LABEL: Record<string, string> = {
     attachment: "50MB",
 };
 
+// 大小限制说明：Supabase 签名上传 URL 无法绑定文件大小，下面的分类上限只校验
+// 客户端上报的 size（实际上只在 upload 前的 UI 层有效）。实际上传字节的强制边界
+// 是 images bucket 的 file_size_limit（统一 100MB，见迁移
+// 20261006231320_images_bucket_limits.sql）。
+
 export async function POST(request: NextRequest) {
     const authError = await checkAuth(request);
     if (authError) return authError;
 
     const limit = await rateLimit(getRateLimitKey(request) + ":upload-url", UPLOAD_RATE_LIMIT);
     if (!limit.success) {
-        return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+        return NextResponse.json({ error: "请求过于频繁，请稍后再试" }, { status: 429 });
     }
 
     try {
@@ -67,40 +73,36 @@ export async function POST(request: NextRequest) {
         if (!parsed.success) {
             const fields = parsed.error.issues.map((i) => i.path.join(".")).join(", ");
             console.error("upload-url validation failed:", JSON.stringify(parsed.error.issues));
-            return NextResponse.json({ error: `Invalid request: ${fields}` }, { status: 400 });
+            return NextResponse.json({ error: `请求参数不合法：${fields}` }, { status: 400 });
         }
 
         const { fileName, size } = parsed.data;
-        let { contentType } = parsed.data;
 
         const ext = fileName.split(".").pop()?.toLowerCase() || "";
+        // contentType 一律由服务端从扩展名推导，客户端上报的 contentType 不参与判断
+        const contentType = EXT_TO_MIME[ext] || "";
         if (!contentType) {
-            contentType = EXT_TO_MIME[ext] || "";
-            if (!contentType) {
-                return NextResponse.json({ error: `Cannot determine file type from extension: "${ext}"` }, { status: 400 });
-            }
+            return NextResponse.json({ error: `无法从扩展名 ".${ext}" 识别文件类型` }, { status: 400 });
         }
 
         const isVideo = contentType.startsWith("video/");
         const isImage = contentType.startsWith("image/");
-        // 附件按扩展名归类，contentType 以服务端映射为准，不信任客户端上报
         const isAttachment = !isImage && !isVideo && ALLOWED_EXTENSIONS.attachment.includes(ext);
-        if (isAttachment) contentType = EXT_TO_MIME[ext];
         if (!isImage && !isVideo && !isAttachment) {
             console.error("upload-url invalid content type:", { fileName, contentType, size });
-            return NextResponse.json({ error: `Only image, video and attachment files allowed, got: "${contentType}"` }, { status: 400 });
+            return NextResponse.json({ error: `仅支持图片、视频和附件文件，当前类型："${contentType}"` }, { status: 400 });
         }
 
         const category = isVideo ? "video" : isImage ? "image" : "attachment";
         if (size > MAX_SIZE[category]) {
-            return NextResponse.json({ error: `File too large (max ${MAX_SIZE_LABEL[category]})` }, { status: 400 });
+            return NextResponse.json({ error: `文件过大（${category === "image" ? "图片" : category === "video" ? "视频" : "附件"}最大 ${MAX_SIZE_LABEL[category]}）` }, { status: 400 });
         }
 
         if (!ALLOWED_EXTENSIONS[category].includes(ext)) {
-            return NextResponse.json({ error: `Unsupported ${category} format: .${ext}` }, { status: 400 });
+            return NextResponse.json({ error: `不支持的${category === "image" ? "图片" : category === "video" ? "视频" : "附件"}格式：.${ext}` }, { status: 400 });
         }
 
-        const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const uniqueName = `${Date.now()}-${randomUUID().replace(/-/g, "")}.${ext}`;
         const filePath = `blog/${uniqueName}`;
 
         const { data, error } = await supabase.storage
@@ -109,7 +111,7 @@ export async function POST(request: NextRequest) {
 
         if (error) {
             console.error("createSignedUploadUrl error:", error);
-            return NextResponse.json({ error: "Failed to generate upload URL" }, { status: 500 });
+            return NextResponse.json({ error: "生成上传链接失败" }, { status: 500 });
         }
 
         const { data: urlData } = supabase.storage
@@ -123,6 +125,6 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         console.error("upload-url error:", error);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ error: "服务器内部错误" }, { status: 500 });
     }
 }
