@@ -70,13 +70,30 @@ interface MedFormProps {
   autoFocusName?: boolean;
   onSubmit: (values: MedFormValues) => Promise<boolean>;
   onCancel: () => void;
+  // 表单内新建位置成功后回调，父组件重新拉取位置列表
+  onLocationsChanged?: () => void;
 }
 
-export function MedForm({ locations, initialValues, autoFocusName, onSubmit, onCancel }: MedFormProps) {
+export function MedForm({ locations, initialValues, autoFocusName, onSubmit, onCancel, onLocationsChanged }: MedFormProps) {
   const [form, setForm] = useState<MedFormValues>(() => initialValues ?? blankMedValues());
   const [saving, setSaving] = useState(false);
   // 月精度是输入模式而非值格式：/^\d{4}-\d{2}$/ 的值在月模式下输入
   const [monthPrecision, setMonthPrecision] = useState(() => /^\d{4}-\d{2}$/.test(form.expiry));
+
+  // 表单内新建的位置：父组件刷新前先合并进本地，保证下拉能立即选中新项
+  const [extraLocations, setExtraLocations] = useState<MedLocation[]>([]);
+  const allLocations = (() => {
+    const map = new Map<number, MedLocation>();
+    for (const l of [...locations, ...extraLocations]) map.set(l.id, l);
+    return [...map.values()];
+  })();
+
+  const [showNewLocation, setShowNewLocation] = useState(false);
+  const [newLocRoomId, setNewLocRoomId] = useState<string>("");
+  const [newRoomName, setNewRoomName] = useState("");
+  const [newContainerName, setNewContainerName] = useState("");
+  const [locSaving, setLocSaving] = useState(false);
+  const [locError, setLocError] = useState("");
 
   const updateField = (patch: Partial<MedFormValues>) => {
     setForm((prev) => ({ ...prev, ...patch }));
@@ -91,10 +108,80 @@ export function MedForm({ locations, initialValues, autoFocusName, onSubmit, onC
     if (suggested) updateField({ afterOpeningExpiry: suggested });
   };
 
-  const rooms = locations.filter((l) => l.parentId === null);
-  const containersOf = (roomId: number) => locations.filter((l) => l.parentId === roomId);
+  const rooms = allLocations.filter((l) => l.parentId === null);
+  const containersOf = (roomId: number) => allLocations.filter((l) => l.parentId === roomId);
 
   const valid = form.name.trim() !== "" && form.locationId !== null && form.expiry !== "";
+  const missing = [
+    form.name.trim() === "" ? "名称" : null,
+    form.locationId === null ? "位置" : null,
+    form.expiry === "" ? "原效期" : null,
+  ].filter(Boolean) as string[];
+
+  const postLocation = async (name: string, parentId: number | null): Promise<MedLocation | null> => {
+    const res = await fetch("/api/medicine/locations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, parentId }),
+    });
+    if (res.ok) return (await res.json()) as MedLocation;
+    const data = await res.json().catch(() => null);
+    setLocError(data?.error || "添加位置失败");
+    return null;
+  };
+
+  const handleAddLocation = async () => {
+    setLocError("");
+    const containerName = newContainerName.trim();
+    const created: MedLocation[] = [];
+    let parentId: number | null = null;
+    let selected: MedLocation | null = null;
+
+    setLocSaving(true);
+    try {
+      if (newLocRoomId === "new") {
+        const roomName = newRoomName.trim();
+        if (!roomName) {
+          setLocError("请填写新房间名");
+          return;
+        }
+        const room = await postLocation(roomName, null);
+        if (!room) return;
+        created.push(room);
+        parentId = room.id;
+        selected = room;
+      } else if (newLocRoomId) {
+        // 已有房间下必须落到一个容器，不能只选房间
+        if (!containerName) {
+          setLocError("请填写容器名");
+          return;
+        }
+        parentId = Number(newLocRoomId);
+      } else {
+        setLocError("请选择房间");
+        return;
+      }
+
+      if (containerName) {
+        const container = await postLocation(containerName, parentId);
+        if (!container) return;
+        created.push(container);
+        selected = container;
+      }
+
+      if (selected) {
+        setExtraLocations((prev) => [...prev, ...created]);
+        updateField({ locationId: selected.id });
+      }
+      onLocationsChanged?.();
+      setShowNewLocation(false);
+      setNewLocRoomId("");
+      setNewRoomName("");
+      setNewContainerName("");
+    } finally {
+      setLocSaving(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,6 +306,79 @@ export function MedForm({ locations, initialValues, autoFocusName, onSubmit, onC
               );
             })}
           </select>
+
+          {showNewLocation || allLocations.length === 0 ? (
+            <div className="flex flex-col gap-3 rounded-lg border border-border/50 p-3">
+              {allLocations.length === 0 && (
+                <p className="text-xs text-muted">还没有位置，先新建一个（如：卧室 / 药箱）</p>
+              )}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <select
+                  aria-label="选择已有房间或新建房间"
+                  value={newLocRoomId}
+                  onChange={(e) => setNewLocRoomId(e.target.value)}
+                  className={inputCls}
+                >
+                  <option value="" disabled>选择房间</option>
+                  {rooms.map((room) => (
+                    <option key={room.id} value={String(room.id)}>{room.name}</option>
+                  ))}
+                  <option value="new">+ 新房间</option>
+                </select>
+                {newLocRoomId === "new" && (
+                  <input
+                    type="text"
+                    value={newRoomName}
+                    onChange={(e) => setNewRoomName(e.target.value)}
+                    placeholder="新房间名，如：书房"
+                    maxLength={100}
+                    className={inputCls}
+                  />
+                )}
+                <input
+                  type="text"
+                  value={newContainerName}
+                  onChange={(e) => setNewContainerName(e.target.value)}
+                  placeholder={
+                    newLocRoomId === "new" ? "容器名（可选），如：抽屉" : "容器名，如：药箱"
+                  }
+                  maxLength={100}
+                  className={inputCls}
+                />
+              </div>
+              {locError && <p className="text-xs text-red-500">{locError}</p>}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAddLocation}
+                  disabled={locSaving}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
+                >
+                  {locSaving ? "添加中..." : "添加位置"}
+                </button>
+                {allLocations.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewLocation(false);
+                      setLocError("");
+                    }}
+                    className="text-xs text-muted hover:text-foreground transition-colors"
+                  >
+                    取消
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowNewLocation(true)}
+              className="self-start text-xs text-accent hover:underline"
+            >
+              + 新建位置
+            </button>
+          )}
         </div>
       </div>
 
@@ -321,6 +481,9 @@ export function MedForm({ locations, initialValues, autoFocusName, onSubmit, onC
         >
           取消
         </button>
+        {!valid && (
+          <span className="text-xs text-muted">还需填写：{missing.join("、")}</span>
+        )}
       </div>
     </form>
   );

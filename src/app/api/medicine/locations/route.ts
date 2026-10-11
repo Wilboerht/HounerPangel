@@ -49,15 +49,14 @@ export async function POST(request: NextRequest) {
         }
 
         try {
-            await createMedLocation(name.trim(), parentId ?? null);
+            const created = await createMedLocation(name.trim(), parentId ?? null);
+            return NextResponse.json(created, { status: 201 });
         } catch (error) {
             if (isUniqueViolation(error)) {
                 return NextResponse.json({ error: "同名位置已存在" }, { status: 409 });
             }
             throw error;
         }
-
-        return NextResponse.json({ success: true }, { status: 201 });
     } catch (error) {
         console.error("Failed to create med location:", error);
         return NextResponse.json({ error: "创建位置失败" }, { status: 500 });

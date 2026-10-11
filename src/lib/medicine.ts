@@ -73,3 +73,14 @@ export function suggestAfterOpeningExpiry(openedAt: string, days: number): strin
     d.setUTCDate(d.getUTCDate() + days);
     return d.toISOString().slice(0, 10);
 }
+
+// 相对效期描述："今天到期" / "还剩 12 天" / "已过期 5 天"；距到期超过 30 天返回 null（列表只显示日期即可）
+export function expiryDistanceText(effectiveExpiry: string, today = todayLocal()): string | null {
+    const days = Math.round(
+        (Date.parse(effectiveExpiry + "T00:00:00Z") - Date.parse(today + "T00:00:00Z")) / 86_400_000
+    );
+    if (days < 0) return `已过期 ${-days} 天`;
+    if (days === 0) return "今天到期";
+    if (days <= EXPIRING_SOON_DAYS) return `还剩 ${days} 天`;
+    return null;
+}

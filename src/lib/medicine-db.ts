@@ -76,9 +76,14 @@ export async function getMedLocations(): Promise<MedLocation[]> {
     return (data ?? []).map(mapLocation);
 }
 
-export async function createMedLocation(name: string, parentId: number | null): Promise<void> {
-    const { error } = await supabase.from("med_locations").insert({ name, parent_id: parentId });
+export async function createMedLocation(name: string, parentId: number | null): Promise<MedLocation> {
+    const { data, error } = await supabase
+        .from("med_locations")
+        .insert({ name, parent_id: parentId })
+        .select("id, name, parent_id, sort_order")
+        .single();
     if (error) throw error;
+    return mapLocation(data as LocationRow);
 }
 
 // 被任何药品（含回收站里的）引用、或下面还有容器时拒绝删除

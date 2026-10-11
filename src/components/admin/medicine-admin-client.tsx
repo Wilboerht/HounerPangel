@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { MapPin, Pencil, Plus, RotateCcw, Search, Trash2, X } from "lucide-react";
+import { MapPin, Plus, RotateCcw, Search, Trash2, X } from "lucide-react";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 import { useScrollLock } from "@/lib/use-scroll-lock";
@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { IconButton } from "@/components/admin/icon-button";
 import { MedForm, blankMedValues, medValuesFromItem, type MedFormValues } from "@/components/admin/medicine-form";
 import { useAuthExpired } from "@/lib/use-auth-expired";
+import { expiryDistanceText } from "@/lib/medicine";
 import type { ExpiryStatus, MedItemWithStatus, MedLocation } from "@/lib/types/medicine";
 
 type StatusFilter = "all" | ExpiryStatus;
@@ -89,6 +90,16 @@ export function MedicineAdminClient() {
     },
     [trashView, toast, authExpired]
   );
+
+  // 表单内新建位置后刷新位置列表（不碰 items，避免打断录入）
+  const reloadLocations = useCallback(async () => {
+    try {
+      const res = await fetch("/api/medicine/locations");
+      if (res.ok) setLocations(await res.json());
+    } catch {
+      // 刷新失败不影响表单：新位置已通过表单的本地合并立即可选
+    }
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -317,10 +328,27 @@ export function MedicineAdminClient() {
 
           {filtered.length > 0 ? (
             <div className="flex flex-col gap-2">
-              {filtered.map((item) => (
+              {filtered.map((item) => {
+                const distanceText = expiryDistanceText(item.effectiveExpiry);
+                return (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-border/50 hover:bg-foreground/[0.02] transition-colors"
+                  onClick={trashView ? undefined : () => setModal({ mode: "edit", item })}
+                  onKeyDown={
+                    trashView
+                      ? undefined
+                      : (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setModal({ mode: "edit", item });
+                          }
+                        }
+                  }
+                  role={trashView ? undefined : "button"}
+                  tabIndex={trashView ? undefined : 0}
+                  className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-border/50 hover:bg-foreground/[0.02] transition-colors ${
+                    trashView ? "" : "cursor-pointer"
+                  }`}
                 >
                   <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2 min-w-0">
@@ -328,6 +356,15 @@ export function MedicineAdminClient() {
                       <Badge variant={STATUS_META[item.expiryStatus].variant}>
                         {STATUS_META[item.expiryStatus].label}
                       </Badge>
+                      {distanceText && (
+                        <span
+                          className={`flex-shrink-0 text-xs ${
+                            item.expiryStatus === "expired" ? "text-red-500" : "text-amber-600"
+                          }`}
+                        >
+                          {distanceText}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-muted flex flex-wrap items-center gap-x-2">
                       <span>{item.locationName}</span>
@@ -338,10 +375,16 @@ export function MedicineAdminClient() {
                           : item.effectiveExpiry}
                       </span>
                       {item.quantity && <span>{item.quantity}</span>}
+                      {item.usageText && <span>用法 {item.usageText}</span>}
                       {item.spec && <span className="truncate">{item.spec}</span>}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  {/* 行点击进编辑，操作区拦截冒泡 */}
+                  <div
+                    className="flex items-center gap-1 flex-shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
                     {trashView ? (
                       <>
                         <IconButton onClick={() => handleRestore(item)} label="恢复" title="恢复">
@@ -357,27 +400,19 @@ export function MedicineAdminClient() {
                         </IconButton>
                       </>
                     ) : (
-                      <>
-                        <IconButton
-                          onClick={() => setModal({ mode: "edit", item })}
-                          label="编辑"
-                          title="编辑"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </IconButton>
-                        <IconButton
-                          onClick={() => setDeleteTarget(item)}
-                          label="删除"
-                          title="删除"
-                          variant="danger"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </IconButton>
-                      </>
+                      <IconButton
+                        onClick={() => setDeleteTarget(item)}
+                        label="删除"
+                        title="删除"
+                        variant="danger"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </IconButton>
                     )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           ) : search || statusFilter !== "all" ? (
             <div className="py-16 text-center">
@@ -448,6 +483,7 @@ export function MedicineAdminClient() {
                     autoFocusName={modal.mode === "create"}
                     onSubmit={handleSubmit}
                     onCancel={() => setModal(null)}
+                    onLocationsChanged={reloadLocations}
                   />
                 </div>
               </div>
