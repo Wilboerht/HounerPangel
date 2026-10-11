@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Pencil, Pill, Plus, RotateCcw, Search, Trash2, X } from "lucide-react";
+import { MapPin, Pencil, Plus, RotateCcw, Search, Trash2, X } from "lucide-react";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 import { useScrollLock } from "@/lib/use-scroll-lock";
@@ -50,6 +51,7 @@ export function MedicineAdminClient() {
   const [items, setItems] = useState<MedItemWithStatus[]>([]);
   const [locations, setLocations] = useState<MedLocation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [trashView, setTrashView] = useState(false);
@@ -76,10 +78,12 @@ export function MedicineAdminClient() {
         const [itemsData, locationsData] = await Promise.all([itemsRes.json(), locationsRes.json()]);
         setItems(itemsData);
         setLocations(locationsData);
+        setLoadFailed(false);
         setLoading(false);
       } catch {
         if (signal?.aborted) return;
         toast.error("加载药品列表失败，请刷新重试");
+        setLoadFailed(true);
         setLoading(false);
       }
     },
@@ -221,9 +225,13 @@ export function MedicineAdminClient() {
               </button>
             ) : (
               <>
-                <IconButton href="/admin/medicine/locations" label="位置管理" title="位置管理">
-                  <Pill className="w-4 h-4" />
-                </IconButton>
+                <Link
+                  href="/admin/medicine/locations"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/[0.03] transition-colors"
+                >
+                  <MapPin className="w-4 h-4" />
+                  位置管理
+                </Link>
                 <button
                   onClick={() => {
                     setTrashView(true);
@@ -266,6 +274,12 @@ export function MedicineAdminClient() {
             </button>
           ))}
         </div>
+      )}
+
+      {loadFailed && !loading && (
+        <p className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-600">
+          数据加载失败，请刷新重试
+        </p>
       )}
 
       {loading ? (
@@ -318,8 +332,10 @@ export function MedicineAdminClient() {
                     <p className="text-xs text-muted flex flex-wrap items-center gap-x-2">
                       <span>{item.locationName}</span>
                       <span>
-                        效期 {item.effectiveExpiry}
-                        {item.expiryPrecision === "month" ? "（月）" : ""}
+                        效期{" "}
+                        {item.expiryPrecision === "month"
+                          ? `${item.effectiveExpiry.slice(0, 7)}（月）`
+                          : item.effectiveExpiry}
                       </span>
                       {item.quantity && <span>{item.quantity}</span>}
                       {item.spec && <span className="truncate">{item.spec}</span>}
@@ -378,7 +394,11 @@ export function MedicineAdminClient() {
             </div>
           ) : (
             <p className="py-16 text-center text-sm text-muted">
-              {trashView ? "回收站是空的" : "暂无药品，点右上角「新增药品」开始录入"}
+              {loadFailed
+                ? "数据加载失败"
+                : trashView
+                  ? "回收站是空的"
+                  : "暂无药品，点右上角「新增药品」开始录入"}
             </p>
           )}
         </div>

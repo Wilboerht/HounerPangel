@@ -188,7 +188,7 @@ export function MedForm({ locations, initialValues, autoFocusName, onSubmit, onC
             type="text"
             value={form.quantity}
             onChange={(e) => updateField({ quantity: e.target.value })}
-            placeholder='如："2 盒""剩 8 片"'
+            placeholder="如：2 盒、剩 8 片"
             maxLength={50}
             className={inputCls}
           />
