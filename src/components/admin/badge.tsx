@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 
-type BadgeVariant = "neutral" | "warning" | "outline";
+type BadgeVariant = "neutral" | "warning" | "danger" | "outline";
 
 const variantCls: Record<BadgeVariant, string> = {
   neutral: "bg-foreground/10 text-foreground",
   warning: "bg-amber-500/10 text-amber-600 border border-amber-500/20",
+  danger: "bg-red-500/10 text-red-600 border border-red-500/20",
   outline: "border border-border/50 text-muted",
 };
 

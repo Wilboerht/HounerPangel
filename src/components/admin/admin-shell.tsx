@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Pill,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -31,6 +32,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "仪表盘", icon: LayoutDashboard, exact: true },
   { href: "/admin/blog", label: "博客", icon: FileText },
+  { href: "/admin/medicine", label: "药箱", icon: Pill },
 ];
 
 function isActive(item: NavItem, pathname: string): boolean {
@@ -41,6 +43,7 @@ function isActive(item: NavItem, pathname: string): boolean {
 // 移动端顶栏标题：优先匹配导航项，编辑页单独命名
 function pageTitle(pathname: string): string {
   if (pathname.startsWith("/admin/blog/edit/")) return "编辑文章";
+  if (pathname === "/admin/medicine/locations") return "位置管理";
   return NAV_ITEMS.find((item) => isActive(item, pathname))?.label ?? "管理面板";
 }
 
