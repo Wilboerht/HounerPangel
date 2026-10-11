@@ -80,7 +80,7 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-5 pb-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))]">
+      <div className="flex flex-shrink-0 items-center justify-between px-5 pb-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))]">
         <Link
           href="/admin"
           onClick={onNavigate}
@@ -95,7 +95,7 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
         )}
       </div>
 
-      <nav className="flex-1 flex flex-col gap-6 px-3 py-2">
+      <nav className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 px-3 py-2">
         {NAV_SECTIONS.map((section, i) => (
           <div key={section.label ?? i} className="flex flex-col gap-0.5">
             {section.label && (
@@ -121,7 +121,7 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
         ))}
       </nav>
 
-      <div className="flex flex-col gap-0.5 border-t border-border/50 px-3 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+      <div className="flex flex-shrink-0 flex-col gap-0.5 border-t border-border/50 px-3 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
         <Link href="/" onClick={onNavigate} className={inactiveCls}>
           <Globe className="w-4 h-4 flex-shrink-0" />
           查看站点
