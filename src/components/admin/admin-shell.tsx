@@ -28,11 +28,24 @@ interface NavItem {
   exact?: boolean;
 }
 
-// 数据驱动的导航项：新增板块时在此数组追加即可
-const NAV_ITEMS: NavItem[] = [
-  { href: "/admin", label: "仪表盘", icon: LayoutDashboard, exact: true },
-  { href: "/admin/blog", label: "博客", icon: FileText },
-  { href: "/admin/medicine", label: "药箱", icon: Pill },
+interface NavSection {
+  // 分类标题；缺省表示不分组（直接置顶显示）
+  label?: string;
+  items: NavItem[];
+}
+
+// 数据驱动的导航：新增板块时往对应分类的 items 追加即可；新分类追加一个 section
+const NAV_SECTIONS: NavSection[] = [
+  {
+    items: [
+      { href: "/admin", label: "仪表盘", icon: LayoutDashboard, exact: true },
+      { href: "/admin/blog", label: "博客", icon: FileText },
+    ],
+  },
+  {
+    label: "智家",
+    items: [{ href: "/admin/medicine", label: "药品记录", icon: Pill }],
+  },
 ];
 
 function isActive(item: NavItem, pathname: string): boolean {
@@ -44,7 +57,11 @@ function isActive(item: NavItem, pathname: string): boolean {
 function pageTitle(pathname: string): string {
   if (pathname.startsWith("/admin/blog/edit/")) return "编辑文章";
   if (pathname === "/admin/medicine/locations") return "位置管理";
-  return NAV_ITEMS.find((item) => isActive(item, pathname))?.label ?? "管理面板";
+  for (const section of NAV_SECTIONS) {
+    const hit = section.items.find((item) => isActive(item, pathname));
+    if (hit) return hit.label;
+  }
+  return "管理面板";
 }
 
 interface SidebarContentProps {
@@ -78,23 +95,30 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
         )}
       </div>
 
-      <nav className="flex-1 flex flex-col gap-0.5 px-3 py-2">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item, pathname);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              aria-current={active ? "page" : undefined}
-              className={active ? activeCls : inactiveCls}
-            >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 flex flex-col gap-6 px-3 py-2">
+        {NAV_SECTIONS.map((section, i) => (
+          <div key={section.label ?? i} className="flex flex-col gap-0.5">
+            {section.label && (
+              <p className="px-3 pb-1 text-xs font-medium text-muted/70">{section.label}</p>
+            )}
+            {section.items.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item, pathname);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  aria-current={active ? "page" : undefined}
+                  className={active ? activeCls : inactiveCls}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="flex flex-col gap-0.5 border-t border-border/50 px-3 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">

@@ -206,7 +206,7 @@ export function MedicineAdminClient() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title={trashView ? "回收站" : "药箱"}
+        title={trashView ? "回收站" : "药品记录"}
         description={trashView ? "删除的药品保留 30 天，可恢复" : "药品、位置与效期一览"}
         actions={
           <div className="flex items-center gap-2">
