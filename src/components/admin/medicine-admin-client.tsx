@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { MapPin, Plus, RotateCcw, Search, Trash2, X } from "lucide-react";
+import { Check, Download, MapPin, Plus, QrCode, RotateCcw, Search, Tag, Trash2, X } from "lucide-react";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 import { useScrollLock } from "@/lib/use-scroll-lock";
@@ -48,6 +49,7 @@ export function MedicineAdminClient() {
   const toast = useToast();
   const reduce = useSafeMotion();
   const authExpired = useAuthExpired();
+  const router = useRouter();
 
   const [items, setItems] = useState<MedItemWithStatus[]>([]);
   const [locations, setLocations] = useState<MedLocation[]>([]);
@@ -56,10 +58,21 @@ export function MedicineAdminClient() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [trashView, setTrashView] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const [modal, setModal] = useState<{ mode: "create" } | { mode: "edit"; item: MedItemWithStatus } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MedItemWithStatus | null>(null);
   const [purgeTarget, setPurgeTarget] = useState<MedItemWithStatus | null>(null);
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const trapRef = useFocusTrap(modal !== null, () => setModal(null));
   useScrollLock(modal !== null);
@@ -236,6 +249,20 @@ export function MedicineAdminClient() {
               </button>
             ) : (
               <>
+                <button
+                  onClick={() => {
+                    setSelectMode(!selectMode);
+                    setSelectedIds(new Set());
+                  }}
+                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm transition-colors ${
+                    selectMode
+                      ? "border-accent/50 text-accent"
+                      : "border-border/50 text-muted hover:text-foreground hover:bg-foreground/[0.03]"
+                  }`}
+                >
+                  <Tag className="w-4 h-4" />
+                  贴标
+                </button>
                 <Link
                   href="/admin/medicine/locations"
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/[0.03] transition-colors"
@@ -243,6 +270,14 @@ export function MedicineAdminClient() {
                   <MapPin className="w-4 h-4" />
                   位置管理
                 </Link>
+                <a
+                  href="/api/medicine/export.csv"
+                  download
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/[0.03] transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  导出 CSV
+                </a>
                 <button
                   onClick={() => {
                     setTrashView(true);
@@ -330,26 +365,46 @@ export function MedicineAdminClient() {
             <div className="flex flex-col gap-2">
               {filtered.map((item) => {
                 const distanceText = expiryDistanceText(item.effectiveExpiry);
+                const selected = selectedIds.has(item.id);
                 return (
                 <div
                   key={item.id}
-                  onClick={trashView ? undefined : () => setModal({ mode: "edit", item })}
+                  onClick={
+                    trashView
+                      ? undefined
+                      : selectMode
+                        ? () => toggleSelect(item.id)
+                        : () => setModal({ mode: "edit", item })
+                  }
                   onKeyDown={
                     trashView
                       ? undefined
                       : (e) => {
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
-                            setModal({ mode: "edit", item });
+                            if (selectMode) toggleSelect(item.id);
+                            else setModal({ mode: "edit", item });
                           }
                         }
                   }
                   role={trashView ? undefined : "button"}
                   tabIndex={trashView ? undefined : 0}
-                  className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-border/50 hover:bg-foreground/[0.02] transition-colors ${
-                    trashView ? "" : "cursor-pointer"
-                  }`}
+                  aria-pressed={selectMode ? selected : undefined}
+                  className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg border transition-colors ${
+                    selectMode && selected
+                      ? "border-accent/50 bg-accent/5 cursor-pointer"
+                      : "border-border/50 hover:bg-foreground/[0.02]"
+                  } ${trashView ? "" : "cursor-pointer"}`}
                 >
+                  {selectMode && (
+                    <span
+                      className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border transition-colors ${
+                        selected ? "border-accent bg-accent text-white" : "border-border"
+                      }`}
+                    >
+                      {selected && <Check className="w-3.5 h-3.5" />}
+                    </span>
+                  )}
                   <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2 min-w-0">
                       <h3 className="text-sm font-medium text-foreground truncate">{item.name}</h3>
@@ -399,15 +454,24 @@ export function MedicineAdminClient() {
                           <Trash2 className="w-4 h-4" />
                         </IconButton>
                       </>
-                    ) : (
-                      <IconButton
-                        onClick={() => setDeleteTarget(item)}
-                        label="删除"
-                        title="删除"
-                        variant="danger"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </IconButton>
+                    ) : selectMode ? null : (
+                      <>
+                        <IconButton
+                          href={`/admin/medicine/labels?ids=${item.id}`}
+                          label="打印标签"
+                          title="打印标签"
+                        >
+                          <QrCode className="w-4 h-4" />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => setDeleteTarget(item)}
+                          label="删除"
+                          title="删除"
+                          variant="danger"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </IconButton>
+                      </>
                     )}
                   </div>
                 </div>
@@ -436,6 +500,32 @@ export function MedicineAdminClient() {
                   : "暂无药品，点右上角「新增药品」开始录入"}
             </p>
           )}
+        </div>
+      )}
+
+      {/* 贴标模式底部操作条 */}
+      {selectMode && (
+        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 rounded-xl border border-border/50 bg-background px-4 py-3 shadow-lg">
+          <span className="text-sm text-muted">已选 {selectedIds.size} 个</span>
+          <button
+            type="button"
+            disabled={selectedIds.size === 0}
+            onClick={() => router.push(`/admin/medicine/labels?ids=${[...selectedIds].join(",")}`)}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
+          >
+            <QrCode className="w-4 h-4" />
+            打印标签
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectMode(false);
+              setSelectedIds(new Set());
+            }}
+            className="text-sm text-muted hover:text-foreground transition-colors"
+          >
+            取消
+          </button>
         </div>
       )}
 

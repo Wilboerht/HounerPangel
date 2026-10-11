@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomBytes } from "node:crypto";
 import { supabase } from "./supabase";
 import { withExpiryStatus } from "./medicine";
 import type { MedItem, MedItemWithStatus, MedLocation } from "./types/medicine";
@@ -225,4 +226,91 @@ export async function purgeMedItem(id: number): Promise<boolean> {
         .select("id");
     if (error) throw error;
     return (data?.length ?? 0) > 0;
+}
+
+// ---- 贴标 / 二维码 ----
+
+// 已有 token 直接返回；没有则生成 32 位随机串（可撤销，撤销后旧码失效）
+export async function ensureQrToken(id: number): Promise<string | null> {
+    const { data, error } = await supabase
+        .from("med_items")
+        .select("qr_token")
+        .eq("id", id)
+        .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    if (data.qr_token) return data.qr_token as string;
+
+    const token = randomBytes(24).toString("base64url");
+    const { error: updateError } = await supabase
+        .from("med_items")
+        .update({ qr_token: token })
+        .eq("id", id)
+        .is("qr_token", null);
+    if (updateError) throw updateError;
+    return token;
+}
+
+export async function revokeQrToken(id: number): Promise<boolean> {
+    const { data, error } = await supabase
+        .from("med_items")
+        .update({ qr_token: null })
+        .eq("id", id)
+        .not("qr_token", "is", null)
+        .select("id");
+    if (error) throw error;
+    return (data?.length ?? 0) > 0;
+}
+
+// 公开急救卡查询：回收站里的也返回（页面据此提示"已删除"而不是"已失效"）
+export async function getMedItemByToken(token: string): Promise<MedItemWithStatus | null> {
+    const { data, error } = await supabase
+        .from("med_items")
+        .select("*")
+        .eq("qr_token", token)
+        .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+
+    const item = mapItem(data as ItemRow);
+    const { data: loc } = await supabase
+        .from("med_locations")
+        .select("id, name, parent_id, sort_order")
+        .eq("id", item.locationId)
+        .maybeSingle();
+    const locations = loc ? [mapLocation(loc as LocationRow)] : [];
+    const byId = new Map(locations.map((l) => [l.id, l]));
+    const locationName = loc ? formatLocationName(locations[0], byId) : "";
+    return withExpiryStatus(item, locationName);
+}
+
+// 标签打印页用：按 id 批量取（保持入参顺序），顺带保证每条都有 qr_token
+export async function getMedItemsForLabels(ids: number[]): Promise<(MedItemWithStatus & { qrToken: string })[]> {
+    if (ids.length === 0) return [];
+    const locations = await getMedLocations();
+    const byId = new Map(locations.map((l) => [l.id, l]));
+    const items: (MedItemWithStatus & { qrToken: string })[] = [];
+    for (const id of ids) {
+        const token = await ensureQrToken(id);
+        if (!token) continue;
+        const { data, error } = await supabase
+            .from("med_items")
+            .select("*")
+            .eq("id", id)
+            .is("deleted_at", null)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) continue;
+        const item = mapItem(data as ItemRow);
+        const loc = byId.get(item.locationId);
+        items.push({
+            ...withExpiryStatus(item, loc ? formatLocationName(loc, byId) : "未知位置"),
+            qrToken: token,
+        });
+    }
+    return items;
+}
+
+export function medLabelNo(id: number): string {
+    return `M-${String(id).padStart(4, "0")}`;
 }
