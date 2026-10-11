@@ -38,7 +38,8 @@ export function LabelsToolbar({ items }: LabelsToolbarProps) {
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-foreground">标签打印</h1>
           <p className="text-sm text-muted mt-1">
-            共 {items.length} 张（60mm × 40mm）。打印时选择标签纸尺寸、边距设为「无」、缩放 100%。
+            共 {items.length} 张（60mm × 40mm）。打印设置：纸张尺寸选 60×40mm（没有就自定义新建一个），边距「无」，缩放 100%，关闭页眉页脚。
+            GE231W 最大打印宽度 48mm，标签会旋转进纸，属正常。若浏览器里没有合适的纸型，先「另存为 PDF」再用得力软件打印。
           </p>
         </div>
         <button

@@ -53,7 +53,7 @@ export default async function MedicineLabelsPage({ searchParams }: Props) {
         <>
           <LabelsToolbar items={labels.map(({ item }) => ({ id: item.id, name: item.name }))} />
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 print:block">
             {labels.map(({ item, qr }) => (
               <div
                 key={item.id}
@@ -62,7 +62,7 @@ export default async function MedicineLabelsPage({ searchParams }: Props) {
               >
                 <div className="flex min-w-0 flex-1 flex-col justify-between" style={{ gap: "1mm" }}>
                   <div>
-                    <p className="font-bold leading-tight text-foreground" style={{ fontSize: "11pt" }}>
+                    <p className="line-clamp-2 font-bold leading-tight text-foreground" style={{ fontSize: "11pt" }}>
                       {item.name}
                       {item.spec && (
                         <span className="ml-1 font-normal text-muted" style={{ fontSize: "8pt" }}>
@@ -71,7 +71,7 @@ export default async function MedicineLabelsPage({ searchParams }: Props) {
                       )}
                     </p>
                     {item.usageText && (
-                      <p className="leading-tight text-foreground" style={{ fontSize: "9pt" }}>
+                      <p className="line-clamp-1 leading-tight text-foreground" style={{ fontSize: "9pt" }}>
                         用法：{item.usageText}
                       </p>
                     )}
