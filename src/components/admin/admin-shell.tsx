@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ChevronDown,
   FileText,
   Globe,
   LayoutDashboard,
@@ -72,11 +73,55 @@ interface SidebarContentProps {
   onClose?: () => void;
 }
 
+// 分类收起状态存 localStorage，用 useSyncExternalStore 读取：
+// 服务端快照恒为空（全展开），避免水合不一致；桌面侧栏和移动抽屉两个实例通过 listeners 保持同步
+const COLLAPSED_STORAGE_KEY = "admin-nav-collapsed";
+const EMPTY_SECTIONS: Record<string, boolean> = {};
+let collapsedCache: Record<string, boolean> | null = null;
+const collapsedListeners = new Set<() => void>();
+
+function getCollapsedSnapshot(): Record<string, boolean> {
+  if (collapsedCache === null) {
+    let parsed: unknown = {};
+    try {
+      const raw = window.localStorage.getItem(COLLAPSED_STORAGE_KEY);
+      parsed = raw ? JSON.parse(raw) : {};
+    } catch {
+      parsed = {};
+    }
+    collapsedCache =
+      typeof parsed === "object" && parsed !== null ? (parsed as Record<string, boolean>) : {};
+  }
+  return collapsedCache ?? EMPTY_SECTIONS;
+}
+
+function subscribeCollapsed(listener: () => void): () => void {
+  collapsedListeners.add(listener);
+  return () => collapsedListeners.delete(listener);
+}
+
+function toggleSectionCollapsed(label: string) {
+  const next = { ...getCollapsedSnapshot(), [label]: !getCollapsedSnapshot()[label] };
+  collapsedCache = next;
+  try {
+    window.localStorage.setItem(COLLAPSED_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // localStorage 不可用时收起状态只在本次会话生效
+  }
+  collapsedListeners.forEach((listener) => listener());
+}
+
 function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose }: SidebarContentProps) {
   const itemCls =
     "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors";
   const activeCls = `${itemCls} bg-foreground/5 text-foreground font-medium`;
   const inactiveCls = `${itemCls} text-muted hover:text-foreground hover:bg-foreground/[0.03]`;
+
+  const collapsed = useSyncExternalStore(
+    subscribeCollapsed,
+    getCollapsedSnapshot,
+    () => EMPTY_SECTIONS
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -96,29 +141,43 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
       </div>
 
       <nav className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 px-3 py-2">
-        {NAV_SECTIONS.map((section, i) => (
-          <div key={section.label ?? i} className="flex flex-col gap-0.5">
-            {section.label && (
-              <p className="px-3 pb-1 text-xs font-medium text-muted/70">{section.label}</p>
-            )}
-            {section.items.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item, pathname);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onNavigate}
-                  aria-current={active ? "page" : undefined}
-                  className={active ? activeCls : inactiveCls}
+        {NAV_SECTIONS.map((section, i) => {
+          const isCollapsed = section.label ? !!collapsed[section.label] : false;
+          return (
+            <div key={section.label ?? i} className="flex flex-col gap-0.5">
+              {section.label && (
+                <button
+                  type="button"
+                  onClick={() => toggleSectionCollapsed(section.label!)}
+                  aria-expanded={!isCollapsed}
+                  className="flex w-full items-center justify-between rounded-lg px-3 pb-1 pt-1 text-xs font-medium text-muted/70 hover:text-foreground transition-colors"
                 >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+                  {section.label}
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
+                  />
+                </button>
+              )}
+              {!isCollapsed &&
+                section.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item, pathname);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onNavigate}
+                      aria-current={active ? "page" : undefined}
+                      className={active ? activeCls : inactiveCls}
+                    >
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+            </div>
+          );
+        })}
       </nav>
 
       <div className="flex flex-shrink-0 flex-col gap-0.5 border-t border-border/50 px-3 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
