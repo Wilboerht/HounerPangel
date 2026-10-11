@@ -127,6 +127,15 @@ input, textarea, select {
   .min-h-dvh {
     min-height: 100vh !important;
   }
+  .max-h-\[90dvh\] {
+    max-height: 90vh !important;
+  }
+  /* max-sm:h-dvh 在 Tailwind v4 里是 @media (width < 40rem) 的响应式变体，fallback 需保持同一断点 */
+  @media (width < 40rem) {
+    .max-sm\:h-dvh {
+      height: 100vh !important;
+    }
+  }
 }
 
 /* Samsung Internet keyboard fix: prevent fixed elements from jumping */

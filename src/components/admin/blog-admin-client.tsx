@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
+import { useScrollLock } from "@/lib/use-scroll-lock";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PostForm, type PostFormValues, type PostFormDraft } from "@/components/admin/post-form";
@@ -93,6 +94,7 @@ export function BlogAdminClient() {
     if (pendingClose || draftRestore.draftPrompt) return;
     closeModalRef.current?.();
   });
+  useScrollLock(showNewModal);
 
   const filteredPosts = debouncedSearch
     ? posts.filter(
@@ -346,21 +348,21 @@ export function BlogAdminClient() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="new-post-title"
-                className="relative w-full max-w-3xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[90vh] flex flex-col max-sm:rounded-none max-sm:max-h-none max-sm:h-dvh"
+                className="relative w-full max-w-3xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[90dvh] flex flex-col max-sm:rounded-none max-sm:max-h-none max-sm:h-dvh"
               >
-                <div className="absolute top-4 right-4 z-10">
+                <div className="absolute z-10 top-[calc(1rem+env(safe-area-inset-top,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))]">
                   <IconButton label="关闭新建窗口" onClick={closeNewModal} size="lg">
                     <X className="w-4 h-4" />
                   </IconButton>
                 </div>
 
-                <div className="px-6 sm:px-8 pt-8 pb-4 flex-shrink-0 pr-16">
+                <div className="pb-4 flex-shrink-0 pt-[calc(2rem+env(safe-area-inset-top,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(4rem+env(safe-area-inset-right,0px))] sm:pl-8 sm:pr-16">
                   <h2 id="new-post-title" className="text-xl font-bold text-foreground">
                     新建文章
                   </h2>
                 </div>
 
-                <div className="px-6 sm:px-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] overflow-y-auto">
+                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] sm:px-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] overflow-y-auto">
                   <PostForm
                     key={formKey}
                     idPrefix="new"

@@ -5,6 +5,7 @@ import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
+import { useScrollLock } from "@/lib/use-scroll-lock";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const reduce = useSafeMotion();
   const trapRef = useFocusTrap(isOpen, onClose);
+  useScrollLock(isOpen);
   const [pending, setPending] = useState(false);
 
   return (
@@ -47,7 +49,7 @@ export function ConfirmDialog({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
             transition={springModal}
-            className="fixed inset-0 flex items-center justify-center z-[111] p-6"
+            className="fixed inset-0 flex items-center justify-center z-[111] p-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))]"
           >
             <div
               ref={trapRef}
@@ -55,7 +57,7 @@ export function ConfirmDialog({
               aria-modal="true"
               aria-labelledby="confirm-title"
               aria-describedby="confirm-message"
-              className="relative w-full max-w-sm bg-background rounded-2xl border border-border/50 shadow-xl p-6"
+              className="relative w-full max-w-sm max-h-full overflow-y-auto bg-background rounded-2xl border border-border/50 shadow-xl p-6"
             >
               <div className="flex items-start gap-4">
                 <div className={`p-2 rounded-full flex-shrink-0 ${danger ? "bg-red-500/10" : "bg-foreground/5"}`}>

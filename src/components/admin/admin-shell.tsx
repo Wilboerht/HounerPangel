@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
+import { useScrollLock } from "@/lib/use-scroll-lock";
 import { useToast } from "@/components/toast";
 import { IconButton } from "@/components/admin/icon-button";
 
@@ -119,6 +120,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const drawerTrapRef = useFocusTrap(drawerOpen, () => setDrawerOpen(false));
+  useScrollLock(drawerOpen);
 
   // 路由变化时收起抽屉
   useEffect(() => {
