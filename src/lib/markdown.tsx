@@ -301,36 +301,39 @@ export function renderMarkdown(content: string): React.ReactNode {
     };
 
     const flushCodeBlock = () => {
-        if (inCodeBlock && codeLines.length > 0) {
-            const code = codeLines.join("\n");
-            let highlighted: string;
-            try {
-                if (codeLanguage && hljs.getLanguage(codeLanguage)) {
-                    highlighted = hljs.highlight(code, { language: codeLanguage }).value;
-                } else if (codeLanguage) {
-                    // 未注册语言按转义后的纯文本渲染
-                    highlighted = escapeHtml(code);
-                } else {
-                    highlighted = hljs.highlightAuto(code).value;
-                }
-            } catch {
+        if (!inCodeBlock) return;
+        const language = codeLanguage;
+        const code = codeLines.join("\n");
+        const hasContent = codeLines.length > 0;
+        codeLines = [];
+        codeLanguage = "";
+        inCodeBlock = false;
+        if (!hasContent) return;
+
+        let highlighted: string;
+        try {
+            if (language && hljs.getLanguage(language)) {
+                highlighted = hljs.highlight(code, { language }).value;
+            } else if (language) {
+                // 未注册语言按转义后的纯文本渲染
                 highlighted = escapeHtml(code);
+            } else {
+                highlighted = hljs.highlightAuto(code).value;
             }
-            elements.push(
-                <pre
-                    key={`pre-${elements.length}`}
-                    className="rounded-xl bg-foreground/5 p-3 sm:p-4 overflow-x-auto"
-                >
-                    <code
-                        className="text-sm font-mono leading-relaxed hljs"
-                        dangerouslySetInnerHTML={{ __html: highlighted }}
-                    />
-                </pre>
-            );
-            codeLines = [];
-            codeLanguage = "";
-            inCodeBlock = false;
+        } catch {
+            highlighted = escapeHtml(code);
         }
+        elements.push(
+            <pre
+                key={`pre-${elements.length}`}
+                className="rounded-xl bg-foreground/5 p-3 sm:p-4 overflow-x-auto"
+            >
+                <code
+                    className="text-sm font-mono leading-relaxed hljs"
+                    dangerouslySetInnerHTML={{ __html: highlighted }}
+                />
+            </pre>
+        );
     };
 
     const flushIframe = () => {

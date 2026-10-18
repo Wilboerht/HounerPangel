@@ -232,7 +232,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* 移动端顶栏 */}
-      <header className="lg:hidden sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border/50 bg-background/80 backdrop-blur pt-[env(safe-area-inset-top,0px)] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] print:hidden">
+      <header className="lg:hidden sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center gap-3 border-b border-border/50 bg-background/80 backdrop-blur pt-[env(safe-area-inset-top,0px)] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] print:hidden">
         <IconButton label="打开导航菜单" onClick={() => setDrawerOpen(true)} className="-ml-2">
           <Menu className="w-5 h-5" />
         </IconButton>
@@ -271,7 +271,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         )}
       </AnimatePresence>
 
-      <main className="py-6 lg:pb-8 lg:pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] sm:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] sm:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] print:p-0!">
+      <main className="pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] lg:pb-8 lg:pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] sm:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] sm:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] print:p-0!">
         <div className="mx-auto max-w-5xl print:mx-0 print:max-w-none">{children}</div>
       </main>
     </div>

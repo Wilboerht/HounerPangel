@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 import { useScrollLock } from "@/lib/use-scroll-lock";
@@ -32,6 +32,8 @@ export function ConfirmDialog({
   const trapRef = useFocusTrap(isOpen, onClose);
   useScrollLock(isOpen);
   const [pending, setPending] = useState(false);
+  const titleId = useId();
+  const messageId = useId();
 
   return (
     <AnimatePresence>
@@ -55,8 +57,8 @@ export function ConfirmDialog({
               ref={trapRef}
               role="alertdialog"
               aria-modal="true"
-              aria-labelledby="confirm-title"
-              aria-describedby="confirm-message"
+              aria-labelledby={titleId}
+              aria-describedby={messageId}
               className="relative w-full max-w-sm max-h-full overflow-y-auto bg-background rounded-2xl border border-border/50 shadow-xl p-6"
             >
               <div className="flex items-start gap-4">
@@ -64,10 +66,10 @@ export function ConfirmDialog({
                   <AlertTriangle className={`w-5 h-5 ${danger ? "text-red-500" : "text-foreground"}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 id="confirm-title" className="text-base font-semibold text-foreground mb-1">
+                  <h3 id={titleId} className="text-base font-semibold text-foreground mb-1">
                     {title}
                   </h3>
-                  <p id="confirm-message" className="text-sm text-muted leading-relaxed">
+                  <p id={messageId} className="text-sm text-muted leading-relaxed">
                     {message}
                   </p>
                 </div>

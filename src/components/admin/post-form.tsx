@@ -71,7 +71,11 @@ export function PostForm({
   const toast = useToast();
   // 达上限/重复被拒绝时给出提示，避免输入框里的内容被静默忽略
   const handleTagReject = useCallback((reason: TagRejectReason) => {
-    if (reason === "limit") toast.error("标签最多 20 个");
+    if (reason === "limit") {
+      toast.error("标签最多 20 个");
+    } else if (reason === "duplicate") {
+      toast.error("标签已存在");
+    }
   }, [toast]);
   const tagManager = useTagManager(initialValues.tags, handleTagReject);
   const [saving, setSaving] = useState(false);
@@ -204,6 +208,7 @@ export function PostForm({
             id={`${idPrefix}-slug`}
             type="text"
             required
+            maxLength={255}
             value={form.slug}
             onChange={(e) => handleSlugChange(e.target.value)}
             placeholder="hello-world"
@@ -266,6 +271,7 @@ export function PostForm({
               <button
                 type="button"
                 onClick={() => { tagManager.removeTag(tag); onDirty(); }}
+                aria-label={`移除标签 ${tag}`}
                 className="hover:text-red-500 transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center"
               >
                 <X className="w-3 h-3" />
@@ -277,6 +283,7 @@ export function PostForm({
           <input
             id={`${idPrefix}-tags`}
             type="text"
+            maxLength={50}
             value={tagManager.input}
             onChange={(e) => tagManager.setInput(e.target.value)}
             onKeyDown={(e) => { const wasAdded = tagManager.handleInputKeyDown(e); if (wasAdded) onDirty(); }}

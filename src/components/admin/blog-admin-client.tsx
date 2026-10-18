@@ -262,6 +262,7 @@ export function BlogAdminClient() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
               <input
                 type="search"
+                aria-label="搜索文章"
                 placeholder="搜索文章标题、slug 或标签..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
