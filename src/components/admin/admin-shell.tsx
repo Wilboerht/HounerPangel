@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  Pill,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -43,10 +42,6 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/admin/blog", label: "博客", icon: FileText },
     ],
   },
-  {
-    label: "智家",
-    items: [{ href: "/admin/medicine", label: "药品记录", icon: Pill }],
-  },
 ];
 
 function isActive(item: NavItem, pathname: string): boolean {
@@ -57,8 +52,6 @@ function isActive(item: NavItem, pathname: string): boolean {
 // 移动端顶栏标题：优先匹配导航项，编辑页单独命名
 function pageTitle(pathname: string): string {
   if (pathname.startsWith("/admin/blog/edit/")) return "编辑文章";
-  if (pathname === "/admin/medicine/locations") return "位置管理";
-  if (pathname === "/admin/medicine/labels") return "标签打印";
   for (const section of NAV_SECTIONS) {
     const hit = section.items.find((item) => isActive(item, pathname));
     if (hit) return hit.label;
