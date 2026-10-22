@@ -224,6 +224,7 @@ export function BlogAdminClient() {
     if (autoOpenHandledRef.current) return;
     if (searchParams.get("new") === "1") {
       autoOpenHandledRef.current = true;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 一次性响应 URL 参数：openNewModal 同时读写 localStorage 草稿和打开弹窗，属于对外部输入的副作用处理，不能移到渲染期
       openNewModal();
       router.replace("/admin/blog");
     }

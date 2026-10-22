@@ -2,6 +2,7 @@ import { cache } from "react";
 import {
     getAllBlogPosts as _getAllBlogPosts,
     getAllBlogPostSummaries as _getAllBlogPostSummaries,
+    getRecentBlogPosts as _getRecentBlogPosts,
     getBlogPostBySlug as _getBlogPostBySlug,
     createBlogPost as _createBlogPost,
     updateBlogPost as _updateBlogPost,
@@ -11,6 +12,7 @@ import {
 // Cached for Server Components / SSG
 export const getAllBlogPosts = cache(_getAllBlogPosts);
 export const getAllBlogPostSummaries = cache(_getAllBlogPostSummaries);
+export const getRecentBlogPosts = cache(_getRecentBlogPosts);
 export const getBlogPostBySlug = cache(_getBlogPostBySlug);
 
 // Mutations are not cached

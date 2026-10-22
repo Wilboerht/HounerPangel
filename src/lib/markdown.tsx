@@ -62,10 +62,11 @@ export function firstImageUrl(content: string): string | undefined {
     return match?.[1];
 }
 
-// 链接协议白名单：仅允许 https?://、mailto:、以及 / 或 # 开头的相对路径
+// 链接协议白名单：仅允许 https?://、mailto:、以及 / 或 # 开头的相对路径。
+// 注意排除 // 开头的协议相对 URL（//evil.com），与下方媒体白名单写法一致。
 function isSafeLinkUrl(url: string): boolean {
     const trimmed = url.trim();
-    return /^(https?:\/\/|mailto:|\/|#)/i.test(trimmed);
+    return /^(https?:\/\/|mailto:|\/(?!\/\/)|#)/i.test(trimmed);
 }
 
 // 图片/视频地址白名单：仅允许站内相对路径或 Supabase 存储域名。

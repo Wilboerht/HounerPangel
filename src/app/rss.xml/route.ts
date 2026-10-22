@@ -1,4 +1,4 @@
-import { getAllBlogPosts } from "@/lib/blog-db";
+import { getRecentBlogPosts } from "@/lib/blog-db";
 import { SITE_URL } from "@/lib/site";
 import { plainTextExcerpt } from "@/lib/markdown";
 import type { BlogPost } from "@/lib/types/blog";
@@ -10,17 +10,22 @@ const cdata = (s: string) => `<![CDATA[${s.replace(/]]>/g, "]]]]><![CDATA[>")}]]
 
 const siteUrl = SITE_URL;
 
+const RSS_ITEM_COUNT = 20;
+
+// ISR：30 分钟内复用缓存，与管理端 revalidatePath("/rss.xml") 语义一致
+export const revalidate = 1800;
+
 export async function GET() {
     let posts: BlogPost[];
     try {
-        posts = await getAllBlogPosts(false);
+        posts = await getRecentBlogPosts(RSS_ITEM_COUNT);
     } catch {
         posts = [];
     }
 
     const lastDate = posts.length > 0 ? new Date(posts[0].updatedAt || posts[0].date).toUTCString() : new Date().toUTCString();
 
-    const items = posts.slice(0, 20).map((post) => `
+    const items = posts.map((post) => `
     <item>
       <title>${cdata(post.title)}</title>
       <link>${siteUrl}/blog/${escapeXml(post.slug)}</link>

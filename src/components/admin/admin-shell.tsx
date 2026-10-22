@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown,
@@ -202,10 +202,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const drawerTrapRef = useFocusTrap(drawerOpen, () => setDrawerOpen(false));
   useScrollLock(drawerOpen);
 
-  // 路由变化时收起抽屉
-  useEffect(() => {
+  // 路由变化时收起抽屉：渲染期比较并调整状态（React 官方推荐的 derived-state 模式），
+  // 避免在 effect 里同步 setState 造成级联渲染
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setDrawerOpen(false);
-  }, [pathname]);
+  }
 
   const handleLogout = async () => {
     if (logoutLoading) return;

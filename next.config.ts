@@ -6,6 +6,11 @@ const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
   : "";
 
+if (!supabaseHostname) {
+  // 缺失时 remotePatterns 为空，所有远程图片会 400——构建不报错，这里显式告警
+  console.warn("[next.config] NEXT_PUBLIC_SUPABASE_URL 未设置，远程图片优化将被禁用。");
+}
+
 // Keep in sync with IFRAME_ALLOWED_DOMAINS in src/lib/markdown.tsx
 const iframeAllowedDomains = [
   "embed.music.apple.com",
@@ -29,7 +34,7 @@ const contentSecurityPolicy = [
   `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.supabase.co https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com",
-  "media-src https://*.supabase.co",
+  "media-src 'self' https://*.supabase.co",
   "connect-src 'self' https://*.supabase.co https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://va.vercel-scripts.com",
   // worker-src 覆盖大多数浏览器，child-src 兼容旧版 Safari 的 worker 回退
   "worker-src 'self' blob:",
@@ -66,6 +71,8 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          // Vercel 只对 *.vercel.app 自动加 HSTS，自定义域名需要自己下发（前提是整站 HTTPS）
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           { key: "Content-Security-Policy", value: contentSecurityPolicy },
         ],
       },

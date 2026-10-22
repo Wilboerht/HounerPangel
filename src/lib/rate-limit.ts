@@ -26,6 +26,15 @@ const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
 const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 const useUpstash = Boolean(upstashUrl && upstashToken);
 
+// serverless（Vercel）下每个实例/冷启动都有独立的内存计数器，
+// 内存限流的实际上限会被实例数放大；生产环境必须配置 Upstash。
+if (process.env.NODE_ENV === "production" && !useUpstash) {
+  console.warn(
+    "[rate-limit] 未配置 UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN，" +
+    "限流退化为单实例内存计数，serverless 多实例下防护效果有限。"
+  );
+}
+
 function cleanupExpired() {
   const now = Date.now();
   for (const [key, entry] of store) {
@@ -121,6 +130,13 @@ export async function rateLimit(
 }
 
 export function getRateLimitKey(request: Request): string {
+  // Vercel 部署时优先用 x-vercel-forwarded-for：该头由 Vercel 边缘节点覆写，
+  // 客户端无法伪造；x-forwarded-for 的前段则可被客户端任意附加。
+  if (process.env.VERCEL) {
+    const vercelForwarded = request.headers.get("x-vercel-forwarded-for");
+    const clientIp = vercelForwarded?.split(",")[0]?.trim();
+    if (clientIp) return clientIp;
+  }
   // Trust the right-most X-Forwarded-For entry: it is appended by the outermost
   // trusted proxy, while earlier entries can be spoofed by the client.
   const forwarded = request.headers.get("x-forwarded-for");

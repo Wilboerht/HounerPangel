@@ -15,7 +15,11 @@ function passwordsMatch(password: string, adminPassword: string): boolean {
 export async function POST(request: NextRequest) {
     const limit = await rateLimit(getRateLimitKey(request) + ":login");
     if (!limit.success) {
-        return NextResponse.json({ error: "尝试次数过多，请稍后再试" }, { status: 429 });
+        const retryAfter = Math.max(1, Math.ceil((limit.resetTime - Date.now()) / 1000));
+        return NextResponse.json(
+            { error: "尝试次数过多，请稍后再试" },
+            { status: 429, headers: { "Retry-After": String(retryAfter) } }
+        );
     }
 
     let body: unknown;

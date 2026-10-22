@@ -170,9 +170,9 @@ export function BlogEditClient({ slug }: { slug: string }) {
         title="编辑文章"
         accessory={!currentPublished && <Badge variant="warning">草稿</Badge>}
         actions={
-          // 草稿也能预览：/blog/[slug] 对 admin 放行未发布文章
+          // 草稿预览走管理端专属路由；公开的 /blog/[slug] 只含已发布文章（ISR 缓存）
           <a
-            href={`/blog/${slug}`}
+            href={`/admin/blog/preview/${slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"

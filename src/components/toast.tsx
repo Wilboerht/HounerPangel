@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
 import { CheckCircle, XCircle, Info, X } from "lucide-react";
 
 type ToastType = "success" | "error" | "info";
@@ -84,11 +84,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         className="fixed top-4 left-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none sm:left-auto sm:w-full sm:max-w-sm"
         style={{ top: `calc(1rem + env(safe-area-inset-top, 0px))` }}
       >
+        <LazyMotion features={domAnimation} strict>
         <AnimatePresence>
           {toasts.map((t) => {
             const Icon = icons[t.type];
             return (
-              <motion.div
+              <m.div
                 key={t.id}
                 initial={{ opacity: 0, y: -12, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -104,10 +105,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 >
                   <X className="w-4 h-4" />
                 </button>
-              </motion.div>
+              </m.div>
             );
           })}
         </AnimatePresence>
+        </LazyMotion>
       </div>
     </ToastContext.Provider>
   );

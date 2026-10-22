@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Noto_Serif, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import "highlight.js/styles/github.css";
 import { Analytics } from "@vercel/analytics/react";
-import { ToastProvider } from "@/components/toast";
 import { SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
@@ -96,9 +95,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} ${notoSerifSC.variable} antialiased`}
       >
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        {children}
         <Analytics />
       </body>
     </html>

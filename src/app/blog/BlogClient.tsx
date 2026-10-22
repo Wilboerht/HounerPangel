@@ -1,26 +1,21 @@
-"use client";
-
 import Link from "next/link";
-import { useMemo } from "react";
 import type { BlogPostSummary } from "@/lib/types/blog";
 
 interface Props {
     posts: BlogPostSummary[];
 }
 
+// 无交互，保持为 server component：避免把全部文章数据序列化进 RSC payload 参与水合
 export default function BlogClient({ posts }: Props) {
-    const groupedPosts = useMemo(() => {
-        const groups: Record<string, BlogPostSummary[]> = {};
-        posts.forEach((post) => {
-            const year = new Date(post.date).getUTCFullYear().toString();
-            if (!groups[year]) groups[year] = [];
-            groups[year].push(post);
-        });
-        Object.values(groups).forEach((group) => {
-            group.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        });
-        return groups;
-    }, [posts]);
+    const groupedPosts: Record<string, BlogPostSummary[]> = {};
+    posts.forEach((post) => {
+        const year = new Date(post.date).getUTCFullYear().toString();
+        if (!groupedPosts[year]) groupedPosts[year] = [];
+        groupedPosts[year].push(post);
+    });
+    Object.values(groupedPosts).forEach((group) => {
+        group.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
 
     // 数据库 date 是 'YYYY-MM-DD' 纯日期串，按 UTC 解析，格式化也固定用 UTC，
     // 避免负时区用户本地格式化差一天、导致水合不匹配
@@ -79,7 +74,7 @@ export default function BlogClient({ posts }: Props) {
 
             {/* Footer */}
             <footer className="mt-auto text-sm text-muted">
-                <p suppressHydrationWarning>&copy; {new Date().getFullYear()} wilboerht</p>
+                <p>&copy; {new Date().getFullYear()} wilboerht</p>
             </footer>
         </>
     );

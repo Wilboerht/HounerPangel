@@ -1,38 +1,35 @@
 import BackButton from "@/components/BackButton";
-import { Calendar } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
-import { cache } from "react";
-import { getBlogPostBySlug } from "@/lib/blog-db";
-import { verifySessionToken } from "@/lib/session";
+import { getBlogPostBySlug, getAllBlogPostSummaries } from "@/lib/blog-db";
 import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
-import { firstImageUrl, plainTextExcerpt, renderMarkdown } from "@/lib/markdown";
-import type { BlogPost } from "@/lib/types/blog";
+import { firstImageUrl, plainTextExcerpt } from "@/lib/markdown";
+import { BlogPostArticle } from "@/components/blog-post-article";
 
 interface Props {
     params: Promise<{ slug: string }>;
 }
 
-// 本页读取 cookies 判断 admin 身份（用于预览草稿），因此是动态渲染，不走 ISR 缓存，
-// 未发布文章不会被公开缓存。管理端更新/删除文章后仍通过 revalidatePath 刷新其它缓存页。
-// cache() 让 generateMetadata 和页面渲染共享同一次会话校验
-const isAdmin = cache(async (): Promise<boolean> => {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("admin-session")?.value;
-    return token ? verifySessionToken(token) : false;
-});
+// ISR：60s 内复用缓存；管理端增删改文章后通过 revalidatePath 立即刷新。
+// 本页只展示已发布文章；管理端的草稿预览走 /admin/blog/preview/[slug]（独立动态路由），
+// 因此这里不需要读 cookies，公开流量可以命中缓存。
+export const revalidate = 60;
 
-async function fetchPost(slug: string): Promise<BlogPost | null> {
+// 构建期预渲染全部已发布文章；构建时 DB 不可达则退化为按需 ISR
+export async function generateStaticParams() {
     try {
-        // admin 可预览未发布的草稿；公众访问未发布文章得到 404
-        const includeUnpublished = await isAdmin();
-        const post = await getBlogPostBySlug(slug, includeUnpublished);
-        if (post) return post;
-    } catch {
-        // ignore db errors and treat as not found
+        const posts = await getAllBlogPostSummaries();
+        return posts.map((post) => ({ slug: post.slug }));
+    } catch (error) {
+        console.error("生成文章静态参数失败，退回按需渲染：", error);
+        return [];
     }
-    return null;
+}
+
+// 未发布/不存在的 slug 返回 null；其他 DB 错误直接抛出，
+// 交给 error.tsx 返回 500（不能把服务故障吞成 404，会误导搜索引擎）
+async function fetchPost(slug: string) {
+    return getBlogPostBySlug(slug, false);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -119,44 +116,7 @@ export default async function BlogPostPage({ params }: Props) {
                     <BackButton label="返回博客" fallbackHref="/blog" />
                 </nav>
 
-                <section className="space-y-10">
-                    <header className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
-                            <div className="inline-flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5" />
-                                <time dateTime={post.date}>
-                                    {new Date(post.date).toLocaleDateString("zh-CN", {
-                                        year: "numeric",
-                                        month: "long",
-                                        day: "numeric",
-                                        // 纯日期串按 UTC 解析，固定 UTC 渲染避免服务器/客户端时区差导致的水合不匹配
-                                        timeZone: "UTC",
-                                    })}
-                                </time>
-                            </div>
-                            {post.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-x-3 gap-y-1">
-                                    {post.tags.map((tag) => (
-                                        <span
-                                            key={tag}
-                                            className="text-sm text-muted/70"
-                                        >
-                                            #{tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                            {post.title}
-                        </h1>
-                    </header>
-
-                    <article className="article-body">
-                        {renderMarkdown(post.content)}
-                    </article>
-                </section>
+                <BlogPostArticle post={post} />
 
                 <footer className="mt-auto text-sm text-muted">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>

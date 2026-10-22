@@ -4,6 +4,9 @@ import { SITE_URL } from "@/lib/site";
 
 const siteUrl = SITE_URL;
 
+// ISR：1 小时内复用缓存，与管理端 revalidatePath("/sitemap.xml") 语义一致
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let posts: Awaited<ReturnType<typeof getAllBlogPostSummaries>> = [];
     try {

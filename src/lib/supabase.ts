@@ -30,6 +30,24 @@ export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogP
     }));
 }
 
+// RSS 等场景只需要最新 N 篇：在数据库侧 limit，避免全表传输后再截断
+export async function getRecentBlogPosts(limit: number): Promise<BlogPost[]> {
+    const { data, error } = await supabase
+        .from("blog_posts")
+        .select("slug, title, content, date, updated_at, tags, published")
+        .eq("published", true)
+        .order("date", { ascending: false })
+        .limit(limit);
+
+    if (error) throw error;
+    return (data || []).map((row) => ({
+        ...row,
+        updatedAt: row.updated_at,
+        tags: row.tags ?? [],
+        published: row.published ?? false,
+    }));
+}
+
 export async function getAllBlogPostSummaries(includeUnpublished = false): Promise<BlogPostSummary[]> {
     let query = supabase
         .from("blog_posts")

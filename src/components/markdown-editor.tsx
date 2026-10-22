@@ -399,6 +399,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
                 </button>
               </span>
             )}
+            {/* eslint-disable-next-line react-hooks/refs -- tool.action 闭包只在 onClick 中执行，内部读取 textareaRef 是合法的；规则对经由普通数组传入 JSX 的回调存在误报 */}
             {tools.map((tool) => (
               <button
                 key={tool.label}
