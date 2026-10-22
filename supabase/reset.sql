@@ -51,18 +51,10 @@ END
 $$;
 
 -- 5. Clean storage: empty and delete all buckets.
--- Use direct deletes instead of storage.empty_bucket()/delete_bucket(),
--- which only exist in newer Supabase Storage versions.
-DO $$
-DECLARE
-  b RECORD;
-BEGIN
-  FOR b IN SELECT id FROM storage.buckets LOOP
-    DELETE FROM storage.objects WHERE bucket_id = b.id;
-    DELETE FROM storage.buckets WHERE id = b.id;
-  END LOOP;
-END
-$$;
+-- Supabase blocks direct DELETE on storage tables via the storage.protect_delete
+-- trigger (ERROR 42501). TRUNCATE does not fire row-level triggers, so it works.
+-- CASCADE also clears tables that reference buckets (objects, multipart uploads, ...).
+TRUNCATE storage.buckets CASCADE;
 
 -- 6. Recreate the blog setup from scratch
 
