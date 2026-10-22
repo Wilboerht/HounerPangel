@@ -110,7 +110,7 @@ function extractStoragePaths(content: string): string[] {
     // 编辑器插入的图片/视频/附件扩展名（附件是 [文件名](url) 链接形式）。
     // 与 upload-url API 的 EXT_TO_MIME / bucket allowed_mime_types 白名单保持一致，
     // 不含 avif/svg（上传通道不支持，列入会误删手工引用的同 bucket 文件）。
-    const mediaExt = /\.(png|jpe?g|gif|webp|mp4|webm|mov|mkv|pdf|txt|md|csv|zip|docx?|xlsx?|pptx?)$/i;
+    const mediaExt = /\.(png|jpe?g|gif|webp|mp4|webm|mov|avi|mkv|pdf|txt|md|csv|zip|docx?|xlsx?|pptx?)$/i;
     const regexes = [
         /!\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown image/video: ![alt](url)
         /(?<!!)\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown link/attachment: [name](url)

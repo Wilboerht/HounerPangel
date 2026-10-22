@@ -2,17 +2,17 @@
 -- Only run this if you want a completely fresh database.
 -- All data will be lost and cannot be undone.
 
--- 1. Disable RLS policies and drop them for public tables
+-- 1. Drop all RLS policies (public schema tables and storage.objects)
 DO $$
 DECLARE
   r RECORD;
 BEGIN
   FOR r IN
-    SELECT policyname, tablename
+    SELECT schemaname, policyname, tablename
     FROM pg_policies
-    WHERE schemaname = 'public'
+    WHERE schemaname IN ('public', 'storage')
   LOOP
-    EXECUTE format('DROP POLICY %I ON public.%I', r.policyname, r.tablename);
+    EXECUTE format('DROP POLICY %I ON %I.%I', r.policyname, r.schemaname, r.tablename);
   END LOOP;
 END
 $$;
@@ -115,7 +115,32 @@ ALTER TABLE public.admin_sessions ENABLE ROW LEVEL SECURITY;
 INSERT INTO storage.buckets (id, name, public, avif_autodetection)
 VALUES ('images', 'images', true, false);
 
+-- Bucket-level upload constraints (mirrors 20261006231320_images_bucket_limits.sql;
+-- the upload-url API only validates client-reported metadata, these are the real backstop)
+UPDATE storage.buckets
+SET
+  file_size_limit = 104857600, -- 100MB（视频上限；图片另由 API 限 10MB）
+  allowed_mime_types = ARRAY[
+    'image/png', 'image/jpeg', 'image/gif', 'image/webp',
+    'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska',
+    'application/pdf', 'text/plain', 'text/markdown', 'text/csv', 'application/zip',
+    'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+  ]
+WHERE id = 'images';
+
 -- Public read access to the images bucket (mirrors 20250804000000_setup_blog.sql;
 -- storage policies are not restored by recreating the bucket)
-CREATE POLICY "Allow public read images" ON storage.objects
-  FOR SELECT USING (bucket_id = 'images');
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND policyname = 'Allow public read images'
+  ) THEN
+    CREATE POLICY "Allow public read images" ON storage.objects
+      FOR SELECT USING (bucket_id = 'images');
+  END IF;
+END
+$$;

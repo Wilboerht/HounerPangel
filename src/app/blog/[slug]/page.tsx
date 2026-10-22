@@ -129,6 +129,8 @@ export default async function BlogPostPage({ params }: Props) {
                                         year: "numeric",
                                         month: "long",
                                         day: "numeric",
+                                        // 纯日期串按 UTC 解析，固定 UTC 渲染避免服务器/客户端时区差导致的水合不匹配
+                                        timeZone: "UTC",
                                     })}
                                 </time>
                             </div>

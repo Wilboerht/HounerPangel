@@ -68,14 +68,45 @@ function isSafeLinkUrl(url: string): boolean {
     return /^(https?:\/\/|mailto:|\/|#)/i.test(trimmed);
 }
 
-// 图片/视频地址白名单：仅允许 http(s) 或相对路径
+// 图片/视频地址白名单：仅允许站内相对路径或 Supabase 存储域名。
+// 与 next.config.ts 的 CSP img-src/media-src 对齐——否则外链媒体会被浏览器拦截，正文静默破图。
 function isSafeMediaUrl(url: string): boolean {
     const trimmed = url.trim();
-    return /^(https?:\/\/|\/|#)/i.test(trimmed);
+    if (/^\/(?!\/)/.test(trimmed)) return true;
+    try {
+        const parsed = new URL(trimmed);
+        return (
+            parsed.protocol === "https:" &&
+            (parsed.hostname === "supabase.co" || parsed.hostname.endsWith(".supabase.co"))
+        );
+    } catch {
+        return false;
+    }
 }
 
 // 编辑器附件上传支持的扩展名，与 /api/admin/upload-url 的白名单保持一致
 const ATTACHMENT_EXT_RE = /\.(pdf|txt|md|csv|zip|docx?|xlsx?|pptx?)$/i;
+
+// 当前项目的 Supabase 存储域名，与 next.config.ts 的 remotePatterns 对齐：
+// 只有该域名的图才能走 next/image 优化（其他 Supabase 项目的图会 400）
+const SUPABASE_HOSTNAME = (() => {
+    try {
+        return process.env.NEXT_PUBLIC_SUPABASE_URL
+            ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+            : "";
+    } catch {
+        return "";
+    }
+})();
+
+function isCurrentSupabaseHost(url: string): boolean {
+    if (!SUPABASE_HOSTNAME) return false;
+    try {
+        return new URL(url).hostname === SUPABASE_HOSTNAME;
+    } catch {
+        return false;
+    }
+}
 
 const IFRAME_ALLOWED_DOMAINS = [
     "embed.music.apple.com",
@@ -561,9 +592,9 @@ export function renderMarkdown(content: string): React.ReactNode {
             const imgHeight = sizeMatch ? parseInt(sizeMatch[3], 10) : undefined;
             if (isSafeMediaUrl(imgUrl)) {
             const isVideo = /\.(mp4|webm|mov|avi|mkv)($|\?)/i.test(imgUrl);
-            // 只有配置了 remotePatterns 的 Supabase 存储图才走 next/image 优化，外链图用裸 img
+            // 只有配置了 remotePatterns 的本项目 Supabase 存储图才走 next/image 优化，其余用裸 img
             const useNextImage = !isVideo && imgWidth !== undefined && imgHeight !== undefined
-                && imgUrl.includes(".supabase.co/");
+                && isCurrentSupabaseHost(imgUrl);
             elements.push(
                 isVideo ? (
                     <figure key={`vid-${index}`} className="">
