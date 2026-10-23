@@ -25,7 +25,10 @@ export default async function AdminLayout({
     const authed = token ? await verifySessionToken(token) : false;
     return (
         <ToastProvider>
-            {authed ? <AdminShell>{children}</AdminShell> : <LoginForm />}
+            {/* 管理端工具界面用 Geist Sans；公开站的衬线字体仅保留给文章正文 */}
+            <div className="admin-ui">
+                {authed ? <AdminShell>{children}</AdminShell> : <LoginForm />}
+            </div>
         </ToastProvider>
     );
 }

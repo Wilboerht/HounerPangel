@@ -193,7 +193,7 @@ export function PostForm({
           e.preventDefault();
         }
       }}
-      className="flex flex-col gap-6"
+      className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-2">
         <label htmlFor={`${idPrefix}-title`} className="text-sm font-medium text-foreground">
@@ -258,31 +258,35 @@ export function PostForm({
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor={`${idPrefix}-date`} className="text-sm font-medium text-foreground">日期</label>
-        <input
-          id={`${idPrefix}-date`}
-          type="date"
-          required
-          value={form.date}
-          onChange={(e) => updateField({ date: e.target.value })}
-          className="w-full px-3 py-2 rounded-md text-foreground geist-input"
-        />
-      </div>
-
-      <div className="flex items-center gap-3">
-        <label htmlFor={`${idPrefix}-published`} className="text-sm font-medium text-foreground">发布状态</label>
-        <label className="relative inline-flex items-center cursor-pointer">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <label htmlFor={`${idPrefix}-date`} className="text-sm font-medium text-foreground">日期</label>
           <input
-            id={`${idPrefix}-published`}
-            type="checkbox"
-            checked={form.published}
-            onChange={(e) => updateField({ published: e.target.checked })}
-            className="sr-only peer"
+            id={`${idPrefix}-date`}
+            type="date"
+            required
+            value={form.date}
+            onChange={(e) => updateField({ date: e.target.value })}
+            className="w-full px-3 py-2 rounded-md text-foreground geist-input"
           />
-          <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-        </label>
-        <span className="text-xs text-muted">{form.published ? "已发布" : "草稿"}</span>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor={`${idPrefix}-published`} className="text-sm font-medium text-foreground">发布状态</label>
+          <div className="flex items-center gap-2 h-9">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                id={`${idPrefix}-published`}
+                type="checkbox"
+                checked={form.published}
+                onChange={(e) => updateField({ published: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+            </label>
+            <span className="text-xs text-muted">{form.published ? "已发布" : "草稿"}</span>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -307,7 +311,8 @@ export function PostForm({
             </span>
           ))}
         </div>
-        <div className="flex gap-2">
+        {/* 输入框和"添加"共用一个描边容器，视觉上是一体化控件 */}
+        <div className="flex items-center rounded-md geist-input">
           <input
             id={`${idPrefix}-tags`}
             type="text"
@@ -316,13 +321,13 @@ export function PostForm({
             onChange={(e) => tagManager.setInput(e.target.value)}
             onKeyDown={(e) => { const wasAdded = tagManager.handleInputKeyDown(e); if (wasAdded) onDirty(); }}
             placeholder="输入标签后按回车添加"
-            className="flex-1 px-3 py-2 rounded-md text-foreground placeholder:text-muted/50 geist-input"
+            className="flex-1 min-w-0 bg-transparent px-3 py-2 text-foreground placeholder:text-muted/50 focus:outline-none"
           />
           <button
             type="button"
             onClick={() => { if (tagManager.addTag(tagManager.input)) onDirty(); }}
             disabled={!tagManager.input.trim()}
-            className="px-4 py-2 rounded-md text-muted hover:text-foreground disabled:opacity-30 text-sm geist-input"
+            className="flex-shrink-0 mr-1 px-3 py-1.5 rounded text-sm text-muted hover:text-foreground hover:bg-foreground/5 disabled:opacity-30 transition-colors"
           >
             添加
           </button>
@@ -340,27 +345,27 @@ export function PostForm({
         />
       </div>
 
-      {/* sticky 底部操作栏：长表单下保存/取消始终可达；含底部安全区避让。
+      {/* sticky 底部操作栏：长表单下保存/取消始终可达；实底 + 顶部发丝分隔线，右对齐（对话框惯例）。
           不用负 margin 撑满父级 padding——弹窗和编辑页的父级 padding 不同，负 margin 会两侧露缝 */}
-      <div className="sticky bottom-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background/85 backdrop-blur-sm rounded-b-lg flex items-center gap-2">
-        <button
-          type="submit"
-          disabled={saving || (slugEditable && !!form.slug && !slugValid)}
-          title="保存 (Ctrl+S)"
-          className="inline-flex items-center gap-2 px-6 py-2 rounded-md bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? "保存中..." : "保存"}
-        </button>
+      <div className="sticky bottom-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background shadow-[0_-1px_0_rgba(0,0,0,0.08)] flex items-center justify-end gap-2">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="text-sm text-muted hover:text-foreground transition-colors"
+            className="px-4 py-2 rounded-md text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
           >
             取消
           </button>
         )}
+        <button
+          type="submit"
+          disabled={saving || (slugEditable && !!form.slug && !slugValid)}
+          title="保存 (Ctrl+S)"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
+        >
+          <Save className="w-4 h-4" />
+          {saving ? "保存中..." : "保存"}
+        </button>
       </div>
     </form>
   );
