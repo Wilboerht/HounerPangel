@@ -517,7 +517,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             insertText("*", "*", "斜体");
           }
         }}
-        placeholder={"## 开头\n\n写点什么..."}
+        placeholder="写点什么..."
         className={`w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px] ${tab === "edit" ? "" : "hidden"}`}
       />
       {tab === "preview" && (
