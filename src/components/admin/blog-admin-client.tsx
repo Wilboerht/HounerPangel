@@ -434,7 +434,7 @@ export function BlogAdminClient() {
                   </h2>
                 </div>
 
-                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] overflow-y-auto [overscroll-behavior:contain]">
+                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] pt-4 overflow-y-auto [overscroll-behavior:contain]">
                   <PostForm
                     key={formKey}
                     idPrefix="new"
@@ -450,6 +450,7 @@ export function BlogAdminClient() {
                     onSavingChange={setCreating}
                     slugError={slugError}
                     onSlugChange={() => setSlugError(null)}
+                    footerClassName="-ml-[calc(1.5rem+env(safe-area-inset-left,0px))] -mr-[calc(1.5rem+env(safe-area-inset-right,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))]"
                   />
                 </div>
               </div>

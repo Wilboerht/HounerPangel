@@ -54,6 +54,9 @@ interface PostFormProps {
   slugError?: string | null;
   // 用户修改 slug 时回调，父级据此清除 slugError
   onSlugChange?: () => void;
+  // 追加到底部操作栏的类名：弹窗里用它把操作栏出血撑满弹窗边缘（页脚形态），
+  // 缺省时操作栏只与内容同宽（编辑页的 sticky 形态）
+  footerClassName?: string;
 }
 
 export function PostForm({
@@ -70,6 +73,7 @@ export function PostForm({
   onSavingChange,
   slugError,
   onSlugChange,
+  footerClassName,
 }: PostFormProps) {
   const [form, setForm] = useState({
     slug: initialValues.slug,
@@ -346,9 +350,9 @@ export function PostForm({
         />
       </div>
 
-      {/* sticky 底部操作栏：长表单下保存/取消始终可达；实底 + 顶部发丝分隔线，右对齐（对话框惯例）。
-          不用负 margin 撑满父级 padding——弹窗和编辑页的父级 padding 不同，负 margin 会两侧露缝 */}
-      <div className="sticky bottom-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background border-t border-border/50 flex items-center justify-end gap-2">
+      {/* sticky 底部操作栏：长表单下保存/取消始终可达；实底 + 顶部分隔线 + 右对齐（对话框页脚惯例）。
+          弹窗里通过 footerClassName 出血撑满弹窗边缘并贴齐下缘，避免"上下悬空一条带子"的观感 */}
+      <div className={`sticky bottom-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background border-t border-border/50 flex items-center justify-end gap-2 ${footerClassName ?? ""}`}>
         {onCancel && (
           <button
             type="button"
