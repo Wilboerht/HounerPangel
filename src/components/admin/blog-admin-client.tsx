@@ -326,7 +326,7 @@ export function BlogAdminClient() {
                 placeholder="搜索文章标题、slug 或标签..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-10 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                className="w-full pl-10 pr-10 py-2 rounded-md text-foreground placeholder:text-muted/50 geist-input"
               />
               {search && (
                 <button
@@ -419,7 +419,7 @@ export function BlogAdminClient() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="new-post-title"
-                className="relative w-full max-w-3xl bg-background rounded-lg geist-shadow overflow-hidden max-h-full flex flex-col max-sm:rounded-none max-sm:h-dvh"
+                className="relative w-full max-w-3xl bg-background rounded-lg geist-dialog-shadow overflow-hidden max-h-full flex flex-col max-sm:rounded-none max-sm:h-dvh"
               >
                 {/* 关闭按钮带底色：表单滚动时内容不会从图标底下穿过 */}
                 <div className="absolute z-10 top-[calc(0.75rem+env(safe-area-inset-top,0px))] right-[calc(0.75rem+env(safe-area-inset-right,0px))] bg-background/80 backdrop-blur-sm rounded-lg">

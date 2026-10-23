@@ -208,7 +208,7 @@ export function PostForm({
           value={form.title}
           onChange={(e) => handleTitleChange(e.target.value)}
           placeholder="文章标题"
-          className="px-4 py-2 rounded-md bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+          className="px-3 py-2 rounded-md text-foreground placeholder:text-muted/50 geist-input"
         />
       </div>
 
@@ -239,10 +239,8 @@ export function PostForm({
               placeholder="hello-world"
               pattern="^[a-z0-9\-]+$"
               aria-invalid={!!slugError || (!!form.slug && !slugValid)}
-              className={`px-4 py-2 rounded-md bg-foreground/5 border text-foreground placeholder:text-muted/50 focus:outline-none transition-colors ${
-                slugError || (form.slug && !slugValid)
-                  ? "border-red-300 focus:border-red-400"
-                  : "border-border/50 focus:border-accent/50"
+              className={`px-3 py-2 rounded-md text-foreground placeholder:text-muted/50 geist-input ${
+                slugError || (form.slug && !slugValid) ? "[--input-ring:#f87171]" : ""
               }`}
             />
             {slugError && (
@@ -268,7 +266,7 @@ export function PostForm({
           required
           value={form.date}
           onChange={(e) => updateField({ date: e.target.value })}
-          className="w-full px-4 py-2 rounded-md bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors"
+          className="w-full px-3 py-2 rounded-md text-foreground geist-input"
         />
       </div>
 
@@ -318,13 +316,13 @@ export function PostForm({
             onChange={(e) => tagManager.setInput(e.target.value)}
             onKeyDown={(e) => { const wasAdded = tagManager.handleInputKeyDown(e); if (wasAdded) onDirty(); }}
             placeholder="输入标签后按回车添加"
-            className="flex-1 px-4 py-2 rounded-md bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+            className="flex-1 px-3 py-2 rounded-md text-foreground placeholder:text-muted/50 geist-input"
           />
           <button
             type="button"
             onClick={() => { if (tagManager.addTag(tagManager.input)) onDirty(); }}
             disabled={!tagManager.input.trim()}
-            className="px-4 py-2 rounded-md bg-foreground/5 text-muted hover:text-foreground disabled:opacity-30 transition-colors text-sm"
+            className="px-4 py-2 rounded-md text-muted hover:text-foreground disabled:opacity-30 text-sm geist-input"
           >
             添加
           </button>

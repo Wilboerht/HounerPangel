@@ -59,7 +59,7 @@ export function ConfirmDialog({
               aria-modal="true"
               aria-labelledby={titleId}
               aria-describedby={messageId}
-              className="relative w-full max-w-sm max-h-full overflow-y-auto bg-background rounded-lg geist-shadow p-6"
+              className="relative w-full max-w-sm max-h-full overflow-y-auto bg-background rounded-lg geist-dialog-shadow p-6"
             >
               <div className="flex items-start gap-4">
                 <div className={`p-2 rounded-full flex-shrink-0 ${danger ? "bg-red-500/10" : "bg-foreground/5"}`}>

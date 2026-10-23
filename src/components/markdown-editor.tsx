@@ -367,8 +367,8 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   ];
 
   return (
-    <div className="border border-border/50 rounded-lg overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 bg-foreground/5 border-b border-border/50">
+    <div className="rounded-lg overflow-hidden shadow-[0_0_0_1px_rgba(0,0,0,0.12)]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 bg-foreground/[0.03] shadow-[0_1px_0_rgba(0,0,0,0.08)]">
         <div className="flex items-center gap-1" role="tablist" aria-label="编辑器视图切换">
           <button
             type="button"
@@ -518,7 +518,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           }
         }}
         placeholder={"## 开头\n\n写点什么..."}
-        className={`w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px] ${tab === "edit" ? "" : "hidden"}`}
+        className={`w-full px-4 py-3 bg-transparent text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px] ${tab === "edit" ? "" : "hidden"}`}
       />
       {tab === "preview" && (
         <div id={previewPanelId} role="tabpanel" aria-labelledby={`${editorId}-tab-preview`} className="px-4 py-3 bg-foreground/[0.02] min-h-[300px] text-sm leading-relaxed">
