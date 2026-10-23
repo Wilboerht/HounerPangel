@@ -429,7 +429,7 @@ export function BlogAdminClient() {
                 </div>
 
                 <div className="pb-4 flex-shrink-0 border-b border-border/50 pt-[calc(2rem+env(safe-area-inset-top,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(4rem+env(safe-area-inset-right,0px))]">
-                  <h2 id="new-post-title" className="text-xl font-bold text-foreground">
+                  <h2 id="new-post-title" className="text-xl font-semibold tracking-tight text-foreground">
                     新建文章
                   </h2>
                 </div>
