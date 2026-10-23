@@ -20,6 +20,8 @@ interface MarkdownEditorProps {
   rows?: number;
   required?: boolean;
   id?: string;
+  // 上传接口返回 401 时回调（统一的会话过期处理：提示 + 刷新出登录表单）
+  onAuthExpired?: () => void;
 }
 
 const MIME_MAP: Record<string, string> = {
@@ -98,7 +100,7 @@ function sanitizeLinkText(name: string): string {
   return name.replace(/[[\]()]/g, "").trim() || "附件";
 }
 
-export function MarkdownEditor({ value, onChange, rows = 12, required = false, id }: MarkdownEditorProps) {
+export function MarkdownEditor({ value, onChange, rows = 12, required = false, id, onAuthExpired }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>("");
@@ -108,6 +110,10 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const attachmentInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
   const toast = useToast();
+
+  // tab/面板 id 基于传入的 id 派生，保证 aria-controls 指向真实存在的元素
+  const editorId = id || "md-editor-panel";
+  const previewPanelId = `${editorId}-preview`;
 
   // 卸载时中止进行中的上传，避免回调对卸载组件写状态
   useEffect(() => () => {
@@ -168,6 +174,9 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     });
   };
 
+  // 会话过期哨兵：onAuthExpired 已统一提示并刷新出登录表单，上层 catch 遇到它不再重复 toast
+  const AUTH_EXPIRED = "__auth_expired__";
+
   const uploadToStorage = async (file: File, signal: AbortSignal): Promise<string> => {
     const contentType = getMimeType(file);
     const res = await fetch("/api/admin/upload-url", {
@@ -182,6 +191,11 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     });
 
     if (!res.ok) {
+      if (res.status === 401) {
+        // 走统一的会话过期流程（toast + 刷新出登录表单），而不是停在编辑页让用户误以为还登录着
+        onAuthExpired?.();
+        throw new Error(AUTH_EXPIRED);
+      }
       let message = "上传失败";
       try { const d = await res.json(); if (d.error) message = d.error; } catch {}
       throw new Error(message);
@@ -210,7 +224,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         }
       };
 
-      xhr.onerror = () => reject(new Error("上传失败"));
+      xhr.onerror = () => reject(new Error("网络错误，请检查连接后重试"));
       xhr.onabort = () => reject(new DOMException("已取消", "AbortError"));
       xhr.send(file);
     });
@@ -246,8 +260,9 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       insertBlock(markdown);
       toast.success(`${KIND_LABEL[kind]}已插入`);
     } catch (err) {
-      // 用户取消或组件卸载触发的 abort 不报错
+      // 用户取消或组件卸载触发的 abort 不报错；会话过期已由 onAuthExpired 统一提示
       if (controller.signal.aborted) return;
+      if (err instanceof Error && err.message === AUTH_EXPIRED) return;
       toast.error(err instanceof Error ? err.message : "上传失败");
     } finally {
       if (uploadAbortRef.current === controller) uploadAbortRef.current = null;
@@ -357,11 +372,11 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         <div className="flex items-center gap-1" role="tablist" aria-label="编辑器视图切换">
           <button
             type="button"
-            id="tab-edit"
+            id={`${editorId}-tab-edit`}
             onClick={() => setTab("edit")}
             role="tab"
             aria-selected={tab === "edit"}
-            aria-controls="md-editor-panel"
+            aria-controls={editorId}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
               tab === "edit" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
@@ -371,11 +386,11 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           </button>
           <button
             type="button"
-            id="tab-preview"
+            id={`${editorId}-tab-preview`}
             onClick={() => setTab("preview")}
             role="tab"
             aria-selected={tab === "preview"}
-            aria-controls="md-preview-panel"
+            aria-controls={previewPanelId}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
               tab === "preview" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
@@ -393,7 +408,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
                   type="button"
                   onClick={() => uploadAbortRef.current?.abort()}
                   aria-label="取消上传"
-                  className="p-1 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
+                  className="p-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -470,9 +485,9 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       {/* textarea 常驻挂载：切预览不丢光标/撤销历史，上传完成时插入目标也不会被卸载 */}
       <textarea
         ref={textareaRef}
-        id={id || "md-editor-panel"}
+        id={editorId}
         role="tabpanel"
-        aria-labelledby="tab-edit"
+        aria-labelledby={`${editorId}-tab-edit`}
         required={required}
         rows={rows}
         defaultValue={value}
@@ -506,7 +521,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         className={`w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px] ${tab === "edit" ? "" : "hidden"}`}
       />
       {tab === "preview" && (
-        <div id="md-preview-panel" role="tabpanel" aria-labelledby="tab-preview" className="px-4 py-3 bg-foreground/[0.02] min-h-[300px] text-sm leading-relaxed">
+        <div id={previewPanelId} role="tabpanel" aria-labelledby={`${editorId}-tab-preview`} className="px-4 py-3 bg-foreground/[0.02] min-h-[300px] text-sm leading-relaxed">
           <MarkdownPreview value={value} />
         </div>
       )}

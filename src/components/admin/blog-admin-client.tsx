@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, X, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Search, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
@@ -63,6 +63,12 @@ export function BlogAdminClient() {
   const [deleteTarget, setDeleteTarget] = useState<BlogPostSummary | null>(null);
   const [formDirty, setFormDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(false);
+  // 创建请求在途时禁止关闭弹窗（避免"请求还在飞、表单已被关掉"的竞态）
+  const [creating, setCreating] = useState(false);
+  // 服务端返回的 slug 冲突（409）显示在表单 slug 字段下方
+  const [slugError, setSlugError] = useState<string | null>(null);
+  // 行内发布/下线切换中的 slug
+  const [togglingSlug, setTogglingSlug] = useState<string | null>(null);
 
   // 新建表单状态：initialValues 变化时通过 formKey 重挂载 PostForm
   const [modalInitial, setModalInitial] = useState<PostFormValues>(() => blankValues(""));
@@ -148,10 +154,58 @@ export function BlogAdminClient() {
       } else {
         toast.error("删除失败");
       }
-    } catch {
-      toast.error("删除失败");
+    } catch (err) {
+      toast.error(err instanceof TypeError ? "网络错误，请检查连接后重试" : "删除失败");
     }
     setDeleteTarget(null);
+  };
+
+  // 行内发布/下线：PUT 需要完整字段，先取全文再翻转 published
+  const handleTogglePublish = async (post: BlogPostSummary) => {
+    if (togglingSlug) return;
+    setTogglingSlug(post.slug);
+    try {
+      const res = await fetch(`/api/blog/${post.slug}`);
+      if (res.status === 401) {
+        authExpired();
+        return;
+      }
+      if (!res.ok) throw new Error("操作失败");
+      const full = await res.json();
+      const putRes = await fetch(`/api/blog/${post.slug}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: full.title,
+          content: full.content,
+          date: full.date,
+          tags: full.tags ?? [],
+          published: !post.published,
+        }),
+      });
+      if (putRes.status === 401) {
+        authExpired();
+        return;
+      }
+      if (!putRes.ok) {
+        const data = await putRes.json();
+        throw new Error(data.error || "操作失败");
+      }
+      setPosts((prev) =>
+        prev.map((p) => (p.slug === post.slug ? { ...p, published: !post.published } : p))
+      );
+      toast.success(post.published ? "已转为草稿" : "已发布");
+    } catch (err) {
+      toast.error(
+        err instanceof TypeError
+          ? "网络错误，请检查连接后重试"
+          : err instanceof Error
+            ? err.message
+            : "操作失败"
+      );
+    } finally {
+      setTogglingSlug(null);
+    }
   };
 
   const resetAndCloseModal = () => {
@@ -161,6 +215,7 @@ export function BlogAdminClient() {
     setFormKey((k) => k + 1);
     setFormDirty(false);
     setPendingClose(false);
+    setSlugError(null);
   };
 
   const handleCreate = async (values: PostFormValues): Promise<boolean> => {
@@ -182,16 +237,20 @@ export function BlogAdminClient() {
         return false;
       } else {
         const data = await res.json();
+        // slug 冲突除了 toast 还高亮输入框（toast 3.5 秒就消失，字段级提示更可见）
+        if (res.status === 409) setSlugError(data.error || "Slug 已存在");
         toast.error(data.error || "保存失败");
         return false;
       }
-    } catch {
-      toast.error("保存失败");
+    } catch (err) {
+      toast.error(err instanceof TypeError ? "网络错误，请检查连接后重试" : "保存失败");
       return false;
     }
   };
 
   const closeNewModal = () => {
+    // 创建请求在途时不允许关闭：弹窗关了但请求还在飞，成功/失败反馈会和用户预期对不上
+    if (creating) return;
     if (formDirty) {
       setPendingClose(true);
       return;
@@ -239,7 +298,7 @@ export function BlogAdminClient() {
         actions={
           <button
             onClick={openNewModal}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             新建文章
@@ -252,7 +311,7 @@ export function BlogAdminClient() {
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-[62px] rounded-lg border border-border/50 bg-foreground/[0.03] animate-pulse"
+              className="h-[62px] rounded-lg border border-border/50 bg-foreground/[0.03] motion-safe:animate-pulse"
             />
           ))}
         </div>
@@ -273,7 +332,7 @@ export function BlogAdminClient() {
                 <button
                   onClick={() => setSearch("")}
                   aria-label="清除搜索"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -300,7 +359,16 @@ export function BlogAdminClient() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <IconButton href={`/admin/blog/edit/${post.slug}`} label="编辑" title="编辑">
+                    <IconButton
+                      onClick={() => handleTogglePublish(post)}
+                      label={post.published ? "转为草稿" : "发布"}
+                      title={post.published ? "转为草稿" : "发布"}
+                      size="lg"
+                      disabled={togglingSlug === post.slug}
+                    >
+                      {post.published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </IconButton>
+                    <IconButton href={`/admin/blog/edit/${post.slug}`} label="编辑" title="编辑" size="lg">
                       <Pencil className="w-4 h-4" />
                     </IconButton>
                     <IconButton
@@ -308,6 +376,7 @@ export function BlogAdminClient() {
                       label="删除"
                       title="删除"
                       variant="danger"
+                      size="lg"
                     >
                       <Trash2 className="w-4 h-4" />
                     </IconButton>
@@ -358,13 +427,13 @@ export function BlogAdminClient() {
                   </IconButton>
                 </div>
 
-                <div className="pb-4 flex-shrink-0 pt-[calc(2rem+env(safe-area-inset-top,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(4rem+env(safe-area-inset-right,0px))] sm:pl-8 sm:pr-16">
+                <div className="pb-4 flex-shrink-0 pt-[calc(2rem+env(safe-area-inset-top,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(4rem+env(safe-area-inset-right,0px))] sm:pl-[calc(2rem+env(safe-area-inset-left,0px))] sm:pr-[calc(4rem+env(safe-area-inset-right,0px))]">
                   <h2 id="new-post-title" className="text-xl font-bold text-foreground">
                     新建文章
                   </h2>
                 </div>
 
-                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] sm:px-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] overflow-y-auto">
+                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] sm:pl-[calc(2rem+env(safe-area-inset-left,0px))] sm:pr-[calc(2rem+env(safe-area-inset-right,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] overflow-y-auto">
                   <PostForm
                     key={formKey}
                     idPrefix="new"
@@ -377,6 +446,9 @@ export function BlogAdminClient() {
                     onDirty={() => setFormDirty(true)}
                     onValuesChange={draft.scheduleSave}
                     onCancel={closeNewModal}
+                    onSavingChange={setCreating}
+                    slugError={slugError}
+                    onSlugChange={() => setSlugError(null)}
                   />
                 </div>
               </div>

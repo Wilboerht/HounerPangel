@@ -10,7 +10,7 @@ export default function MarkdownPreview({ value }: { value: string }) {
   const rendered = useMemo(() => renderMarkdown(value), [value]);
 
   if (!value) {
-    return <span className="text-muted/50">预览区域 — 开始 Markdown 内容</span>;
+    return <span className="text-muted/50">预览区域 — 开始输入 Markdown 内容</span>;
   }
   // 与前台文章页共用 .article-body，保证预览所见即所得
   return (

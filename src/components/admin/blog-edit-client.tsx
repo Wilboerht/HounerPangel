@@ -18,12 +18,16 @@ export function BlogEditClient({ slug }: { slug: string }) {
   const toast = useToast();
 
   const [loading, setLoading] = useState(true);
+  // 网络/服务错误时留在原地给重试入口（只有文章真正不存在才跳回列表）
+  const [loadFailed, setLoadFailed] = useState(false);
   const [initial, setInitial] = useState<PostFormValues | null>(null);
   const [initialTagInput, setInitialTagInput] = useState<string | undefined>(undefined);
   // 恢复草稿时通过 formKey 重挂载 PostForm，让新的 initialValues 生效
   const [formKey, setFormKey] = useState(0);
   const [formDirty, setFormDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(false);
+  // 保存请求在途时禁止返回（避免"请求还在飞、页面已离开"的竞态）
+  const [saving, setSaving] = useState(false);
   // 头部"草稿"徽标跟随表单发布状态
   const [currentPublished, setCurrentPublished] = useState(false);
   const { scheduleSave: scheduleDraftSave, read: readDraft, clear: clearDraft } =
@@ -46,7 +50,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
   });
   const authExpired = useAuthExpired();
 
-  useEffect(() => {
+  const loadPost = useCallback(() => {
     fetch(`/api/blog/${slug}`)
       .then(async (res) => {
         if (res.status === 401) {
@@ -92,21 +96,36 @@ export function BlogEditClient({ slug }: { slug: string }) {
         }
       })
       .catch(() => {
-        toast.error("加载失败");
-        router.push("/admin/blog");
+        // 网络/服务错误：留在原地并给出重试入口，而不是把用户踢回列表
+        setLoading(false);
+        setLoadFailed(true);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, router]);
 
+  useEffect(() => {
+    loadPost();
+  }, [loadPost]);
+
+  // 重试按钮用：重置加载状态后重新拉取（重置放在事件处理器里，而非 loadPost 内，
+  // 避免挂载 effect 里同步 setState 触发级联渲染）
+  const retryLoad = () => {
+    setLoading(true);
+    setLoadFailed(false);
+    loadPost();
+  };
+
   useDirtyGuard(formDirty, () => setPendingClose(true));
 
   const goBack = useCallback(() => {
+    // 保存请求在途时不允许离开，避免请求完成后页面已切走的状态错乱
+    if (saving) return;
     if (formDirty) {
       setPendingClose(true);
       return;
     }
     router.push("/admin/blog");
-  }, [formDirty, router]);
+  }, [saving, formDirty, router]);
 
   const handleSave = async (values: PostFormValues): Promise<boolean> => {
     try {
@@ -135,8 +154,8 @@ export function BlogEditClient({ slug }: { slug: string }) {
         toast.error(data.error || "保存失败");
         return false;
       }
-    } catch {
-      toast.error("保存失败");
+    } catch (err) {
+      toast.error(err instanceof TypeError ? "网络错误，请检查连接后重试" : "保存失败");
       return false;
     }
   };
@@ -147,9 +166,27 @@ export function BlogEditClient({ slug }: { slug: string }) {
   }, [scheduleDraftSave]);
 
   if (loading) {
+    // 与列表页一致的骨架屏，避免纯文字"加载中"的体验落差
     return (
-      <div className="flex items-center justify-center py-32">
-        <p className="text-sm text-muted">加载中...</p>
+      <div className="flex flex-col gap-6" aria-busy="true" aria-label="加载中">
+        <div className="h-9 w-24 rounded-lg bg-foreground/[0.05] motion-safe:animate-pulse" />
+        <div className="h-10 rounded-lg bg-foreground/[0.05] motion-safe:animate-pulse" />
+        <div className="h-10 rounded-lg bg-foreground/[0.05] motion-safe:animate-pulse" />
+        <div className="h-72 rounded-lg bg-foreground/[0.05] motion-safe:animate-pulse" />
+      </div>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-32">
+        <p className="text-sm text-muted">加载失败，可能是网络问题</p>
+        <button
+          onClick={retryLoad}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+        >
+          重试
+        </button>
       </div>
     );
   }
@@ -195,6 +232,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
           onDirty={() => setFormDirty(true)}
           onValuesChange={handleValuesChange}
           onCancel={goBack}
+          onSavingChange={setSaving}
         />
       )}
 

@@ -23,6 +23,7 @@ interface IconButtonProps {
   variant?: IconButtonVariant;
   size?: IconButtonSize;
   title?: string;
+  disabled?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -34,10 +35,11 @@ export function IconButton({
   variant = "ghost",
   size = "md",
   title,
+  disabled = false,
   className,
   children,
 }: IconButtonProps) {
-  const cls = `inline-flex items-center justify-center rounded-lg transition-colors ${variantCls[variant]} ${sizeCls[size]} ${className ?? ""}`;
+  const cls = `inline-flex items-center justify-center rounded-lg transition-colors disabled:opacity-50 ${variantCls[variant]} ${sizeCls[size]} ${className ?? ""}`;
   if (href) {
     return (
       <Link href={href} aria-label={label} title={title} onClick={onClick} className={cls}>
@@ -46,7 +48,7 @@ export function IconButton({
     );
   }
   return (
-    <button type="button" onClick={onClick} aria-label={label} title={title} className={cls}>
+    <button type="button" onClick={onClick} disabled={disabled} aria-label={label} title={title} className={cls}>
       {children}
     </button>
   );

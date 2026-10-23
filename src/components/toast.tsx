@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, ReactNode } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
 import { CheckCircle, XCircle, Info, X } from "lucide-react";
+import { useSafeMotion, safeAnimate } from "@/lib/animation";
 
 type ToastType = "success" | "error" | "info";
 
@@ -48,6 +49,7 @@ const iconColors: Record<ToastType, string> = {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const reduce = useSafeMotion();
 
   useEffect(() => {
     const timers = timersRef.current;
@@ -60,10 +62,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const addToast = useCallback((type: ToastType, message: string) => {
     const id = Math.random().toString(36).slice(2);
     setToasts((prev) => [...prev, { id, type, message }]);
+    // 错误提示停留更久：错误信息通常更长、更需要用户看到
+    const duration = type === "error" ? 6000 : 3500;
     const timer = setTimeout(() => {
       timersRef.current.delete(timer);
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3500);
+    }, duration);
     timersRef.current.add(timer);
   }, []);
 
@@ -91,9 +95,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             return (
               <m.div
                 key={t.id}
-                initial={{ opacity: 0, y: -12, scale: 0.95 }}
+                initial={safeAnimate(reduce, { opacity: 0, y: -12, scale: 0.95 })}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 40, scale: 0.95 }}
+                exit={safeAnimate(reduce, { opacity: 0, x: 40, scale: 0.95 })}
                 className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg ${colors[t.type]}`}
               >
                 <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${iconColors[t.type]}`} />
@@ -101,7 +105,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <button
                   onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
                   aria-label="关闭通知"
-                  className="flex-shrink-0 -m-1.5 min-w-[28px] min-h-[28px] flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity"
+                  className="flex-shrink-0 -m-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity"
                 >
                   <X className="w-4 h-4" />
                 </button>

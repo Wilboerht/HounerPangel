@@ -37,17 +37,14 @@ export default async function AdminDashboardPage() {
                 </p>
             )}
 
-            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-3 gap-4">
                 {stats.map((s) => (
-                    <div
-                        key={s.label}
-                        className="rounded-xl border border-border/50 px-4 py-3 sm:px-5 sm:py-4"
-                    >
+                    <DashboardCard key={s.label}>
                         <p className="text-xs text-muted sm:text-sm">{s.label}</p>
                         <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
                             {s.value}
                         </p>
-                    </div>
+                    </DashboardCard>
                 ))}
             </div>
 

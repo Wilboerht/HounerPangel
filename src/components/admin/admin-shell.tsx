@@ -17,7 +17,9 @@ import {
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 import { useScrollLock } from "@/lib/use-scroll-lock";
+import { isAdminDirty, subscribeAdminDirty } from "@/lib/dirty-state";
 import { useToast } from "@/components/toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { IconButton } from "@/components/admin/icon-button";
 
 interface NavItem {
@@ -61,7 +63,8 @@ function pageTitle(pathname: string): string {
 
 interface SidebarContentProps {
   pathname: string;
-  onNavigate?: () => void;
+  // 所有导航链接的点击都经过这里：AdminShell 在表单有未保存内容时拦截跳转
+  onNavigateLink: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
   onLogout: () => void;
   logoutLoading: boolean;
   onClose?: () => void;
@@ -105,7 +108,7 @@ function toggleSectionCollapsed(label: string) {
   collapsedListeners.forEach((listener) => listener());
 }
 
-function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose }: SidebarContentProps) {
+function SidebarContent({ pathname, onNavigateLink, onLogout, logoutLoading, onClose }: SidebarContentProps) {
   const itemCls =
     "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors";
   const activeCls = `${itemCls} bg-foreground/5 text-foreground font-medium`;
@@ -122,7 +125,7 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
       <div className="flex flex-shrink-0 items-center justify-between px-5 pb-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))]">
         <Link
           href="/admin"
-          onClick={onNavigate}
+          onClick={(e) => onNavigateLink(e, "/admin")}
           className="text-base font-semibold tracking-tight text-foreground"
         >
           管理面板
@@ -144,7 +147,7 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
                   type="button"
                   onClick={() => toggleSectionCollapsed(section.label!)}
                   aria-expanded={!isCollapsed}
-                  className="flex w-full items-center justify-between rounded-lg px-3 pb-1 pt-1 text-xs font-medium text-muted/70 hover:text-foreground transition-colors"
+                  className="flex w-full items-center justify-between rounded-lg px-3 pb-1 pt-1 text-xs font-medium text-muted hover:text-foreground transition-colors"
                 >
                   {section.label}
                   <ChevronDown
@@ -160,7 +163,7 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={onNavigate}
+                      onClick={(e) => onNavigateLink(e, item.href)}
                       aria-current={active ? "page" : undefined}
                       className={active ? activeCls : inactiveCls}
                     >
@@ -175,7 +178,7 @@ function SidebarContent({ pathname, onNavigate, onLogout, logoutLoading, onClose
       </nav>
 
       <div className="flex flex-shrink-0 flex-col gap-0.5 border-t border-border/50 px-3 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
-        <Link href="/" onClick={onNavigate} className={inactiveCls}>
+        <Link href="/" onClick={(e) => onNavigateLink(e, "/")} className={inactiveCls}>
           <Globe className="w-4 h-4 flex-shrink-0" />
           查看站点
         </Link>
@@ -202,6 +205,19 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const drawerTrapRef = useFocusTrap(drawerOpen, () => setDrawerOpen(false));
   useScrollLock(drawerOpen);
 
+  // 表单未保存时拦截侧边栏 <Link> 导航（useDirtyGuard 的 popstate 守卫拦不住 SPA 跳转）。
+  // 未保存内容已被 useLocalDraft 自动存为本地草稿，确认文案里如实告知用户
+  const formDirty = useSyncExternalStore(subscribeAdminDirty, isAdminDirty, () => false);
+  const [pendingNavHref, setPendingNavHref] = useState<string | null>(null);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (formDirty && href !== pathname) {
+      e.preventDefault();
+      setPendingNavHref(href);
+    }
+    setDrawerOpen(false);
+  };
+
   // 路由变化时收起抽屉：渲染期比较并调整状态（React 官方推荐的 derived-state 模式），
   // 避免在 effect 里同步 setState 造成级联渲染
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -216,7 +232,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
     try {
       const res = await fetch("/api/admin/logout", { method: "POST" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      router.push("/blog");
+      // 原地刷新让服务端重新校验会话并渲染登录表单，比重定向到公开页更符合"已退出"心智
+      toast.success("已退出登录");
+      router.refresh();
     } catch {
       toast.error("退出失败，请重试");
       setLogoutLoading(false);
@@ -229,6 +247,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <aside className="hidden lg:flex fixed inset-y-0 left-0 z-40 w-60 flex-col border-r border-border/50 bg-background print:hidden">
         <SidebarContent
           pathname={pathname}
+          onNavigateLink={handleNavClick}
           onLogout={handleLogout}
           logoutLoading={logoutLoading}
         />
@@ -263,7 +282,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <div ref={drawerTrapRef} role="dialog" aria-modal="true" aria-label="导航菜单" className="h-full">
                 <SidebarContent
                   pathname={pathname}
-                  onNavigate={() => setDrawerOpen(false)}
+                  onNavigateLink={handleNavClick}
                   onLogout={handleLogout}
                   logoutLoading={logoutLoading}
                   onClose={() => setDrawerOpen(false)}
@@ -277,6 +296,20 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <main className="pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] lg:pb-8 lg:pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] sm:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] sm:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] print:p-0!">
         <div className="mx-auto max-w-5xl print:mx-0 print:max-w-none">{children}</div>
       </main>
+
+      <ConfirmDialog
+        isOpen={pendingNavHref !== null}
+        onClose={() => setPendingNavHref(null)}
+        onConfirm={() => {
+          const href = pendingNavHref;
+          setPendingNavHref(null);
+          if (href) router.push(href);
+        }}
+        title="离开当前页面"
+        message="有未保存的内容，确定离开吗？内容已自动存为本地草稿，下次打开时可恢复。"
+        confirmLabel="确定离开"
+        danger={false}
+      />
     </div>
   );
 }

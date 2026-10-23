@@ -5,6 +5,7 @@ import { Save, X } from "lucide-react";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { useTagManager, type TagRejectReason } from "@/lib/use-tag-manager";
 import { useToast } from "@/components/toast";
+import { useAuthExpired } from "@/lib/use-auth-expired";
 
 // \w 只匹配 ASCII，纯中文标题会得到空串，调用方需做兜底
 export function slugify(text: string): string {
@@ -47,6 +48,12 @@ interface PostFormProps {
   // 每次表单内容变化时回调（含标签输入框内容），供父级做草稿自动保存
   onValuesChange?: (values: PostFormValues & { tagInput: string }) => void;
   onCancel?: () => void;
+  // 保存请求的开始/结束，供父级在请求在途时禁止关闭表单（避免竞态）
+  onSavingChange?: (saving: boolean) => void;
+  // 服务端返回的 slug 冲突等字段级错误（如 409），显示在 slug 输入框下方
+  slugError?: string | null;
+  // 用户修改 slug 时回调，父级据此清除 slugError
+  onSlugChange?: () => void;
 }
 
 export function PostForm({
@@ -60,6 +67,9 @@ export function PostForm({
   onDirty,
   onValuesChange,
   onCancel,
+  onSavingChange,
+  slugError,
+  onSlugChange,
 }: PostFormProps) {
   const [form, setForm] = useState({
     slug: initialValues.slug,
@@ -77,8 +87,19 @@ export function PostForm({
       toast.error("标签已存在");
     }
   }, [toast]);
-  const tagManager = useTagManager(initialValues.tags, handleTagReject);
+  const tagManager = useTagManager(initialValues.tags, handleTagReject, (removed) => {
+    // Backspace 快速删除最后一个标签时给反馈，避免误触无感知
+    toast.info(`已移除标签 ${removed}`);
+  });
   const [saving, setSaving] = useState(false);
+  const authExpired = useAuthExpired();
+
+  // slugError 出现时把焦点移到 slug 输入框，用户可以直接改
+  useEffect(() => {
+    if (slugError) {
+      document.getElementById(`${idPrefix}-slug`)?.focus();
+    }
+  }, [slugError, idPrefix]);
 
   // 恢复草稿时把输入框里未确认的标签内容也还原
   useEffect(() => {
@@ -123,6 +144,7 @@ export function PostForm({
 
   const handleSlugChange = (slug: string) => {
     updateField({ slug: slug.toLowerCase().replace(/\s+/g, "-") });
+    onSlugChange?.();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -144,11 +166,13 @@ export function PostForm({
     }
 
     setSaving(true);
+    onSavingChange?.(true);
     try {
       const ok = await onSubmit({ ...form, tags });
       if (ok) tagManager.setInput("");
     } finally {
       setSaving(false);
+      onSavingChange?.(false);
     }
   };
 
@@ -204,21 +228,27 @@ export function PostForm({
           )}
         </label>
         {slugEditable ? (
-          <input
-            id={`${idPrefix}-slug`}
-            type="text"
-            required
-            maxLength={255}
-            value={form.slug}
-            onChange={(e) => handleSlugChange(e.target.value)}
-            placeholder="hello-world"
-            pattern="^[a-z0-9\-]+$"
-            className={`px-4 py-2 rounded-lg bg-foreground/5 border text-foreground placeholder:text-muted/50 focus:outline-none transition-colors ${
-              form.slug && !slugValid
-                ? "border-red-300 focus:border-red-400"
-                : "border-border/50 focus:border-accent/50"
-            }`}
-          />
+          <>
+            <input
+              id={`${idPrefix}-slug`}
+              type="text"
+              required
+              maxLength={255}
+              value={form.slug}
+              onChange={(e) => handleSlugChange(e.target.value)}
+              placeholder="hello-world"
+              pattern="^[a-z0-9\-]+$"
+              aria-invalid={!!slugError || (!!form.slug && !slugValid)}
+              className={`px-4 py-2 rounded-lg bg-foreground/5 border text-foreground placeholder:text-muted/50 focus:outline-none transition-colors ${
+                slugError || (form.slug && !slugValid)
+                  ? "border-red-300 focus:border-red-400"
+                  : "border-border/50 focus:border-accent/50"
+              }`}
+            />
+            {slugError && (
+              <p className="text-xs text-red-500">{slugError}</p>
+            )}
+          </>
         ) : (
           <input
             id={`${idPrefix}-slug`}
@@ -272,7 +302,7 @@ export function PostForm({
                 type="button"
                 onClick={() => { tagManager.removeTag(tag); onDirty(); }}
                 aria-label={`移除标签 ${tag}`}
-                className="hover:text-red-500 transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center"
+                className="hover:text-red-500 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -308,14 +338,17 @@ export function PostForm({
           value={form.content}
           onChange={(v) => updateField({ content: v })}
           rows={contentRows}
+          onAuthExpired={authExpired}
         />
       </div>
 
-      {/* sticky 底部操作栏：长表单下保存/取消始终可达；含底部安全区避让 */}
-      <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background/85 backdrop-blur-sm flex items-center gap-4">
+      {/* sticky 底部操作栏：长表单下保存/取消始终可达；含底部安全区避让。
+          不用负 margin 撑满父级 padding——弹窗和编辑页的父级 padding 不同，负 margin 会两侧露缝 */}
+      <div className="sticky bottom-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background/85 backdrop-blur-sm rounded-b-lg flex items-center gap-2">
         <button
           type="submit"
           disabled={saving || (slugEditable && !!form.slug && !slugValid)}
+          title="保存 (Ctrl+S)"
           className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
         >
           <Save className="w-4 h-4" />

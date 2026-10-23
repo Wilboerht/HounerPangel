@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { setAdminDirty } from "./dirty-state";
 
 const GUARD_KEY = "__dirtyGuard";
 
@@ -9,6 +10,13 @@ export function useDirtyGuard(dirty: boolean, onAttemptLeave: () => void) {
   useEffect(() => {
     onAttemptLeaveRef.current = onAttemptLeave;
   }, [onAttemptLeave]);
+
+  // 同步到管理端全局 dirty 状态，供 AdminShell 拦截 <Link> 侧边栏导航
+  //（pushState 导航不触发 popstate/beforeunload，上面的守卫拦不住）
+  useEffect(() => {
+    setAdminDirty(dirty);
+    return () => setAdminDirty(false);
+  }, [dirty]);
 
   useEffect(() => {
     if (!dirty) return;
