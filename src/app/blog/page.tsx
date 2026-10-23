@@ -33,9 +33,15 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function Blog() {
-    // DB 错误直接抛出，交给 error.tsx 返回 500——不能静默渲染空列表，
-    // 否则服务故障会被访客和搜索引擎误认为"没有内容"
-    const posts: BlogPostSummary[] = await getAllBlogPostSummaries();
+    let posts: BlogPostSummary[];
+    try {
+        posts = await getAllBlogPostSummaries();
+    } catch (error) {
+        // 构建期 DB 不可达不应阻塞部署；降级为空列表后由 ISR（revalidate = 60）
+        // 在请求期自愈。代价是运行期故障也会短暂显示空列表（最长 60s），已接受。
+        console.error("获取博客文章列表失败：", error);
+        posts = [];
+    }
 
     return (
         <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
