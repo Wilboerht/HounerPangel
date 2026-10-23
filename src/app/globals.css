@@ -360,17 +360,6 @@ textarea:-webkit-autofill:focus {
     0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
-/* 管理端用 Geist Sans：公开站的衬线是阅读排版风格，工具界面用它不像工具。
-   加在 admin layout 的容器上 */
-.admin-ui {
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
-}
-
-/* 文章正文/预览固定衬线，不随管理端容器变 sans（预览要与公开页所见即所得） */
-.article-body {
-  font-family: var(--font-serif-sc), var(--font-serif), "Noto Serif SC", "Noto Serif", serif;
-}
-
 /* 组合输入框（如标签输入+按钮共用一个描边容器）时，焦点在内部输入框上 */
 .geist-input:focus-within {
   box-shadow:
