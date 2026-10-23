@@ -50,7 +50,7 @@ export default function Footprints() {
             <Link
                 href="/"
                 aria-label="返回主页"
-                className="absolute left-4 top-4 z-10 flex h-9 items-center justify-center gap-1.5 overflow-hidden rounded-full border border-white/60 bg-white/40 px-3 text-xs font-medium text-foreground/80 shadow-[0_8px_24px_rgba(0,0,0,0.10),inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 before:pointer-events-none before:absolute before:inset-x-2 before:top-0.5 before:h-1/2 before:rounded-full before:bg-gradient-to-b before:from-white/50 before:to-transparent hover:bg-white/55 hover:text-foreground hover:shadow-[0_10px_32px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.75)] active:scale-95 sm:h-11 sm:px-4 sm:text-sm"
+                className="absolute top-[calc(1rem+env(safe-area-inset-top,0px))] left-[calc(1rem+env(safe-area-inset-left,0px))] z-10 flex h-11 items-center justify-center gap-1.5 overflow-hidden rounded-full border border-white/60 bg-white/40 px-3 text-xs font-medium text-foreground/80 shadow-[0_8px_24px_rgba(0,0,0,0.10),inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 before:pointer-events-none before:absolute before:inset-x-2 before:top-0.5 before:h-1/2 before:rounded-full before:bg-gradient-to-b before:from-white/50 before:to-transparent hover:bg-white/55 hover:text-foreground hover:shadow-[0_10px_32px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.75)] active:scale-95 sm:px-4 sm:text-sm"
             >
                 <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 返回

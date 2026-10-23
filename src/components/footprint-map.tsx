@@ -59,7 +59,7 @@ export function FootprintMap({ cities }: { cities: City[] }) {
                         onKeyDown={(e) => {
                             if (e.key === "Escape") setSelected(null);
                         }}
-                        className={`block cursor-pointer p-0 transition-colors duration-200 ${
+                        className={`block cursor-pointer p-2 -m-2 transition-colors duration-200 ${
                             city.status === "planned"
                                 ? selected?.name === city.name
                                     ? "text-accent"

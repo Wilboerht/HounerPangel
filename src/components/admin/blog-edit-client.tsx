@@ -196,7 +196,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
       <nav>
         <button
           onClick={goBack}
-          className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[36px]"
+          className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
           <span>返回列表</span>

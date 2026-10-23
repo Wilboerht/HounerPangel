@@ -279,19 +279,18 @@ export function PostForm({
 
         <div className="flex flex-col gap-2">
           <label htmlFor={`${idPrefix}-published`} className="text-sm font-medium text-foreground">发布状态</label>
-          <div className="flex items-center gap-2 h-9">
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                id={`${idPrefix}-published`}
-                type="checkbox"
-                checked={form.published}
-                onChange={(e) => updateField({ published: e.target.checked })}
-                className="sr-only peer"
-              />
-              <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-            </label>
+          {/* 整个 label（含状态文字）都是触控区：p-2 -m-2 把 36×20 的开关扩到 44px+ */}
+          <label className="relative inline-flex items-center gap-2 cursor-pointer self-start p-2 -m-2 min-h-[36px]">
+            <input
+              id={`${idPrefix}-published`}
+              type="checkbox"
+              checked={form.published}
+              onChange={(e) => updateField({ published: e.target.checked })}
+              className="sr-only peer"
+            />
+            <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-2 after:ml-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
             <span className="text-xs text-muted">{form.published ? "已发布" : "草稿"}</span>
-          </div>
+          </label>
         </div>
       </div>
 
@@ -357,7 +356,7 @@ export function PostForm({
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+            className="px-4 py-2 min-h-[44px] rounded-lg text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
           >
             取消
           </button>
@@ -366,7 +365,7 @@ export function PostForm({
           type="submit"
           disabled={saving || (slugEditable && !!form.slug && !slugValid)}
           title="保存 (Ctrl+S)"
-          className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-2 min-h-[44px] rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
         >
           <Save className="w-4 h-4" />
           {saving ? "保存中..." : "保存"}

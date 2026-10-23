@@ -277,7 +277,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               animate={{ x: 0 }}
               exit={safeAnimate(reduce, { x: "-100%" })}
               transition={springModal}
-              className="fixed inset-y-0 left-0 z-[95] w-64 border-r border-border/50 bg-background lg:hidden"
+              className="fixed inset-y-0 left-0 z-[95] w-[calc(16rem+env(safe-area-inset-left,0px))] pl-[env(safe-area-inset-left,0px)] border-r border-border/50 bg-background lg:hidden"
             >
               <div ref={drawerTrapRef} role="dialog" aria-modal="true" aria-label="导航菜单" className="h-full">
                 <SidebarContent

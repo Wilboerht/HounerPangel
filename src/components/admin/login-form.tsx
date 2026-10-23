@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Lock } from "lucide-react";
 import { useToast } from "@/components/toast";
 
@@ -13,6 +13,13 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // 只在键鼠设备上自动聚焦：触屏上进 /admin 立即弹键盘会遮住半个屏幕
+  useEffect(() => {
+    if (window.matchMedia("(pointer: fine)").matches) {
+      inputRef.current?.focus();
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +49,7 @@ export function LoginForm() {
   };
 
   return (
-    <main className="min-h-dvh flex items-center justify-center px-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+    <main className="min-h-dvh flex items-center justify-center pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
       <div className="w-full max-w-sm flex flex-col gap-6">
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-foreground/5 border border-border/50">
@@ -69,14 +76,13 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="请输入密码"
-              autoFocus
               className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
             />
           </div>
           <button
             type="submit"
             disabled={loginLoading}
-            className="w-full px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="w-full px-4 py-2 min-h-[44px] rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {loginLoading ? "登录中..." : "登录"}
           </button>

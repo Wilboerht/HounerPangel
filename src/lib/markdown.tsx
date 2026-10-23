@@ -154,7 +154,7 @@ function renderInline(text: string): React.ReactNode {
         const codeMatch = remaining.match(/^`([^`]+)`/);
         if (codeMatch) {
             tokens.push(
-                <code key={key++} className="px-1.5 py-0.5 rounded-md bg-foreground/10 text-foreground text-sm font-mono">
+                <code key={key++} className="px-1.5 py-0.5 rounded-md bg-foreground/10 text-foreground text-sm font-mono break-all">
                     {codeMatch[1]}
                 </code>
             );

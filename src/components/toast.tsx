@@ -85,7 +85,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div
         aria-live="polite"
-        className="fixed top-4 left-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none sm:left-auto sm:w-full sm:max-w-sm"
+        className="fixed top-4 left-[calc(1rem+env(safe-area-inset-left,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] z-[200] flex flex-col gap-2 pointer-events-none sm:left-auto sm:w-full sm:max-w-sm"
         style={{ top: `calc(1rem + env(safe-area-inset-top, 0px))` }}
       >
         <LazyMotion features={domAnimation} strict>

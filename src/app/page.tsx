@@ -65,7 +65,7 @@ export default function Home() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="flex items-center gap-2 text-lg text-muted hover:text-foreground transition-colors duration-200 relative group"
+                className="flex items-center gap-2 min-h-[44px] text-lg text-muted hover:text-foreground transition-colors duration-200 relative group"
               >
                 <link.icon className="w-5 h-5" />
                 {link.name}

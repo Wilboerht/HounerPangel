@@ -50,7 +50,7 @@ export default function BlogClient({ posts }: Props) {
                                                 href={`/blog/${post.slug}`}
                                                 className="group flex items-baseline gap-3"
                                             >
-                                                <span className="min-w-0 text-base text-foreground group-hover:text-accent transition-colors duration-200">
+                                                <span className="min-w-0 text-base text-foreground break-words group-hover:text-accent transition-colors duration-200">
                                                     {post.title}
                                                 </span>
                                                 <time

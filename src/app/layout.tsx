@@ -83,6 +83,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: "#fafafa",
+  // Chrome/Android 弹键盘时收缩布局视口，fixed 弹窗（新建文章等）随键盘实际变小
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
