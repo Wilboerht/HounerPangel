@@ -270,7 +270,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               animate={{ opacity: 1 }}
               exit={safeAnimate(reduce, { opacity: 0 })}
               onClick={() => setDrawerOpen(false)}
-              className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-[90] lg:hidden geist-backdrop"
             />
             <motion.div
               initial={safeAnimate(reduce, { x: "-100%" })}

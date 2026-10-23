@@ -405,7 +405,7 @@ export function BlogAdminClient() {
               animate={{ opacity: 1 }}
               exit={safeAnimate(reduce, { opacity: 0 })}
               onClick={closeNewModal}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
+              className="fixed inset-0 z-[100] geist-backdrop"
             />
             <motion.div
               initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
@@ -419,21 +419,23 @@ export function BlogAdminClient() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="new-post-title"
-                className="relative w-full max-w-3xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-[90dvh] flex flex-col max-sm:rounded-none max-sm:max-h-none max-sm:h-dvh"
+                className="relative w-full max-w-3xl bg-background rounded-lg geist-shadow overflow-hidden max-h-full flex flex-col max-sm:rounded-none max-sm:h-dvh"
               >
-                <div className="absolute z-10 top-[calc(1rem+env(safe-area-inset-top,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))]">
-                  <IconButton label="关闭新建窗口" onClick={closeNewModal} size="lg">
+                {/* 关闭按钮带底色：表单滚动时内容不会从图标底下穿过 */}
+                <div className="absolute z-10 top-[calc(0.75rem+env(safe-area-inset-top,0px))] right-[calc(0.75rem+env(safe-area-inset-right,0px))] bg-background/80 backdrop-blur-sm rounded-lg">
+                  <IconButton label="关闭新建窗口" onClick={closeNewModal} size="lg" disabled={creating}>
                     <X className="w-4 h-4" />
                   </IconButton>
                 </div>
 
-                <div className="pb-4 flex-shrink-0 pt-[calc(2rem+env(safe-area-inset-top,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(4rem+env(safe-area-inset-right,0px))] sm:pl-[calc(2rem+env(safe-area-inset-left,0px))] sm:pr-[calc(4rem+env(safe-area-inset-right,0px))]">
-                  <h2 id="new-post-title" className="text-xl font-bold text-foreground">
+                {/* Geist 分隔：1px 阴影描边代替 border */}
+                <div className="pb-4 flex-shrink-0 shadow-[0_1px_0_rgba(0,0,0,0.08)] pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(4rem+env(safe-area-inset-right,0px))]">
+                  <h2 id="new-post-title" className="text-base font-semibold text-foreground">
                     新建文章
                   </h2>
                 </div>
 
-                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] sm:pl-[calc(2rem+env(safe-area-inset-left,0px))] sm:pr-[calc(2rem+env(safe-area-inset-right,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] overflow-y-auto">
+                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] overflow-y-auto [overscroll-behavior:contain]">
                   <PostForm
                     key={formKey}
                     idPrefix="new"

@@ -316,3 +316,20 @@ textarea:-webkit-autofill:focus {
     animation: none;
   }
 }
+
+/* Geist 风格弹层：shadow-as-border（1px 阴影描边替代 border）+ 多层微阴影 + 内圈微光。
+   弹窗/确认对话框/toast 共用，参考 Vercel Geist 设计体系。 */
+.geist-shadow {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 2px 2px rgba(0, 0, 0, 0.04),
+    0 8px 8px -8px rgba(0, 0, 0, 0.04),
+    inset 0 0 0 1px #fafafa;
+}
+
+/* Geist 风格遮罩：近白色薄纱 + 模糊，而非黑幕 */
+.geist-backdrop {
+  background-color: hsla(0, 0%, 98%, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}

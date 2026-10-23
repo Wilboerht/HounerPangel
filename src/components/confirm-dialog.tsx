@@ -44,7 +44,7 @@ export function ConfirmDialog({
             animate={{ opacity: 1 }}
             exit={safeAnimate(reduce, { opacity: 0 })}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[110]"
+            className="fixed inset-0 z-[110] geist-backdrop"
           />
           <motion.div
             initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
@@ -59,7 +59,7 @@ export function ConfirmDialog({
               aria-modal="true"
               aria-labelledby={titleId}
               aria-describedby={messageId}
-              className="relative w-full max-w-sm max-h-full overflow-y-auto bg-background rounded-2xl border border-border/50 shadow-xl p-6"
+              className="relative w-full max-w-sm max-h-full overflow-y-auto bg-background rounded-lg geist-shadow p-6"
             >
               <div className="flex items-start gap-4">
                 <div className={`p-2 rounded-full flex-shrink-0 ${danger ? "bg-red-500/10" : "bg-foreground/5"}`}>
@@ -78,7 +78,7 @@ export function ConfirmDialog({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-lg text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+                  className="px-4 py-2 rounded-md text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
                 >
                   取消
                 </button>
@@ -96,7 +96,7 @@ export function ConfirmDialog({
                       setPending(false);
                     }
                   }}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-60 ${
                     danger
                       ? "bg-red-500 text-white hover:bg-red-600"
                       : "bg-foreground text-background hover:bg-foreground/90"

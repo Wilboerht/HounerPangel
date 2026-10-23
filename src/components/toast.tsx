@@ -35,9 +35,9 @@ const icons: Record<ToastType, typeof CheckCircle> = {
 };
 
 const colors: Record<ToastType, string> = {
-  success: "bg-green-50 border-green-200 text-green-800",
-  error: "bg-red-50 border-red-200 text-red-800",
-  info: "bg-blue-50 border-blue-200 text-blue-800",
+  success: "bg-green-50 text-green-800",
+  error: "bg-red-50 text-red-800",
+  info: "bg-blue-50 text-blue-800",
 };
 
 const iconColors: Record<ToastType, string> = {
@@ -98,7 +98,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 initial={safeAnimate(reduce, { opacity: 0, y: -12, scale: 0.95 })}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={safeAnimate(reduce, { opacity: 0, x: 40, scale: 0.95 })}
-                className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg ${colors[t.type]}`}
+                className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-lg geist-shadow ${colors[t.type]}`}
               >
                 <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${iconColors[t.type]}`} />
                 <p className="text-sm flex-1 leading-relaxed">{t.message}</p>

@@ -39,7 +39,7 @@ export function IconButton({
   className,
   children,
 }: IconButtonProps) {
-  const cls = `inline-flex items-center justify-center rounded-lg transition-colors disabled:opacity-50 ${variantCls[variant]} ${sizeCls[size]} ${className ?? ""}`;
+  const cls = `inline-flex items-center justify-center rounded-lg transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${variantCls[variant]} ${sizeCls[size]} ${className ?? ""}`;
   if (href) {
     return (
       <Link href={href} aria-label={label} title={title} onClick={onClick} className={cls}>
