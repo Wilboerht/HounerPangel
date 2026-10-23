@@ -326,7 +326,7 @@ export function BlogAdminClient() {
                 placeholder="搜索文章标题、slug 或标签..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-10 py-2 rounded-md text-foreground placeholder:text-muted/50 geist-input"
+                className="w-full pl-10 pr-10 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
               />
               {search && (
                 <button
@@ -405,7 +405,7 @@ export function BlogAdminClient() {
               animate={{ opacity: 1 }}
               exit={safeAnimate(reduce, { opacity: 0 })}
               onClick={closeNewModal}
-              className="fixed inset-0 z-[100] geist-backdrop"
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
             />
             <motion.div
               initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
@@ -419,7 +419,7 @@ export function BlogAdminClient() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="new-post-title"
-                className="relative w-full max-w-3xl bg-background rounded-lg geist-dialog-shadow overflow-hidden max-h-full flex flex-col max-sm:rounded-none max-sm:h-dvh"
+                className="relative w-full max-w-3xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-full flex flex-col max-sm:rounded-none max-sm:h-dvh"
               >
                 {/* 关闭按钮带底色：表单滚动时内容不会从图标底下穿过 */}
                 <div className="absolute z-10 top-[calc(0.75rem+env(safe-area-inset-top,0px))] right-[calc(0.75rem+env(safe-area-inset-right,0px))] bg-background/80 backdrop-blur-sm rounded-lg">
@@ -428,14 +428,13 @@ export function BlogAdminClient() {
                   </IconButton>
                 </div>
 
-                {/* Geist 分隔：1px 阴影描边代替 border */}
-                <div className="pb-4 flex-shrink-0 shadow-[0_1px_0_rgba(0,0,0,0.08)] pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(4rem+env(safe-area-inset-right,0px))]">
-                  <h2 id="new-post-title" className="text-base font-semibold text-foreground">
+                <div className="pb-4 flex-shrink-0 border-b border-border/50 pt-[calc(2rem+env(safe-area-inset-top,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(4rem+env(safe-area-inset-right,0px))]">
+                  <h2 id="new-post-title" className="text-xl font-bold text-foreground">
                     新建文章
                   </h2>
                 </div>
 
-                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] overflow-y-auto [overscroll-behavior:contain]">
+                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] overflow-y-auto [overscroll-behavior:contain]">
                   <PostForm
                     key={formKey}
                     idPrefix="new"

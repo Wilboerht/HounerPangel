@@ -208,7 +208,7 @@ export function PostForm({
           value={form.title}
           onChange={(e) => handleTitleChange(e.target.value)}
           placeholder="文章标题"
-          className="px-3 py-2 rounded-md text-foreground placeholder:text-muted/50 geist-input"
+          className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
         />
       </div>
 
@@ -239,8 +239,10 @@ export function PostForm({
               placeholder="hello-world"
               pattern="^[a-z0-9\-]+$"
               aria-invalid={!!slugError || (!!form.slug && !slugValid)}
-              className={`px-3 py-2 rounded-md text-foreground placeholder:text-muted/50 geist-input ${
-                slugError || (form.slug && !slugValid) ? "[--input-ring:#f87171]" : ""
+              className={`px-4 py-2 rounded-lg bg-foreground/5 border text-foreground placeholder:text-muted/50 focus:outline-none transition-colors ${
+                slugError || (form.slug && !slugValid)
+                  ? "border-red-300 focus:border-red-400"
+                  : "border-border/50 focus:border-accent/50"
               }`}
             />
             {slugError && (
@@ -253,7 +255,7 @@ export function PostForm({
             type="text"
             disabled
             value={form.slug}
-            className="px-4 py-2 rounded-md bg-foreground/5 border border-border/50 text-muted cursor-not-allowed"
+            className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-muted cursor-not-allowed"
           />
         )}
       </div>
@@ -267,7 +269,7 @@ export function PostForm({
             required
             value={form.date}
             onChange={(e) => updateField({ date: e.target.value })}
-            className="w-full px-3 py-2 rounded-md text-foreground geist-input"
+            className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground focus:outline-none focus:border-accent/50 transition-colors"
           />
         </div>
 
@@ -297,7 +299,7 @@ export function PostForm({
           {tagManager.tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 pl-3 pr-1 py-1 rounded-full bg-foreground/10 text-foreground text-xs font-medium"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-foreground/10 text-foreground text-xs font-medium"
             >
               {tag}
               <button
@@ -311,8 +313,7 @@ export function PostForm({
             </span>
           ))}
         </div>
-        {/* 输入框和"添加"共用一个描边容器，视觉上是一体化控件 */}
-        <div className="flex items-center rounded-md geist-input">
+        <div className="flex gap-2">
           <input
             id={`${idPrefix}-tags`}
             type="text"
@@ -321,13 +322,13 @@ export function PostForm({
             onChange={(e) => tagManager.setInput(e.target.value)}
             onKeyDown={(e) => { const wasAdded = tagManager.handleInputKeyDown(e); if (wasAdded) onDirty(); }}
             placeholder="输入标签后按回车添加"
-            className="flex-1 min-w-0 bg-transparent px-3 py-2 text-foreground placeholder:text-muted/50 focus:outline-none"
+            className="flex-1 px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
           />
           <button
             type="button"
             onClick={() => { if (tagManager.addTag(tagManager.input)) onDirty(); }}
             disabled={!tagManager.input.trim()}
-            className="flex-shrink-0 mr-1 px-3 py-1.5 rounded text-sm text-muted hover:text-foreground hover:bg-foreground/5 disabled:opacity-30 transition-colors"
+            className="px-4 py-2 rounded-lg bg-foreground/5 text-muted hover:text-foreground disabled:opacity-30 transition-colors text-sm"
           >
             添加
           </button>
@@ -347,12 +348,12 @@ export function PostForm({
 
       {/* sticky 底部操作栏：长表单下保存/取消始终可达；实底 + 顶部发丝分隔线，右对齐（对话框惯例）。
           不用负 margin 撑满父级 padding——弹窗和编辑页的父级 padding 不同，负 margin 会两侧露缝 */}
-      <div className="sticky bottom-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background shadow-[0_-1px_0_rgba(0,0,0,0.08)] flex items-center justify-end gap-2">
+      <div className="sticky bottom-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background border-t border-border/50 flex items-center justify-end gap-2">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-md text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
           >
             取消
           </button>
@@ -361,7 +362,7 @@ export function PostForm({
           type="submit"
           disabled={saving || (slugEditable && !!form.slug && !slugValid)}
           title="保存 (Ctrl+S)"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
         >
           <Save className="w-4 h-4" />
           {saving ? "保存中..." : "保存"}
