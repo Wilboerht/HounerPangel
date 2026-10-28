@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Rss } from "lucide-react";
 import type { BlogPostSummary } from "@/lib/types/blog";
 
 interface Props {
@@ -29,9 +30,19 @@ export default function BlogClient({ posts }: Props) {
     return (
         <>
             <section className="space-y-10">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                    博客
-                </h1>
+                <div className="flex items-center justify-between gap-4">
+                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                        博客
+                    </h1>
+                    <a
+                        href="/rss.xml"
+                        aria-label="订阅 RSS"
+                        className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
+                    >
+                        <Rss className="h-4 w-4" aria-hidden="true" />
+                        RSS 订阅
+                    </a>
+                </div>
 
                 {/* Blog List */}
                 <div className="space-y-10">
