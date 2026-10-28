@@ -278,7 +278,7 @@ function splitTableRow(line: string): string[] {
     return trimmedCells;
 }
 
-export function renderMarkdown(content: string): React.ReactNode {
+export function renderMarkdown(content: string, options: { forRss?: boolean } = {}): React.ReactNode {
     const lines = content.split("\n");
     const elements: React.ReactNode[] = [];
     let inUnorderedList = false;
@@ -597,8 +597,8 @@ export function renderMarkdown(content: string): React.ReactNode {
             const imgHeight = sizeMatch ? parseInt(sizeMatch[3], 10) : undefined;
             if (isSafeMediaUrl(imgUrl)) {
             const isVideo = /\.(mp4|webm|mov|avi|mkv)($|\?)/i.test(imgUrl);
-            // 只有配置了 remotePatterns 的本项目 Supabase 存储图才走 next/image 优化，其余用裸 img
-            const useNextImage = !isVideo && imgWidth !== undefined && imgHeight !== undefined
+            // 公开页面使用 Next/Image；RSS 与其他外链媒体一样输出可直接订阅的裸 img
+            const useNextImage = !options.forRss && !isVideo && imgWidth !== undefined && imgHeight !== undefined
                 && isCurrentSupabaseHost(imgUrl);
             elements.push(
                 isVideo ? (
