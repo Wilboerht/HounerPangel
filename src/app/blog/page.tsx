@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     description: "Hank Wong 的思考、笔记与创作。",
     alternates: {
         canonical: `${SITE_URL}/blog`,
+        types: {
+            "application/rss+xml": "/rss.xml",
+        },
     },
     openGraph: {
         title: "博客 - Hank Wong's Web",
@@ -37,9 +40,9 @@ export default async function Blog() {
     try {
         posts = await getAllBlogPostSummaries();
     } catch (error) {
-        // 构建期 DB 不可达不应阻塞部署；降级为空列表后由 ISR（revalidate = 60）
-        // 在请求期自愈。代价是运行期故障也会短暂显示空列表（最长 60s），已接受。
-        console.error("获取博客文章列表失败：", error);
+        if (process.env.NEXT_PHASE !== "phase-production-build") throw error;
+        // 仅构建期 DB 不可达时降级为空列表，运行期保留错误以维持已有 ISR 缓存
+        console.error("获取博客文章列表失败，构建期降级为空列表：", error);
         posts = [];
     }
 

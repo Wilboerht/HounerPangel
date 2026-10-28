@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { ArrowUpRight, FileText, Plus } from "lucide-react";
 import { getAllBlogPostSummaries } from "@/lib/supabase";
+import { isAdminSession } from "@/lib/auth";
 import { DashboardCard } from "@/components/admin/dashboard-card";
 import { Badge } from "@/components/admin/badge";
 import { PageHeader } from "@/components/admin/page-header";
 import type { BlogPostSummary } from "@/lib/types/blog";
 
 export default async function AdminDashboardPage() {
+    if (!(await isAdminSession())) return null;
+
     // 数据获取失败时优雅降级：显示 0 / 空态 + 提示，不整页 crash
     let posts: BlogPostSummary[] = [];
     let loadFailed = false;

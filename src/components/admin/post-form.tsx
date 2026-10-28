@@ -96,6 +96,7 @@ export function PostForm({
     toast.info(`已移除标签 ${removed}`);
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const authExpired = useAuthExpired();
 
   // slugError 出现时把焦点移到 slug 输入框，用户可以直接改
@@ -153,7 +154,7 @@ export function PostForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (saving) return;
+    if (saving || uploading) return;
 
     // 提交前把标签输入框里未确认的内容补进 tags，避免静默丢失
     let tags = tagManager.tags;
@@ -197,8 +198,8 @@ export function PostForm({
           e.preventDefault();
         }
       }}
-      className="flex flex-col gap-4"
     >
+      <fieldset disabled={saving} className="flex min-w-0 flex-col gap-4">
       <div className="flex flex-col gap-2">
         <label htmlFor={`${idPrefix}-title`} className="text-sm font-medium text-foreground">
           标题 <span className="text-xs text-muted">({form.title.length}/500)</span>
@@ -322,7 +323,7 @@ export function PostForm({
             type="text"
             maxLength={50}
             value={tagManager.input}
-            onChange={(e) => tagManager.setInput(e.target.value)}
+            onChange={(e) => { tagManager.setInput(e.target.value); onDirty(); }}
             onKeyDown={(e) => { const wasAdded = tagManager.handleInputKeyDown(e); if (wasAdded) onDirty(); }}
             placeholder="输入标签后按回车添加"
             className="flex-1 px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
@@ -345,7 +346,9 @@ export function PostForm({
           value={form.content}
           onChange={(v) => updateField({ content: v })}
           rows={contentRows}
+          required
           onAuthExpired={authExpired}
+          onUploadingChange={setUploading}
         />
       </div>
 
@@ -363,14 +366,15 @@ export function PostForm({
         )}
         <button
           type="submit"
-          disabled={saving || (slugEditable && !!form.slug && !slugValid)}
+          disabled={saving || uploading || (slugEditable && !!form.slug && !slugValid)}
           title="保存 (Ctrl+S)"
           className="inline-flex items-center gap-2 px-6 py-2 min-h-[44px] rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
         >
           <Save className="w-4 h-4" />
-          {saving ? "保存中..." : "保存"}
+          {saving ? "保存中..." : uploading ? "上传中..." : "保存"}
         </button>
       </div>
+      </fieldset>
     </form>
   );
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidateBlogPaths } from "@/lib/revalidate-blog";
 import { getAllBlogPostSummaries, createBlogPost } from "@/lib/blog-db";
 import { checkAuth, isAdminRequest } from "@/lib/auth";
 import { blogPostSchema } from "@/lib/validation";
@@ -56,10 +56,7 @@ export async function POST(request: NextRequest) {
             throw error;
         }
 
-        // 新建文章后立即刷新博客列表页的 ISR 缓存
-        revalidatePath("/blog");
-        revalidatePath("/rss.xml");
-        revalidatePath("/sitemap.xml");
+        revalidateBlogPaths(slug);
 
         return NextResponse.json({ success: true }, { status: 201 });
     } catch (error) {

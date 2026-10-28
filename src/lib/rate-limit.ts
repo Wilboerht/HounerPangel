@@ -121,9 +121,14 @@ export async function rateLimit(
     try {
       return await rateLimitUpstash(identifier, options);
     } catch (error) {
-      // Fail open to in-memory limiting rather than locking users out when
-      // the Redis backend is unreachable.
-      console.error("Upstash rate limit failed, falling back to in-memory:", error);
+      // A configured shared limiter must not silently degrade to per-instance
+      // counters during a Redis outage.
+      console.error("Upstash rate limit failed, rejecting request:", error);
+      return {
+        success: false,
+        remaining: 0,
+        resetTime: Date.now() + options.windowMs,
+      };
     }
   }
   return rateLimitMemory(identifier, options);

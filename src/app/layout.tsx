@@ -1,24 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Serif, Noto_Serif_SC } from "next/font/google";
+import { Geist_Mono, Noto_Serif, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import "highlight.js/styles/github.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SITE_URL } from "@/lib/site";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 const notoSerif = Noto_Serif({
   variable: "--font-serif",
   subsets: ["latin"],
   weight: ["400", "700"],
+  preload: false,
 });
 
 const notoSerifSC = Noto_Serif_SC({
@@ -52,6 +49,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
+    url: SITE_URL,
     locale: "zh_CN",
     title: "Hank Wong's Web",
     description: "Hank Wong (wilboerht)'s personal website. Building things on the internet.",
@@ -95,7 +93,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} ${notoSerifSC.variable} antialiased`}
+        className={`${geistMono.variable} ${notoSerif.variable} ${notoSerifSC.variable} antialiased`}
       >
         {children}
         <Analytics />

@@ -93,7 +93,8 @@ export async function createBlogPost(
 
 export async function updateBlogPost(
     slug: string,
-    post: Omit<BlogPost, "tags" | "slug" | "updatedAt"> & { tags: string[] }
+    post: Omit<BlogPost, "tags" | "slug" | "updatedAt"> & { tags: string[] },
+    expectedUpdatedAt: string
 ): Promise<BlogPost | null> {
     const { data: oldPost, error: fetchError } = await supabase
         .from("blog_posts")
@@ -106,6 +107,7 @@ export async function updateBlogPost(
         .from("blog_posts")
         .update(post)
         .eq("slug", slug)
+        .eq("updated_at", expectedUpdatedAt)
         .select("slug, title, content, date, updated_at, tags, published")
         .maybeSingle();
     if (error) throw error;
@@ -119,6 +121,22 @@ export async function updateBlogPost(
     return data ? { ...data, updatedAt: data.updated_at, tags: data.tags ?? [], published: data.published ?? false } : null;
 }
 
+export async function setBlogPostPublished(
+    slug: string,
+    published: boolean,
+    expectedUpdatedAt: string
+): Promise<string | null> {
+    const { data, error } = await supabase
+        .from("blog_posts")
+        .update({ published })
+        .eq("slug", slug)
+        .eq("updated_at", expectedUpdatedAt)
+        .select("updated_at")
+        .maybeSingle();
+    if (error) throw error;
+    return data?.updated_at ?? null;
+}
+
 function extractStoragePaths(content: string): string[] {
     const baseUrl = env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
     if (!baseUrl) return [];
@@ -130,7 +148,7 @@ function extractStoragePaths(content: string): string[] {
     // 不含 avif/svg（上传通道不支持，列入会误删手工引用的同 bucket 文件）。
     const mediaExt = /\.(png|jpe?g|gif|webp|mp4|webm|mov|avi|mkv|pdf|txt|md|csv|zip|docx?|xlsx?|pptx?)$/i;
     const regexes = [
-        /!\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown image/video: ![alt](url)
+        /!\[[^\]]*\]\(([^)\s]+)(?:\s+=\d+x\d+)?\)/g, // Markdown image/video, with optional =WxH
         /(?<!!)\[[^\]]*\]\(([^)\s]+)\)/g, // Markdown link/attachment: [name](url)
         /(?:src|poster)\s*=\s*["']([^"']+)["']/g, // HTML img/video src
     ];
@@ -190,10 +208,10 @@ export async function deleteBlogPost(slug: string): Promise<void> {
     if (fetchError) throw fetchError;
 
     const paths = post ? extractStoragePaths(post.content) : [];
-    await removeUnreferencedMedia(paths, slug);
-
     const { error } = await supabase.from("blog_posts").delete().eq("slug", slug);
     if (error) throw error;
+
+    await removeUnreferencedMedia(paths, slug);
 }
 
 

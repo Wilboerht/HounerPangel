@@ -59,7 +59,8 @@ export function plainTextExcerpt(content: string, max = 160): string {
 // 提取正文中第一张图片作为 og:image（兼容 =WxH 尺寸标注）
 export function firstImageUrl(content: string): string | undefined {
     const match = content.match(/^!\[[^\]]*\]\((\S+?)(?:\s+=\d+x\d+)?\)\s*$/m);
-    return match?.[1];
+    if (!match || /\.(mp4|webm|mov|avi|mkv)(?:$|[?#])/i.test(match[1])) return undefined;
+    return match[1];
 }
 
 // 链接协议白名单：仅允许 https?://、mailto:、以及 / 或 # 开头的相对路径。
@@ -271,7 +272,10 @@ function splitTableRow(line: string): string[] {
         current += ch;
     }
     cells.push(current);
-    return cells.filter((c) => c.trim()).map((c) => c.trim());
+    const trimmedCells = cells.map((c) => c.trim());
+    if (trimmedCells[0] === "") trimmedCells.shift();
+    if (trimmedCells[trimmedCells.length - 1] === "") trimmedCells.pop();
+    return trimmedCells;
 }
 
 export function renderMarkdown(content: string): React.ReactNode {
@@ -543,7 +547,7 @@ export function renderMarkdown(content: string): React.ReactNode {
                                 <tr className="border-b border-border">
                                     {headerCells.map((cell, ci) => (
                                         <th key={ci} className="px-3 py-2 text-left font-semibold text-foreground">
-                                            {cell}
+                                            {renderInline(cell)}
                                         </th>
                                     ))}
                                 </tr>
@@ -656,12 +660,18 @@ export function renderMarkdown(content: string): React.ReactNode {
             const cardClass =
                 "no-underline flex items-center gap-3 px-4 py-3 rounded-xl border border-border/50 bg-foreground/[0.02] hover:bg-foreground/[0.05] transition-colors duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
             if (isAttachment) {
+                let attachmentUrl = cardUrl;
+                if (isCurrentSupabaseHost(cardUrl)) {
+                    const url = new URL(cardUrl);
+                    url.searchParams.set("download", cardText);
+                    attachmentUrl = url.toString();
+                }
                 // 文件类型徽标（PDF / DOCX...），下载前给用户明确的格式预期
                 const extLabel = cleanUrl.match(/\.([a-z0-9]+)$/i)?.[1]?.toUpperCase() ?? "FILE";
                 elements.push(
                     <a
                         key={`attach-${index}`}
-                        href={cardUrl}
+                        href={attachmentUrl}
                         download
                         target="_blank"
                         rel="noopener noreferrer"

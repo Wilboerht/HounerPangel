@@ -15,7 +15,14 @@ export const blogPostSchema = z.object({
     published: z.boolean().default(false),
 });
 
-export const blogPostUpdateSchema = blogPostSchema.omit({ slug: true });
+export const blogPostUpdateSchema = blogPostSchema.omit({ slug: true }).extend({
+    expectedUpdatedAt: z.string().min(1),
+});
+
+export const blogPostPublishSchema = z.object({
+    published: z.boolean(),
+    expectedUpdatedAt: z.string().min(1),
+});
 
 export const loginSchema = z.object({
     password: z.string().min(1, "密码不能为空").max(256, "密码过长"),

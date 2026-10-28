@@ -111,6 +111,9 @@ input, textarea, select {
 
 /* dvh fallback for browsers that don't support dynamic viewport units */
 @supports not (min-height: 100dvh) {
+  .h-dvh {
+    height: 100vh !important;
+  }
   .min-h-dvh {
     min-height: 100vh !important;
   }

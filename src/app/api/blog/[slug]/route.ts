@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
-import { getBlogPostBySlug, updateBlogPost, deleteBlogPost } from "@/lib/blog-db";
+import { getBlogPostBySlug, updateBlogPost, setBlogPostPublished, deleteBlogPost } from "@/lib/blog-db";
 import { checkAuth, isAdminRequest } from "@/lib/auth";
-import { blogPostUpdateSchema, slugParamSchema } from "@/lib/validation";
+import { blogPostUpdateSchema, blogPostPublishSchema, slugParamSchema } from "@/lib/validation";
+import { revalidateBlogPaths } from "@/lib/revalidate-blog";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 interface Params {
@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
             return NextResponse.json({ error: "输入不合法" }, { status: 400 });
         }
 
-        const { title, content, date, tags, published } = parseResult.data;
+        const { title, content, date, tags, published, expectedUpdatedAt } = parseResult.data;
 
         const updated = await updateBlogPost(slug, {
             title,
@@ -55,22 +55,54 @@ export async function PUT(request: NextRequest, { params }: Params) {
             date,
             tags,
             published,
-        });
+        }, expectedUpdatedAt);
 
         if (!updated) {
-            return NextResponse.json({ error: "文章不存在" }, { status: 404 });
+            return NextResponse.json({ error: "文章已被其他会话修改，请刷新后重试" }, { status: 409 });
         }
 
-        // 刷新该文章详情页和列表页的 ISR 缓存
-        revalidatePath("/blog");
-        revalidatePath(`/blog/${slug}`);
-        revalidatePath("/rss.xml");
-        revalidatePath("/sitemap.xml");
+        revalidateBlogPaths(slug);
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, updatedAt: updated.updatedAt });
     } catch (error) {
         console.error("Failed to update blog post:", error);
         return NextResponse.json({ error: "更新文章失败" }, { status: 500 });
+    }
+}
+
+export async function PATCH(request: NextRequest, { params }: Params) {
+    const authError = await checkAuth(request);
+    if (authError) return authError;
+
+    const limit = await rateLimit(getRateLimitKey(request) + ":blog:publish");
+    if (!limit.success) {
+        return NextResponse.json({ error: "请求过于频繁，请稍后再试" }, { status: 429 });
+    }
+
+    try {
+        const { slug } = await params;
+        const slugResult = slugParamSchema.safeParse({ slug });
+        if (!slugResult.success) {
+            return NextResponse.json({ error: "Slug 不合法" }, { status: 400 });
+        }
+
+        const body = await request.json();
+        const parseResult = blogPostPublishSchema.safeParse(body);
+        if (!parseResult.success) {
+            return NextResponse.json({ error: "输入不合法" }, { status: 400 });
+        }
+
+        const { published, expectedUpdatedAt } = parseResult.data;
+        const updatedAt = await setBlogPostPublished(slug, published, expectedUpdatedAt);
+        if (!updatedAt) {
+            return NextResponse.json({ error: "文章已被其他会话修改，请刷新后重试" }, { status: 409 });
+        }
+
+        revalidateBlogPaths(slug);
+        return NextResponse.json({ success: true, updatedAt });
+    } catch (error) {
+        console.error("Failed to update publish status:", error);
+        return NextResponse.json({ error: "更新发布状态失败" }, { status: 500 });
     }
 }
 
@@ -91,11 +123,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         }
         await deleteBlogPost(slug);
 
-        // 刷新列表页和被删文章详情页的 ISR 缓存（使其变为 404）
-        revalidatePath("/blog");
-        revalidatePath(`/blog/${slug}`);
-        revalidatePath("/rss.xml");
-        revalidatePath("/sitemap.xml");
+        revalidateBlogPaths(slug);
 
         return NextResponse.json({ success: true });
     } catch (error) {

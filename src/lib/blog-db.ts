@@ -6,6 +6,7 @@ import {
     getBlogPostBySlug as _getBlogPostBySlug,
     createBlogPost as _createBlogPost,
     updateBlogPost as _updateBlogPost,
+    setBlogPostPublished as _setBlogPostPublished,
     deleteBlogPost as _deleteBlogPost,
 } from "./supabase";
 
@@ -16,4 +17,9 @@ export const getRecentBlogPosts = cache(_getRecentBlogPosts);
 export const getBlogPostBySlug = cache(_getBlogPostBySlug);
 
 // Mutations are not cached
-export { _createBlogPost as createBlogPost, _updateBlogPost as updateBlogPost, _deleteBlogPost as deleteBlogPost };
+export {
+    _createBlogPost as createBlogPost,
+    _updateBlogPost as updateBlogPost,
+    _setBlogPostPublished as setBlogPostPublished,
+    _deleteBlogPost as deleteBlogPost,
+};

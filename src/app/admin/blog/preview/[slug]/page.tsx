@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Eye } from "lucide-react";
 import { getBlogPostBySlug } from "@/lib/blog-db";
+import { isAdminSession } from "@/lib/auth";
 import { BlogPostArticle } from "@/components/blog-post-article";
 import { Badge } from "@/components/admin/badge";
 
@@ -13,9 +14,11 @@ export const metadata: Metadata = {
     title: "预览文章",
 };
 
-// 管理端草稿预览：/admin layout 已统一做会话校验，这里直接读未发布文章。
+// 页面必须在取数前独立鉴权：layout 隐藏 children 不会阻止其进入 RSC Payload。
 // 公开详情页 /blog/[slug] 走 ISR 只含已发布文章，草稿不会泄漏到公开缓存。
 export default async function BlogPreviewPage({ params }: Props) {
+    if (!(await isAdminSession())) return null;
+
     const { slug } = await params;
     const post = await getBlogPostBySlug(slug, true);
 

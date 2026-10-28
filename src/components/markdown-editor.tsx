@@ -22,6 +22,7 @@ interface MarkdownEditorProps {
   id?: string;
   // 上传接口返回 401 时回调（统一的会话过期处理：提示 + 刷新出登录表单）
   onAuthExpired?: () => void;
+  onUploadingChange?: (uploading: boolean) => void;
 }
 
 const MIME_MAP: Record<string, string> = {
@@ -100,7 +101,7 @@ function sanitizeLinkText(name: string): string {
   return name.replace(/[[\]()]/g, "").trim() || "附件";
 }
 
-export function MarkdownEditor({ value, onChange, rows = 12, required = false, id, onAuthExpired }: MarkdownEditorProps) {
+export function MarkdownEditor({ value, onChange, rows = 12, required = false, id, onAuthExpired, onUploadingChange }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>("");
@@ -233,6 +234,10 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   };
 
   const handleFileUpload = async (file: File, getMarkdown: (url: string) => string, kind: UploadKind) => {
+    if (uploadAbortRef.current) {
+      toast.info("请等待当前上传完成");
+      return;
+    }
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
     if (!KIND_ALLOWED[kind].has(ext)) {
       toast.error(`不支持的${KIND_LABEL[kind]}格式: .${ext || "未知"}`);
@@ -242,10 +247,11 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       toast.error(`文件过大，${KIND_LABEL[kind]}最大 ${KIND_MAX_LABEL[kind]}`);
       return;
     }
-    setUploading(true);
-    setUploadProgress("");
     const controller = new AbortController();
     uploadAbortRef.current = controller;
+    setUploading(true);
+    setUploadProgress("");
+    onUploadingChange?.(true);
     try {
       const url = await uploadToStorage(file, controller.signal);
       let markdown = getMarkdown(url);
@@ -265,9 +271,12 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       if (err instanceof Error && err.message === AUTH_EXPIRED) return;
       toast.error(err instanceof Error ? err.message : "上传失败");
     } finally {
-      if (uploadAbortRef.current === controller) uploadAbortRef.current = null;
-      setUploading(false);
-      setUploadProgress("");
+      if (uploadAbortRef.current === controller) {
+        uploadAbortRef.current = null;
+        setUploading(false);
+        setUploadProgress("");
+        onUploadingChange?.(false);
+      }
     }
   };
 
@@ -303,6 +312,10 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   };
 
   const handleDroppedFiles = async (files: FileList | File[]) => {
+    if (uploadAbortRef.current) {
+      toast.info("请等待当前上传完成");
+      return;
+    }
     const list = Array.from(files);
     if (list.length === 0) return;
     let hasMedia = false;
@@ -490,6 +503,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         aria-labelledby={`${editorId}-tab-edit`}
         required={required}
         rows={rows}
+        maxLength={100000}
         defaultValue={value}
         onInput={(e) => onChange(e.currentTarget.value)}
         onPaste={(e) => {

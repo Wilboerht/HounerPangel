@@ -21,6 +21,7 @@ export async function generateStaticParams() {
         const posts = await getAllBlogPostSummaries();
         return posts.map((post) => ({ slug: post.slug }));
     } catch (error) {
+        if (process.env.NEXT_PHASE !== "phase-production-build") throw error;
         console.error("生成文章静态参数失败，退回按需渲染：", error);
         return [];
     }
@@ -52,6 +53,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         alternates: {
             canonical: url,
+            types: {
+                "application/rss+xml": "/rss.xml",
+            },
         },
         openGraph: {
             title: post.title,

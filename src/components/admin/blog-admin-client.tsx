@@ -51,6 +51,7 @@ export function BlogAdminClient() {
   const toast = useToast();
   const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -112,22 +113,35 @@ export function BlogAdminClient() {
     : posts;
 
   const loadPosts = useCallback((signal?: AbortSignal) => {
-    fetch("/api/blog", { signal })
+    fetch("/api/admin/blog", { signal })
       .then(async (res) => {
+        if (res.status === 401) {
+          authExpired();
+          return null;
+        }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((data) => {
+        if (!data) return;
         if (!Array.isArray(data)) throw new Error("Unexpected response shape");
         setPosts(data);
-        setLoading(false);
+        setLoadFailed(false);
       })
       .catch(() => {
         if (signal?.aborted) return;
-        toast.error("加载文章列表失败，请刷新重试");
-        setLoading(false);
+        setLoadFailed(true);
+      })
+      .finally(() => {
+        if (!signal?.aborted) setLoading(false);
       });
-  }, [toast]);
+  }, [authExpired]);
+
+  const retryLoad = () => {
+    setLoading(true);
+    setLoadFailed(false);
+    loadPosts();
+  };
 
   // 登录状态由服务端渲染保证，这里直接加载列表
   useEffect(() => {
@@ -140,61 +154,53 @@ export function BlogAdminClient() {
   useDirtyGuard(formDirty, () => setPendingClose(true));
 
   const handleDelete = async () => {
-    if (!deleteTarget) return;
+    const target = deleteTarget;
+    if (!target) return;
     try {
-      const res = await fetch(`/api/blog/${deleteTarget.slug}`, { method: "DELETE" });
+      const res = await fetch(`/api/blog/${target.slug}`, { method: "DELETE" });
       if (res.status === 401) {
-        setDeleteTarget(null);
         authExpired();
         return;
       }
       if (res.ok) {
-        setPosts((prev) => prev.filter((p) => p.slug !== deleteTarget.slug));
+        setPosts((prev) => prev.filter((p) => p.slug !== target.slug));
         toast.success("文章已删除");
       } else {
         toast.error("删除失败");
       }
     } catch (err) {
       toast.error(err instanceof TypeError ? "网络错误，请检查连接后重试" : "删除失败");
+    } finally {
+      setDeleteTarget((current) => current?.slug === target.slug ? null : current);
     }
-    setDeleteTarget(null);
   };
 
-  // 行内发布/下线：PUT 需要完整字段，先取全文再翻转 published
   const handleTogglePublish = async (post: BlogPostSummary) => {
     if (togglingSlug) return;
     setTogglingSlug(post.slug);
+    const published = !post.published;
     try {
-      const res = await fetch(`/api/blog/${post.slug}`);
+      const res = await fetch(`/api/blog/${post.slug}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ published, expectedUpdatedAt: post.updatedAt }),
+      });
       if (res.status === 401) {
         authExpired();
         return;
       }
-      if (!res.ok) throw new Error("操作失败");
-      const full = await res.json();
-      const putRes = await fetch(`/api/blog/${post.slug}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: full.title,
-          content: full.content,
-          date: full.date,
-          tags: full.tags ?? [],
-          published: !post.published,
-        }),
-      });
-      if (putRes.status === 401) {
-        authExpired();
-        return;
+      if (res.status === 409) {
+        throw new Error("发布状态冲突：文章已被其他会话修改，请刷新列表后重试");
       }
-      if (!putRes.ok) {
-        const data = await putRes.json();
+      if (!res.ok) {
+        const data = await res.json();
         throw new Error(data.error || "操作失败");
       }
+      const data = await res.json();
       setPosts((prev) =>
-        prev.map((p) => (p.slug === post.slug ? { ...p, published: !post.published } : p))
+        prev.map((p) => (p.slug === post.slug ? { ...p, published, updatedAt: data.updatedAt } : p))
       );
-      toast.success(post.published ? "已转为草稿" : "已发布");
+      toast.success(published ? "已发布" : "已转为草稿");
     } catch (err) {
       toast.error(
         err instanceof TypeError
@@ -314,6 +320,16 @@ export function BlogAdminClient() {
               className="h-[62px] rounded-lg border border-border/50 bg-foreground/[0.03] motion-safe:animate-pulse"
             />
           ))}
+        </div>
+      ) : loadFailed ? (
+        <div className="flex flex-col items-center gap-3 py-16">
+          <p className="text-sm text-muted">加载文章列表失败，请检查网络后重试</p>
+          <button
+            onClick={retryLoad}
+            className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+          >
+            重试
+          </button>
         </div>
       ) : (
         <div className="flex flex-col gap-4">

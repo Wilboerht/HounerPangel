@@ -9,7 +9,7 @@ import { useScrollLock } from "@/lib/use-scroll-lock";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
-  // 取消/点遮罩/Escape 时调用；onConfirm 之后不会再触发
+  // 取消/点遮罩/Escape 时调用；确认处理期间会忽略关闭操作
   onClose: () => void;
   // 确认时调用；不会自动关弹窗，由调用方在 onConfirm 里把 isOpen 置为 false
   onConfirm: () => void | Promise<void>;
@@ -29,9 +29,12 @@ export function ConfirmDialog({
   danger = true,
 }: ConfirmDialogProps) {
   const reduce = useSafeMotion();
-  const trapRef = useFocusTrap(isOpen, onClose);
-  useScrollLock(isOpen);
   const [pending, setPending] = useState(false);
+  const handleClose = () => {
+    if (!pending) onClose();
+  };
+  const trapRef = useFocusTrap(isOpen, handleClose);
+  useScrollLock(isOpen);
   const titleId = useId();
   const messageId = useId();
 
@@ -43,7 +46,7 @@ export function ConfirmDialog({
             initial={safeAnimate(reduce, { opacity: 0 })}
             animate={{ opacity: 1 }}
             exit={safeAnimate(reduce, { opacity: 0 })}
-            onClick={onClose}
+            onClick={handleClose}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[110]"
           />
           <motion.div
@@ -77,8 +80,9 @@ export function ConfirmDialog({
               <div className="flex items-center justify-end gap-3 mt-6">
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 min-h-[44px] rounded-lg text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+                  disabled={pending}
+                  onClick={handleClose}
+                  className="px-4 py-2 min-h-[44px] rounded-lg text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors disabled:opacity-60"
                 >
                   取消
                 </button>

@@ -19,11 +19,21 @@ export async function GET() {
     let posts: BlogPost[];
     try {
         posts = await getRecentBlogPosts(RSS_ITEM_COUNT);
-    } catch {
+    } catch (error) {
+        if (process.env.NEXT_PHASE !== "phase-production-build") {
+            return new Response("RSS temporarily unavailable", {
+                status: 503,
+                headers: { "Cache-Control": "no-store" },
+            });
+        }
+        console.error("生成 RSS 失败，构建期降级为空 feed：", error);
         posts = [];
     }
 
-    const lastDate = posts.length > 0 ? new Date(posts[0].updatedAt || posts[0].date).toUTCString() : new Date().toUTCString();
+    const lastModified = posts.length > 0
+        ? Math.max(...posts.map((post) => new Date(post.updatedAt || post.date).getTime()))
+        : Date.now();
+    const lastDate = new Date(lastModified).toUTCString();
 
     const items = posts.map((post) => `
     <item>

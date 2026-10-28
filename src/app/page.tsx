@@ -7,6 +7,9 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
     alternates: {
         canonical: SITE_URL,
+        types: {
+            "application/rss+xml": "/rss.xml",
+        },
     },
 };
 

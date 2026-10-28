@@ -39,7 +39,19 @@ export function FootprintMap({ cities }: { cities: City[] }) {
             }
             style={{ width: "100%", height: "100%" }}
             mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-            onError={() => setMapError(true)}
+            onError={(event) => {
+                const resourceEvent = event as typeof event & {
+                    source?: unknown;
+                    sourceId?: string;
+                    tile?: unknown;
+                };
+                if (resourceEvent.source || resourceEvent.sourceId || resourceEvent.tile) {
+                    console.error("地图局部资源加载失败：", event.error);
+                    return;
+                }
+                console.error("地图初始化失败：", event.error);
+                setMapError(true);
+            }}
         >
             <NavigationControl position="top-right" />
             {cities.map((city) => (

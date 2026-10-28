@@ -21,6 +21,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
   // 网络/服务错误时留在原地给重试入口（只有文章真正不存在才跳回列表）
   const [loadFailed, setLoadFailed] = useState(false);
   const [initial, setInitial] = useState<PostFormValues | null>(null);
+  const [updatedAt, setUpdatedAt] = useState("");
   const [initialTagInput, setInitialTagInput] = useState<string | undefined>(undefined);
   // 恢复草稿时通过 formKey 重挂载 PostForm，让新的 initialValues 生效
   const [formKey, setFormKey] = useState(0);
@@ -51,22 +52,23 @@ export function BlogEditClient({ slug }: { slug: string }) {
   const authExpired = useAuthExpired();
 
   const loadPost = useCallback(() => {
-    fetch(`/api/blog/${slug}`)
+    fetch(`/api/admin/blog/${slug}`)
       .then(async (res) => {
         if (res.status === 401) {
           setLoading(false);
           authExpired();
           return null;
         }
+        if (res.status === 404) {
+          toast.error("文章不存在");
+          router.push("/admin/blog");
+          return null;
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((data) => {
         if (!data) return;
-        if (data.error) {
-          toast.error("文章不存在");
-          router.push("/admin/blog");
-          return;
-        }
         const loaded: PostFormValues = {
           slug,
           title: data.title,
@@ -76,6 +78,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
           tags: data.tags ?? [],
         };
         setInitial(loaded);
+        setUpdatedAt(data.updatedAt);
         setCurrentPublished(loaded.published);
         setLoading(false);
 
@@ -138,16 +141,22 @@ export function BlogEditClient({ slug }: { slug: string }) {
           date: values.date,
           tags: values.tags,
           published: values.published,
+          expectedUpdatedAt: updatedAt,
         }),
       });
 
       if (res.ok) {
+        const data = await res.json();
+        setUpdatedAt(data.updatedAt);
         clearDraft();
         setFormDirty(false);
         toast.success("文章已保存");
         return true;
       } else if (res.status === 401) {
         authExpired();
+        return false;
+      } else if (res.status === 409) {
+        toast.error("保存冲突：文章已被其他会话修改，未覆盖服务器版本，请刷新后重试");
         return false;
       } else {
         const data = await res.json();

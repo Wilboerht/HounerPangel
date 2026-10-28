@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     description: "了解 Hank Wong (wilboerht) —— 开发者、旅行爱好者及超级个体。",
     alternates: {
         canonical: `${SITE_URL}/me`,
+        types: {
+            "application/rss+xml": "/rss.xml",
+        },
     },
     openGraph: {
         title: "关于我 - Hank Wong's Web",

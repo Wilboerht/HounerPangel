@@ -11,8 +11,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let posts: Awaited<ReturnType<typeof getAllBlogPostSummaries>> = [];
     try {
         posts = await getAllBlogPostSummaries();
-    } catch {
-        // If Supabase is unavailable during build, skip blog posts
+    } catch (error) {
+        if (process.env.NEXT_PHASE !== "phase-production-build") throw error;
+        console.error("生成 sitemap 失败，构建期跳过博客文章：", error);
     }
 
     const staticRoutes = [
@@ -22,13 +23,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         "/map",
     ];
 
-    // 静态路由的 lastModified 用最新文章的日期；没有文章时省略，避免每次请求都变
-    const latestPostDate = posts.length > 0 ? new Date(posts[0].updatedAt || posts[0].date) : undefined;
+    const latestPostDate = posts.length > 0
+        ? new Date(Math.max(...posts.map((post) => new Date(post.updatedAt || post.date).getTime())))
+        : undefined;
 
     const routes: MetadataRoute.Sitemap = [
         ...staticRoutes.map((route) => ({
             url: `${siteUrl}${route}`,
-            ...(latestPostDate ? { lastModified: latestPostDate } : {}),
+            ...(route === "/blog" && latestPostDate ? { lastModified: latestPostDate } : {}),
             changeFrequency: "weekly" as const,
             priority: route === "/" ? 1 : 0.8,
         })),
