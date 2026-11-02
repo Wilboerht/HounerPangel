@@ -20,97 +20,127 @@ function computeBounds(cities: City[]): [number, number, number, number] | undef
 export function FootprintMap({ cities }: { cities: City[] }) {
     const [selected, setSelected] = useState<City | null>(null);
     const [mapError, setMapError] = useState(false);
+    const [resourceError, setResourceError] = useState(false);
     const bounds = useMemo(() => computeBounds(cities), [cities]);
 
     if (mapError) {
         return (
-            <div className="flex h-full w-full items-center justify-center text-sm text-muted">
-                地图加载失败，请检查网络后刷新
+            <div role="alert" className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-muted">
+                <p>地图加载失败，请检查网络后重试</p>
+                <button
+                    type="button"
+                    onClick={() => window.location.reload()}
+                    className="min-h-11 rounded-lg bg-foreground px-4 text-background"
+                >
+                    重新加载
+                </button>
             </div>
         );
     }
 
     return (
-        <Map
-            initialViewState={
-                bounds
-                    ? { bounds, fitBoundsOptions: { padding: 60, maxZoom: 6 } }
-                    : { longitude: 104.0, latitude: 35.5, zoom: 3 }
-            }
-            style={{ width: "100%", height: "100%" }}
-            mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-            onError={(event) => {
-                const resourceEvent = event as typeof event & {
-                    source?: unknown;
-                    sourceId?: string;
-                    tile?: unknown;
-                };
-                if (resourceEvent.source || resourceEvent.sourceId || resourceEvent.tile) {
-                    console.error("地图局部资源加载失败：", event.error);
-                    return;
+        <div className="relative h-full w-full">
+            <Map
+                initialViewState={
+                    bounds
+                        ? { bounds, fitBoundsOptions: { padding: 60, maxZoom: 6 } }
+                        : { longitude: 104.0, latitude: 35.5, zoom: 3 }
                 }
-                console.error("地图初始化失败：", event.error);
-                setMapError(true);
-            }}
-        >
-            <NavigationControl position="top-right" />
-            {cities.map((city) => (
-                <Marker
-                    key={`${city.name}-${city.coordinates.join(",")}`}
-                    longitude={city.coordinates[0]}
-                    latitude={city.coordinates[1]}
-                    anchor="bottom"
-                    onClick={(e) => {
-                        e.originalEvent.stopPropagation();
-                        setSelected(city);
-                    }}
+                style={{ width: "100%", height: "100%" }}
+                mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+                workerUrl="/vendor/maplibre-gl-worker.mjs"
+                onError={(event) => {
+                    const resourceEvent = event as typeof event & {
+                        source?: unknown;
+                        sourceId?: string;
+                        tile?: unknown;
+                    };
+                    const error = event.error as typeof event.error & { url?: unknown };
+                    if (resourceEvent.source || resourceEvent.sourceId || resourceEvent.tile || typeof error.url === "string") {
+                        console.error("地图局部资源加载失败：", event.error);
+                        setResourceError(true);
+                        return;
+                    }
+                    console.error("地图初始化失败：", event.error);
+                    setMapError(true);
+                }}
+            >
+                <NavigationControl position="top-right" />
+                {cities.map((city) => (
+                    <Marker
+                        key={`${city.name}-${city.coordinates.join(",")}`}
+                        longitude={city.coordinates[0]}
+                        latitude={city.coordinates[1]}
+                        anchor="bottom"
+                        onClick={(e) => {
+                            e.originalEvent.stopPropagation();
+                            setSelected(city);
+                        }}
+                    >
+                        <button
+                            type="button"
+                            aria-label={city.name}
+                            aria-controls="footprint-city-popup"
+                            aria-expanded={selected === city}
+                            onKeyDown={(e) => {
+                                if (e.key === "Escape") setSelected(null);
+                            }}
+                            className={`block cursor-pointer p-3 -m-3 transition-colors duration-200 ${
+                                city.status === "planned"
+                                    ? selected === city
+                                        ? "text-accent"
+                                        : "text-accent/60 hover:text-accent"
+                                    : selected === city
+                                      ? "text-foreground"
+                                      : "text-foreground/50 hover:text-foreground"
+                            }`}
+                        >
+                            <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="currentColor" aria-hidden="true">
+                                <path d="M12 2C8.13 2 5 5.13 5 8.5c0 5.25 7 13 7 13s7-7.75 7-13C19 5.13 15.87 2 12 2zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                            </svg>
+                        </button>
+                    </Marker>
+                ))}
+                {selected && (
+                    <Popup
+                        longitude={selected.coordinates[0]}
+                        latitude={selected.coordinates[1]}
+                        anchor="bottom"
+                        offset={22}
+                        onClose={() => setSelected(null)}
+                        closeOnClick={true}
+                        closeButton={false}
+                        className="footprint-popup"
+                    >
+                        <div id="footprint-city-popup" role="status" className="space-y-0.5">
+                            <p className="text-sm font-semibold tracking-wide text-foreground">{selected.name}</p>
+                            {selected.status === "planned" && (
+                                <p className="text-xs text-accent">计划前往</p>
+                            )}
+                            {(selected.visitDate || selected.note) && (
+                                <p className="text-xs text-muted">
+                                    {[selected.visitDate, selected.note].filter(Boolean).join(" · ")}
+                                </p>
+                            )}
+                        </div>
+                    </Popup>
+                )}
+            </Map>
+            {resourceError && (
+                <div
+                    role="alert"
+                    className="absolute bottom-[calc(3rem+env(safe-area-inset-bottom,0px))] left-1/2 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2 text-xs text-card-foreground shadow-lg"
                 >
+                    <p>部分底图资源加载失败，请重试</p>
                     <button
                         type="button"
-                        aria-label={city.name}
-                        onKeyDown={(e) => {
-                            if (e.key === "Escape") setSelected(null);
-                        }}
-                        className={`block cursor-pointer p-2 -m-2 transition-colors duration-200 ${
-                            city.status === "planned"
-                                ? selected?.name === city.name
-                                    ? "text-accent"
-                                    : "text-accent/60 hover:text-accent"
-                                : selected?.name === city.name
-                                  ? "text-foreground"
-                                  : "text-foreground/50 hover:text-foreground"
-                        }`}
+                        onClick={() => window.location.reload()}
+                        className="min-h-11 shrink-0 px-3 font-medium text-accent"
                     >
-                        <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="currentColor" aria-hidden="true">
-                            <path d="M12 2C8.13 2 5 5.13 5 8.5c0 5.25 7 13 7 13s7-7.75 7-13C19 5.13 15.87 2 12 2zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                        </svg>
+                        重新加载
                     </button>
-                </Marker>
-            ))}
-            {selected && (
-                <Popup
-                    longitude={selected.coordinates[0]}
-                    latitude={selected.coordinates[1]}
-                    anchor="bottom"
-                    offset={22}
-                    onClose={() => setSelected(null)}
-                    closeOnClick={true}
-                    closeButton={false}
-                    className="footprint-popup"
-                >
-                    <div className="space-y-0.5">
-                        <p className="text-sm font-semibold tracking-wide text-foreground">{selected.name}</p>
-                        {selected.status === "planned" && (
-                            <p className="text-xs text-accent">计划前往</p>
-                        )}
-                        {(selected.visitDate || selected.note) && (
-                            <p className="text-xs text-muted">
-                                {[selected.visitDate, selected.note].filter(Boolean).join(" · ")}
-                            </p>
-                        )}
-                    </div>
-                </Popup>
+                </div>
             )}
-        </Map>
+        </div>
     );
 }
