@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FileText, MapPin, User } from "lucide-react";
 import type { Metadata } from "next";
 import { ContactMenu } from "@/components/ContactMenu";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, PERSON_ID } from "@/lib/site";
 
 export const metadata: Metadata = {
     alternates: {
@@ -24,8 +24,9 @@ const jsonLd = {
     "@graph": [
         {
             "@type": "Person",
+            "@id": PERSON_ID,
             name: "Hank Wong",
-            alternateName: "wilboerht",
+            alternateName: ["wilboerht", "Hongkun Wang", "王泓坤"],
             url: SITE_URL,
             jobTitle: "Developer",
             sameAs: [
