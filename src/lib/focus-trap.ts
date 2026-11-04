@@ -3,6 +3,8 @@ import { useEffect, useRef } from "react";
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+const trapStack: HTMLElement[] = [];
+
 export function useFocusTrap(active: boolean, onEscape?: () => void) {
   const ref = useRef<HTMLDivElement>(null);
   const onEscapeRef = useRef(onEscape);
@@ -27,7 +29,10 @@ export function useFocusTrap(active: boolean, onEscape?: () => void) {
       firstFocusable.focus();
     }
 
+    trapStack.push(container);
+
     function handleKeyDown(e: KeyboardEvent) {
+      if (trapStack[trapStack.length - 1] !== container) return;
       if (e.key === "Escape") {
         onEscapeRef.current?.();
         return;
@@ -63,6 +68,8 @@ export function useFocusTrap(active: boolean, onEscape?: () => void) {
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      const stackIndex = trapStack.lastIndexOf(container);
+      if (stackIndex !== -1) trapStack.splice(stackIndex, 1);
       const prev = previouslyFocusedRef.current;
       if (prev && typeof prev.focus === "function") {
         prev.focus();

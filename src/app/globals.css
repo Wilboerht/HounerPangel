@@ -213,6 +213,92 @@ input, textarea, select {
   margin-top: 0.5rem;
 }
 
+.article-body h5,
+.article-body h6 {
+  color: var(--foreground);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.article-body h5 { font-size: 1rem; }
+.article-body h6 { font-size: 0.875rem; }
+.article-body > * + h4,
+.article-body > * + h5,
+.article-body > * + h6 { margin-top: 1.75rem; }
+
+.article-body .markdown-alert {
+  --alert-color: var(--accent);
+  border-left: 4px solid var(--alert-color);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--alert-color) 7%, transparent);
+  color: var(--foreground);
+  padding: 0.75rem 1rem;
+}
+
+.article-body .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--alert-color);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.article-body .markdown-alert-title + p { margin-top: 0.5rem; }
+.article-body .markdown-alert-title svg { flex-shrink: 0; fill: currentColor; }
+.article-body .markdown-alert-note { --alert-color: #3b82f6; }
+.article-body .markdown-alert-tip { --alert-color: #16a34a; }
+.article-body .markdown-alert-important { --alert-color: #9333ea; }
+.article-body .markdown-alert-warning { --alert-color: #d97706; }
+.article-body .markdown-alert-caution { --alert-color: #dc2626; }
+
+.article-body .task-list-item { list-style: none; }
+.article-body .task-list-item > input {
+  margin-right: 0.5rem;
+  accent-color: var(--accent);
+  vertical-align: middle;
+}
+
+.article-body th,
+.article-body td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.article-body th { color: var(--foreground); font-weight: 600; }
+.article-body pre code { padding: 0; background: transparent; }
+.article-body del { color: var(--muted); }
+.article-body .footnotes { font-size: 0.875rem; }
+.article-body .markdown-link-detail { display: none; }
+
+.article-body p > a.markdown-link:only-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--foreground);
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.article-body p > a.markdown-link:only-child:hover { background: color-mix(in srgb, var(--foreground) 4%, transparent); }
+.article-body p > a.markdown-link:only-child .markdown-link-detail {
+  display: block;
+  flex-basis: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .article-body hr {
   border-color: var(--border);
 }

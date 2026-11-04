@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import {
-  Eye, Edit3, Bold, Italic, Heading2, Heading3,
-  Link, Code, Code2, List, Image as ImageIcon, Video, Paperclip, X, Library,
+  Eye, Edit3, Bold, Italic, Heading1, Heading2, Heading3,
+  Link, Code, Code2, List, ListOrdered, ListChecks, Quote, Table, Minus, Strikethrough,
+  Image as ImageIcon, Video, Paperclip, X, Library,
 } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { MediaPicker } from "@/components/admin/media-picker";
@@ -164,17 +165,50 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const ta = textareaRef.current;
     if (!ta) return;
     const start = ta.selectionStart;
+    const end = ta.selectionEnd;
     const current = ta.value;
+    const selected = current.slice(start, end);
     const before = current.slice(0, start);
     const prefix = before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : before.length === 0 ? "" : "\n\n";
-    const text = syntax + placeholder;
+    let text = syntax + placeholder;
+    if (selected) {
+      if (syntax === "1. ") {
+        text = selected.split("\n").map((line, index) => `${index + 1}. ${line}`).join("\n");
+      } else if (["# ", "## ", "### ", "- ", "- [ ] ", "> "].includes(syntax)) {
+        text = selected.split("\n").map((line) => syntax + line).join("\n");
+      } else if (syntax.startsWith("> [!")) {
+        text = syntax + selected.replace(/\n/g, "\n> ");
+      } else if (syntax === "---" || syntax.startsWith("|")) {
+        text = `${syntax}\n${selected}`;
+      } else {
+        text = syntax + selected;
+      }
+    }
     const suffix = "\n";
-    const newValue = before + prefix + text + suffix + current.slice(start);
+    const newValue = before + prefix + text + suffix + current.slice(end);
     updateValue(newValue);
     requestAnimationFrame(() => {
       ta.focus();
-      const pos = start + prefix.length + syntax.length;
-      ta.setSelectionRange(pos, pos + placeholder.length);
+      const pos = selected ? start + prefix.length : start + prefix.length + syntax.length;
+      ta.setSelectionRange(pos, selected ? pos + text.length : pos + placeholder.length);
+    });
+  };
+
+  const indentSelection = (outdent: boolean) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const current = ta.value;
+    const blockStart = current.lastIndexOf("\n", start - 1) + 1;
+    const nextBreak = current.indexOf("\n", end);
+    const blockEnd = nextBreak === -1 ? current.length : nextBreak;
+    const block = current.slice(blockStart, blockEnd);
+    const updated = outdent ? block.replace(/^ {1,2}/gm, "") : block.replace(/^/gm, "  ");
+    updateValue(current.slice(0, blockStart) + updated + current.slice(blockEnd));
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(blockStart, blockStart + updated.length);
     });
   };
 
@@ -375,16 +409,18 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const ta = textareaRef.current;
     if (!ta) return;
     const start = ta.selectionStart;
+    const end = ta.selectionEnd;
     const current = ta.value;
+    const selected = current.slice(start, end) || "code";
     const before = current.slice(0, start);
     const prefix = before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : before.length === 0 ? "" : "\n\n";
-    const text = "```\ncode\n```\n";
-    const newValue = before + prefix + text + current.slice(start);
+    const text = `\`\`\`\n${selected}\n\`\`\`\n`;
+    const newValue = before + prefix + text + current.slice(end);
     updateValue(newValue);
     requestAnimationFrame(() => {
       ta.focus();
       const pos = start + prefix.length + 4;
-      ta.setSelectionRange(pos, pos + 4);
+      ta.setSelectionRange(pos, pos + selected.length);
     });
   };
 
@@ -397,15 +433,24 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     setMediaOpen(false);
   };
 
+  const insertTable = () => insertBlock("| 列 1 | 列 2 | 列 3 |\n| --- | --- | --- |\n| 内容 | 内容 | 内容 |");
+
   const tools = [
     { icon: Bold, label: "加粗 (Ctrl+B)", action: () => insertText("**", "**", "粗体") },
     { icon: Italic, label: "斜体 (Ctrl+I)", action: () => insertText("*", "*", "斜体") },
+    { icon: Strikethrough, label: "删除线", action: () => insertText("~~", "~~", "删除线") },
+    { icon: Heading1, label: "一级标题", action: () => insertBlock("# ", "标题") },
     { icon: Heading2, label: "二级标题", action: () => insertBlock("## ", "标题") },
     { icon: Heading3, label: "三级标题", action: () => insertBlock("### ", "标题") },
-    { icon: Link, label: "链接", action: insertLink },
-    { icon: Code, label: "行内代码", action: () => insertText("`", "`", "code") },
+    { icon: Link, label: "链接 (Ctrl+K)", action: insertLink },
+    { icon: Code, label: "行内代码 (Ctrl+E)", action: () => insertText("`", "`", "code") },
     { icon: Code2, label: "代码块", action: insertCodeBlock },
     { icon: List, label: "无序列表", action: () => insertBlock("- ", "列表项") },
+    { icon: ListOrdered, label: "有序列表", action: () => insertBlock("1. ", "列表项") },
+    { icon: ListChecks, label: "任务列表", action: () => insertBlock("- [ ] ", "待办事项") },
+    { icon: Quote, label: "引用", action: () => insertBlock("> ", "引用内容") },
+    { icon: Table, label: "表格", action: insertTable },
+    { icon: Minus, label: "分隔线", action: () => insertBlock("---") },
   ];
 
   return (
@@ -469,6 +514,24 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
                 <tool.icon className="w-4 h-4" />
               </button>
             ))}
+            <select
+              value=""
+              aria-label="插入提示块"
+              title="插入提示块"
+              onChange={(event) => {
+                const type = event.target.value;
+                if (type) insertBlock(`> [!${type}]\n> `, "提示内容");
+                event.target.value = "";
+              }}
+              className="min-h-[36px] rounded-md border border-border/50 bg-background px-2 text-xs text-muted"
+            >
+              <option value="">提示块</option>
+              <option value="NOTE">Note 注意</option>
+              <option value="TIP">Tip 提示</option>
+              <option value="IMPORTANT">Important 重要</option>
+              <option value="WARNING">Warning 警告</option>
+              <option value="CAUTION">Caution 谨慎</option>
+            </select>
             <div className="w-px h-5 bg-border/50 mx-1 flex-shrink-0" />
             <button
               type="button"
@@ -559,6 +622,11 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           }
         }}
         onKeyDown={(e) => {
+          if (e.key === "Tab" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            e.preventDefault();
+            indentSelection(e.shiftKey);
+            return;
+          }
           if (!(e.ctrlKey || e.metaKey)) return;
           const key = e.key.toLowerCase();
           if (key === "b") {
@@ -567,6 +635,15 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           } else if (key === "i") {
             e.preventDefault();
             insertText("*", "*", "斜体");
+          } else if (key === "k") {
+            e.preventDefault();
+            insertLink();
+          } else if (key === "e") {
+            e.preventDefault();
+            insertText("`", "`", "code");
+          } else if (key === "x" && e.shiftKey) {
+            e.preventDefault();
+            insertText("~~", "~~", "删除线");
           }
         }}
         placeholder="写点什么..."

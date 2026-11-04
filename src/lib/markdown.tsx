@@ -1,5 +1,11 @@
+import { isValidElement, type ReactNode } from "react";
 import hljs from "highlight.js/lib/core";
 import Image from "next/image";
+import ReactMarkdown, { type Components } from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import remarkGfm from "remark-gfm";
+import { remarkAlert } from "remark-github-blockquote-alert";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
 import python from "highlight.js/lib/languages/python";
@@ -36,66 +42,72 @@ hljs.registerLanguage("diff", diff);
 hljs.registerLanguage("markdown", markdownLang);
 hljs.registerLanguage("plaintext", plaintext);
 
-function escapeHtml(s: string): string {
-    return s
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+function mapFencedLines(
+    content: string,
+    outside: (line: string) => string,
+    inside: (line: string) => string
+): string {
+    let fence: { marker: string; length: number } | null = null;
+    return content.split("\n").map((line) => {
+        if (fence) {
+            const closing = line.match(/^ {0,3}(`{3,}|~{3,})\s*$/);
+            if (closing && closing[1][0] === fence.marker && closing[1].length >= fence.length) fence = null;
+            return inside(line);
+        }
+        const opening = line.match(/^ {0,3}(`{3,}|~{3,})/);
+        if (opening) fence = { marker: opening[1][0], length: opening[1].length };
+        return opening ? inside(line) : outside(line);
+    }).join("\n");
 }
 
-// 去掉 markdown 语法，生成纯文本摘要
+function stripFencedCodeBlocks(content: string): string {
+    return mapFencedLines(content, (line) => line, () => "");
+}
+
 export function plainTextExcerpt(content: string, max = 160): string {
-    return content
+    return stripFencedCodeBlocks(content)
+        .replace(/^\s*>\s*\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)(?:\/[^\]]+)?\]\s*$/gim, "")
         .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
         .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-        .replace(/[#>*`_~]/g, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/^\s*>\s?/gm, "")
+        .replace(/[#>*`_~|]/g, "")
         .replace(/\s+/g, " ")
         .trim()
         .slice(0, max);
 }
 
-// 提取正文中第一张图片作为 og:image（兼容 =WxH 尺寸标注）
 export function firstImageUrl(content: string): string | undefined {
-    const match = content.match(/^!\[[^\]]*\]\((\S+?)(?:\s+=\d+x\d+)?\)\s*$/m);
-    if (!match || /\.(mp4|webm|mov|avi|mkv)(?:$|[?#])/i.test(match[1])) return undefined;
-    return match[1];
+    let url: string | undefined;
+    mapFencedLines(content, (line) => {
+        if (!url) url = line.match(/^!\[[^\]]*\]\((\S+)(?:\s+[^)]*)?\)\s*$/)?.[1];
+        return line;
+    }, (line) => line);
+    if (url && /\.(mp4|webm|mov|avi|mkv)(?:$|[?#])/i.test(url)) return undefined;
+    return url;
 }
 
-// 链接协议白名单：仅允许 https?://、mailto:、以及 / 或 # 开头的相对路径。
-// 注意排除 // 开头的协议相对 URL（//evil.com），与下方媒体白名单写法一致。
 function isSafeLinkUrl(url: string): boolean {
-    const trimmed = url.trim();
-    return /^(https?:\/\/|mailto:|\/(?!\/\/)|#)/i.test(trimmed);
+    return /^(https?:\/\/|mailto:|\/(?!\/\/)|#)/i.test(url.trim());
 }
 
-// 图片/视频地址白名单：仅允许站内相对路径或 Supabase 存储域名。
-// 与 next.config.ts 的 CSP img-src/media-src 对齐——否则外链媒体会被浏览器拦截，正文静默破图。
 function isSafeMediaUrl(url: string): boolean {
     const trimmed = url.trim();
     if (/^\/(?!\/)/.test(trimmed)) return true;
     try {
         const parsed = new URL(trimmed);
-        return (
-            parsed.protocol === "https:" &&
-            (parsed.hostname === "supabase.co" || parsed.hostname.endsWith(".supabase.co"))
-        );
+        return parsed.protocol === "https:" && (parsed.hostname === "supabase.co" || parsed.hostname.endsWith(".supabase.co"));
     } catch {
         return false;
     }
 }
 
-// 编辑器附件上传支持的扩展名，与 /api/admin/upload-url 的白名单保持一致
 const ATTACHMENT_EXT_RE = /\.(pdf|txt|md|csv|zip|docx?|xlsx?|pptx?)$/i;
+const VIDEO_EXT_RE = /\.(mp4|webm|mov|avi|mkv)($|\?|#)/i;
 
-// 当前项目的 Supabase 存储域名，与 next.config.ts 的 remotePatterns 对齐：
-// 只有该域名的图才能走 next/image 优化（其他 Supabase 项目的图会 400）
 const SUPABASE_HOSTNAME = (() => {
     try {
-        return process.env.NEXT_PUBLIC_SUPABASE_URL
-            ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
-            : "";
+        return process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname : "";
     } catch {
         return "";
     }
@@ -126,618 +138,143 @@ const IFRAME_ALLOWED_DOMAINS = [
     "instagram.com",
 ];
 
-// 校验 iframe src 域名白名单，通过则返回干净的 src，否则返回 null
-function getAllowedIframeSrc(html: string): string | null {
-    const srcMatch = html.match(/src\s*=\s*["']([^"']+)["']/i);
-    if (!srcMatch) return null;
+function isAllowedIframeSrc(src: string): boolean {
     try {
-        const url = new URL(srcMatch[1]);
-        if (url.protocol !== "https:") return null;
-        return IFRAME_ALLOWED_DOMAINS.some((d) => url.hostname === d) ? srcMatch[1] : null;
+        const url = new URL(src);
+        return url.protocol === "https:" && IFRAME_ALLOWED_DOMAINS.includes(url.hostname);
+    } catch {
+        return false;
+    }
+}
+
+function normalizeMediaDimensions(content: string): string {
+    return mapFencedLines(content, (line) => line.replace(/^!\[([^\]]*)\]\((\S+)\s+=(\d+)x(\d+)\)\s*$/, (_match, alt: string, url: string, width: string, height: string) =>
+        `![${alt}](${url} "${width}x${height}")`
+    ), (line) => line);
+}
+
+const sanitizeSchema = {
+    ...defaultSchema,
+    tagNames: [...(defaultSchema.tagNames ?? []), "iframe", "svg", "path"],
+    attributes: {
+        ...defaultSchema.attributes,
+        "*": [...(defaultSchema.attributes?.["*"] ?? []), "className"],
+        iframe: ["src", "title", "allow", "allowFullScreen", "loading", "referrerPolicy", "className"],
+        svg: ["viewBox", "width", "height", "ariaHidden", "className"],
+        path: ["d", "fill", "stroke", "strokeWidth", "strokeLinecap", "strokeLinejoin"],
+    },
+};
+
+function highlightedCode(children: React.ReactNode, className: string | undefined) {
+    const code = String(children).replace(/\n$/, "");
+    const language = /language-([\w-]+)/.exec(className ?? "")?.[1]?.toLowerCase();
+    if (!language) return null;
+    try {
+        return hljs.getLanguage(language)
+            ? hljs.highlight(code, { language }).value
+            : hljs.highlightAuto(code).value;
     } catch {
         return null;
     }
 }
 
-function findNextSpecial(s: string): number {
-    for (let i = 0; i < s.length; i++) {
-        if ("`[]*_~()".includes(s[i])) return i;
-    }
-    return -1;
+function reactText(node: ReactNode): string {
+    if (typeof node === "string" || typeof node === "number" || typeof node === "bigint") return String(node);
+    if (Array.isArray(node)) return node.map(reactText).join("");
+    if (isValidElement(node)) return reactText((node.props as { children?: ReactNode }).children);
+    return "";
 }
 
-function renderInline(text: string): React.ReactNode {
-    const tokens: React.ReactNode[] = [];
-    let remaining = text;
-    let key = 0;
-
-    while (remaining.length > 0) {
-        const codeMatch = remaining.match(/^`([^`]+)`/);
-        if (codeMatch) {
-            tokens.push(
-                <code key={key++} className="px-1.5 py-0.5 rounded-md bg-foreground/10 text-foreground text-sm font-mono break-all">
-                    {codeMatch[1]}
-                </code>
-            );
-            remaining = remaining.slice(codeMatch[0].length);
-            continue;
-        }
-
-        const linkMatch = remaining.match(/^\[([^\]]+)\]\(([^)]+)\)/);
-        if (linkMatch) {
-            if (isSafeLinkUrl(linkMatch[2])) {
-                tokens.push(
-                    <a
-                        key={key++}
-                        href={linkMatch[2]}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-accent hover:underline underline-offset-2"
-                    >
-                        {renderInline(linkMatch[1])}
-                    </a>
-                );
-            } else {
-                // 不允许的协议渲染为纯文本
-                tokens.push(<span key={key++}>{linkMatch[1]}</span>);
-            }
-            remaining = remaining.slice(linkMatch[0].length);
-            continue;
-        }
-
-        const boldMatch = remaining.match(/^\*\*([^*]+)\*\*/);
-        if (boldMatch) {
-            tokens.push(
-                <strong key={key++} className="font-semibold text-foreground">
-                    {renderInline(boldMatch[1])}
-                </strong>
-            );
-            remaining = remaining.slice(boldMatch[0].length);
-            continue;
-        }
-
-        const italicMatch = remaining.match(/^(\*)([^*]+)(\*)/);
-        if (italicMatch && italicMatch[1] === italicMatch[3]) {
-            tokens.push(
-                <em key={key++} className="italic text-foreground/90">
-                    {renderInline(italicMatch[2])}
-                </em>
-            );
-            remaining = remaining.slice(italicMatch[0].length);
-            continue;
-        }
-
-        const underscoreMatch = remaining.match(/^(_)([^_]+)(_)/);
-        if (underscoreMatch) {
-            tokens.push(
-                <em key={key++} className="italic text-foreground/90">
-                    {renderInline(underscoreMatch[2])}
-                </em>
-            );
-            remaining = remaining.slice(underscoreMatch[0].length);
-            continue;
-        }
-
-        const strikeMatch = remaining.match(/^~~([^~]+)~~/);
-        if (strikeMatch) {
-            tokens.push(
-                <del key={key++} className="line-through text-muted">
-                    {renderInline(strikeMatch[1])}
-                </del>
-            );
-            remaining = remaining.slice(strikeMatch[0].length);
-            continue;
-        }
-
-        const nextSpecial = findNextSpecial(remaining);
-        if (nextSpecial === -1) {
-            tokens.push(<span key={key++}>{remaining}</span>);
-            break;
-        }
-        if (nextSpecial > 0) {
-            tokens.push(<span key={key++}>{remaining.slice(0, nextSpecial)}</span>);
-            remaining = remaining.slice(nextSpecial);
-            continue;
-        }
-
-        tokens.push(<span key={key++}>{remaining[0]}</span>);
-        remaining = remaining.slice(1);
-    }
-
-    return tokens;
-}
-
-// 按未转义且不在行内代码 span 内的 | 切分表格单元格，最后把 \| 还原为 |
-function splitTableRow(line: string): string[] {
-    const cells: string[] = [];
-    let current = "";
-    let inCode = false;
-    for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === "\\" && line[i + 1] === "|") {
-            current += "|";
-            i++;
-            continue;
-        }
-        if (ch === "`") {
-            inCode = !inCode;
-            current += ch;
-            continue;
-        }
-        if (ch === "|" && !inCode) {
-            cells.push(current);
-            current = "";
-            continue;
-        }
-        current += ch;
-    }
-    cells.push(current);
-    const trimmedCells = cells.map((c) => c.trim());
-    if (trimmedCells[0] === "") trimmedCells.shift();
-    if (trimmedCells[trimmedCells.length - 1] === "") trimmedCells.pop();
-    return trimmedCells;
-}
-
-export function renderMarkdown(content: string, options: { forRss?: boolean } = {}): React.ReactNode {
-    const lines = content.split("\n");
-    const elements: React.ReactNode[] = [];
-    let inUnorderedList = false;
-    let inOrderedList = false;
-    let inCodeBlock = false;
-    let inQuote = false;
-    let inIframe = false;
-    let codeLines: string[] = [];
-    let codeLanguage = "";
-    let iframeLines: string[] = [];
-    let unorderedItems: React.ReactNode[] = [];
-    let orderedItems: React.ReactNode[] = [];
-    let quoteLines: string[] = [];
-
-    const flushUnordered = () => {
-        if (inUnorderedList && unorderedItems.length > 0) {
-            elements.push(
-                <ul key={`ul-${elements.length}`} className="list-disc pl-5 text-muted">
-                    {unorderedItems}
-                </ul>
-            );
-            unorderedItems = [];
-            inUnorderedList = false;
-        }
-    };
-
-    const flushOrdered = () => {
-        if (inOrderedList && orderedItems.length > 0) {
-            elements.push(
-                <ol key={`ol-${elements.length}`} className="list-decimal pl-5 text-muted">
-                    {orderedItems}
-                </ol>
-            );
-            orderedItems = [];
-            inOrderedList = false;
-        }
-    };
-
-    const flushQuote = () => {
-        if (inQuote && quoteLines.length > 0) {
-            elements.push(
-                <blockquote
-                    key={`bq-${elements.length}`}
-                    className="border-l-2 border-accent/40"
-                >
-                    {quoteLines.map((q, i) => (
-                        <p key={i}>
-                            {renderInline(q)}
-                        </p>
-                    ))}
-                </blockquote>
-            );
-            quoteLines = [];
-            inQuote = false;
-        }
-    };
-
-    const flushCodeBlock = () => {
-        if (!inCodeBlock) return;
-        const language = codeLanguage;
-        const code = codeLines.join("\n");
-        const hasContent = codeLines.length > 0;
-        codeLines = [];
-        codeLanguage = "";
-        inCodeBlock = false;
-        if (!hasContent) return;
-
-        let highlighted: string;
-        try {
-            if (language && hljs.getLanguage(language)) {
-                highlighted = hljs.highlight(code, { language }).value;
-            } else if (language) {
-                // 未注册语言按转义后的纯文本渲染
-                highlighted = escapeHtml(code);
-            } else {
-                highlighted = hljs.highlightAuto(code).value;
-            }
-        } catch {
-            highlighted = escapeHtml(code);
-        }
-        elements.push(
-            <pre
-                key={`pre-${elements.length}`}
-                className="rounded-xl bg-foreground/5 p-3 sm:p-4 overflow-x-auto"
-            >
-                <code
-                    className="text-sm font-mono leading-relaxed hljs"
-                    dangerouslySetInnerHTML={{ __html: highlighted }}
-                />
-            </pre>
-        );
-    };
-
-    const flushIframe = () => {
-        if (inIframe && iframeLines.length > 0) {
-            const iframeHtml = iframeLines.join("\n").trim();
-            const safeSrc = getAllowedIframeSrc(iframeHtml);
-
-            if (safeSrc) {
-                // 校验通过后重建一个干净的 iframe，剥离所有事件属性和其他内容
-                elements.push(
-                    <div key={`iframe-${elements.length}`} className="iframe-wrapper">
-                        <iframe
-                            src={safeSrc}
-                            className="w-full aspect-video rounded-xl border-0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer"
-                            title="嵌入内容"
-                        />
-                    </div>
-                );
-            } else {
-                // 校验失败的 iframe 按普通文本段落渲染
-                elements.push(
-                    <p key={`iframe-${elements.length}`} className="text-muted">
-                        {iframeHtml}
-                    </p>
-                );
-            }
-            iframeLines = [];
-            inIframe = false;
-        }
-    };
-
-    for (let index = 0; index < lines.length; index++) {
-        const line = lines[index];
-        const trimmed = line.trim();
-
-        if (trimmed.startsWith("```")) {
-            if (!inCodeBlock) {
-                flushUnordered();
-                flushOrdered();
-                flushQuote();
-                codeLanguage = trimmed.replace("```", "").trim();
-                inCodeBlock = true;
-            } else {
-                flushCodeBlock();
-            }
-            continue;
-        }
-
-        if (inCodeBlock) {
-            codeLines.push(line);
-            continue;
-        }
-
-        if (trimmed.toLowerCase().startsWith("<iframe")) {
-            flushUnordered();
-            flushOrdered();
-            flushQuote();
-            inIframe = true;
-            iframeLines.push(line);
-            // 单行写法立即 flush，避免吞掉后续正文
-            if (trimmed.toLowerCase().includes("</iframe>")) {
-                flushIframe();
-            }
-            continue;
-        }
-        if (inIframe) {
-            iframeLines.push(line);
-            if (trimmed.toLowerCase().includes("</iframe>")) {
-                flushIframe();
-            }
-            continue;
-        }
-
-        if (/^(---+|___+|\*\*\*+)$/.test(trimmed)) {
-            flushUnordered();
-            flushOrdered();
-            flushQuote();
-            elements.push(
-                <hr key={`hr-${elements.length}`} className="border-border" />
-            );
-            continue;
-        }
-
-        if (trimmed.startsWith("# ") && !trimmed.startsWith("## ")) {
-            flushUnordered();
-            flushOrdered();
-            flushQuote();
-            elements.push(
-                <h1 key={index} className="text-2xl font-bold tracking-tight text-foreground">
-                    {renderInline(trimmed.replace("# ", ""))}
-                </h1>
-            );
-            continue;
-        }
-
-        if (trimmed.startsWith("## ")) {
-            flushUnordered();
-            flushOrdered();
-            flushQuote();
-            elements.push(
-                <h2 key={index} className="text-xl font-semibold tracking-tight text-foreground">
-                    {renderInline(trimmed.replace("## ", ""))}
-                </h2>
-            );
-            continue;
-        }
-
-        if (trimmed.startsWith("### ")) {
-            flushUnordered();
-            flushOrdered();
-            flushQuote();
-            elements.push(
-                <h3 key={index} className="text-lg font-semibold tracking-tight text-foreground">
-                    {renderInline(trimmed.replace("### ", ""))}
-                </h3>
-            );
-            continue;
-        }
-
-        if (trimmed.startsWith("> ")) {
-            flushUnordered();
-            flushOrdered();
-            if (!inQuote) inQuote = true;
-            quoteLines.push(trimmed.replace("> ", ""));
-            continue;
-        } else if (inQuote && trimmed.length === 0) {
-            flushQuote();
-            continue;
-        }
-
-        if (trimmed.startsWith("- ")) {
-            flushOrdered();
-            flushQuote();
-            if (!inUnorderedList) inUnorderedList = true;
-            unorderedItems.push(
-                <li key={index}>{renderInline(trimmed.replace("- ", ""))}</li>
-            );
-            continue;
-        }
-
-        if (trimmed.match(/^\d+\.\s/)) {
-            flushUnordered();
-            flushQuote();
-            if (!inOrderedList) inOrderedList = true;
-            orderedItems.push(
-                <li key={index}>{renderInline(trimmed.replace(/^\d+\.\s/, ""))}</li>
-            );
-            continue;
-        }
-
-        if (trimmed.startsWith("|")) {
-            flushUnordered();
-            flushOrdered();
-            flushQuote();
-            const headerCells = splitTableRow(trimmed);
-            const nextLine = index + 1 < lines.length ? lines[index + 1].trim() : "";
-            const isSeparator = /^\|[\s\-:|]+\|$/.test(nextLine);
-            if (isSeparator && headerCells.length > 0) {
-                index++; // consume separator
-                const bodyRows: string[][] = [];
-                while (index + 1 < lines.length) {
-                    const nextTrimmed = lines[index + 1].trim();
-                    if (!nextTrimmed.startsWith("|")) break;
-                    bodyRows.push(splitTableRow(nextTrimmed));
-                    index++;
-                }
-                elements.push(
-                    <div key={`tbl-${index}`} className="overflow-x-auto">
-                        <table className="w-full text-sm border-collapse">
-                            <thead>
-                                <tr className="border-b border-border">
-                                    {headerCells.map((cell, ci) => (
-                                        <th key={ci} className="px-3 py-2 text-left font-semibold text-foreground">
-                                            {renderInline(cell)}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {bodyRows.map((row, ri) => (
-                                    <tr key={ri} className="border-b border-border/50">
-                                        {row.map((cell, ci) => (
-                                            <td key={ci} className="px-3 py-2 text-muted">
-                                                {renderInline(cell)}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                );
-            } else {
-                elements.push(
-                    <p key={index} className="text-muted">
-                        {renderInline(trimmed)}
-                    </p>
-                );
-            }
-            continue;
-        }
-
-        if (trimmed.length === 0) {
-            flushUnordered();
-            flushOrdered();
-            flushQuote();
-            continue;
-        }
-
-        flushUnordered();
-        flushOrdered();
-        flushQuote();
-
-        const imageMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-        if (imageMatch) {
-            const [, imgAlt, imgSrcRaw] = imageMatch;
-            // 支持可选的 =WxH 尺寸标注（上传时自动写入），用于预留宽高比防止 CLS
-            const sizeMatch = imgSrcRaw.match(/^(\S+)\s+=(\d+)x(\d+)$/);
-            const imgUrl = sizeMatch ? sizeMatch[1] : imgSrcRaw;
-            const imgWidth = sizeMatch ? parseInt(sizeMatch[2], 10) : undefined;
-            const imgHeight = sizeMatch ? parseInt(sizeMatch[3], 10) : undefined;
-            if (isSafeMediaUrl(imgUrl)) {
-            const isVideo = /\.(mp4|webm|mov|avi|mkv)($|\?)/i.test(imgUrl);
-            // 公开页面使用 Next/Image；RSS 与其他外链媒体一样输出可直接订阅的裸 img
-            const useNextImage = !options.forRss && !isVideo && imgWidth !== undefined && imgHeight !== undefined
-                && isCurrentSupabaseHost(imgUrl);
-            elements.push(
-                isVideo ? (
-                    <figure key={`vid-${index}`} className="">
-                        <video
-                            src={imgUrl}
-                            controls
-                            className="rounded-xl w-full"
-                            preload="metadata"
-                        >
-                            您的浏览器不支持视频播放。
-                        </video>
-                        {imgAlt && (
-                            <figcaption className="text-sm text-muted text-center mt-2">
-                                {imgAlt}
-                            </figcaption>
-                        )}
-                    </figure>
-                ) : (
-                    <figure key={`img-${index}`} className="">
-                        {useNextImage ? (
-                            <Image
-                                src={imgUrl}
-                                alt={imgAlt || ""}
-                                width={imgWidth}
-                                height={imgHeight}
-                                sizes="(max-width: 768px) 100vw, 672px"
-                                className="rounded-xl block mx-auto max-w-full h-auto"
-                            />
-                        ) : (
-                            /* 未知尺寸的外链图：不拉伸小图，保持原始尺寸居中 */
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
-                                src={imgUrl}
-                                alt={imgAlt || ""}
-                                className="rounded-xl block mx-auto max-w-full"
-                                loading="lazy"
-                            />
-                        )}
-                        {imgAlt && (
-                            <figcaption className="text-sm text-muted text-center mt-2">
-                                {imgAlt}
-                            </figcaption>
-                        )}
-                    </figure>
-                )
-            );
-            continue;
-            }
-        }
-
-        const standaloneLinkMatch = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-        if (standaloneLinkMatch && isSafeLinkUrl(standaloneLinkMatch[2])) {
-            const [, cardText, cardUrl] = standaloneLinkMatch;
-            // 附件（pdf、文档、压缩包等）渲染成下载卡片，不做内嵌预览；其他链接保持外链卡片
-            const cleanUrl = cardUrl.split("?")[0].split("#")[0];
-            const isAttachment = ATTACHMENT_EXT_RE.test(cleanUrl);
-            // 卡片共用轻量样式：无下划线（覆盖 .article-body a 的全局规则）、无重阴影、hover 只提亮背景
-            const cardClass =
-                "no-underline flex items-center gap-3 px-4 py-3 rounded-xl border border-border/50 bg-foreground/[0.02] hover:bg-foreground/[0.05] transition-colors duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
-            if (isAttachment) {
-                let attachmentUrl = cardUrl;
-                if (isCurrentSupabaseHost(cardUrl)) {
-                    const url = new URL(cardUrl);
-                    url.searchParams.set("download", cardText);
+function markdownComponents(forRss: boolean): Components {
+    return {
+        a({ href = "", children, title }) {
+            if (!isSafeLinkUrl(href)) return <span>{children}</span>;
+            const text = reactText(children);
+            const cleanUrl = href.split("?")[0].split("#")[0];
+            if (ATTACHMENT_EXT_RE.test(cleanUrl)) {
+                let attachmentUrl = href;
+                if (isCurrentSupabaseHost(href)) {
+                    const url = new URL(href);
+                    url.searchParams.set("download", text);
                     attachmentUrl = url.toString();
                 }
-                // 文件类型徽标（PDF / DOCX...），下载前给用户明确的格式预期
                 const extLabel = cleanUrl.match(/\.([a-z0-9]+)$/i)?.[1]?.toUpperCase() ?? "FILE";
-                elements.push(
-                    <a
-                        key={`attach-${index}`}
-                        href={attachmentUrl}
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`下载附件：${cardText}`}
-                        className={cardClass}
-                    >
-                        <span className="flex-shrink-0 min-w-9 px-1.5 py-1 rounded-md bg-foreground/5 text-center text-[10px] font-mono font-medium leading-none text-muted uppercase">
-                            {extLabel}
-                        </span>
-                        <span className="min-w-0 flex-1 truncate text-sm text-foreground">
-                            {cardText}
-                        </span>
-                        <svg
-                            className="w-4 h-4 flex-shrink-0 text-muted group-hover:text-foreground transition-colors"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                        </svg>
+                return (
+                    <a href={attachmentUrl} download target="_blank" rel="noopener noreferrer" title={title} aria-label={`下载附件：${text}`} className="no-underline flex items-center gap-3 px-4 py-3 rounded-xl border border-border/50 bg-foreground/[0.02] hover:bg-foreground/[0.05] transition-colors">
+                        <span className="flex-shrink-0 min-w-9 px-1.5 py-1 rounded-md bg-foreground/5 text-center text-[10px] font-mono font-medium leading-none text-muted uppercase">{extLabel}</span>
+                        <span className="min-w-0 flex-1 truncate text-sm text-foreground">{children}</span>
                     </a>
                 );
-                continue;
             }
-            elements.push(
-                <a
-                    key={`card-${index}`}
-                    href={cardUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${cardClass} justify-between`}
-                >
-                    <div className="min-w-0">
-                        <span className="block text-sm text-foreground truncate">
-                            {cardText}
-                        </span>
-                        <span className="block text-xs text-muted mt-0.5 truncate">
-                            {cardUrl}
-                        </span>
-                    </div>
-                    <svg
-                        className="w-4 h-4 flex-shrink-0 text-muted group-hover:text-foreground transition-colors"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                    >
-                        <path d="M7 17L17 7M17 7H7M17 7V17" />
-                    </svg>
-                </a>
+            return <a href={href} target="_blank" rel="noopener noreferrer" title={title} className="markdown-link">{children}{!forRss && <span className="markdown-link-detail">{href}</span>}</a>;
+        },
+        img({ src = "", alt = "", width, height, title }) {
+            const source = typeof src === "string" ? src : "";
+            if (!isSafeMediaUrl(source)) return <span>{alt}</span>;
+            if (VIDEO_EXT_RE.test(source)) {
+                return (
+                    <figure>
+                        <video src={source} controls title={title} className="rounded-xl w-full" preload="metadata">您的浏览器不支持视频播放。</video>
+                        {alt && <figcaption>{alt}</figcaption>}
+                    </figure>
+                );
+            }
+            const dimensions = /^(\d+)x(\d+)$/.exec(title ?? "");
+            const displayTitle = dimensions ? undefined : title;
+            const resolvedWidth = width ?? dimensions?.[1];
+            const resolvedHeight = height ?? dimensions?.[2];
+            const numericWidth = Number(resolvedWidth);
+            const numericHeight = Number(resolvedHeight);
+            const hasDimensions = Number.isFinite(numericWidth) && numericWidth > 0 && Number.isFinite(numericHeight) && numericHeight > 0;
+            return (
+                <figure>
+                    {!forRss && hasDimensions && isCurrentSupabaseHost(source) ? (
+                        <Image src={source} alt={alt} title={displayTitle} width={numericWidth} height={numericHeight} sizes="(max-width: 768px) 100vw, 672px" className="rounded-xl block mx-auto max-w-full h-auto" />
+                    ) : (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={source} alt={alt} title={displayTitle} width={resolvedWidth} height={resolvedHeight} className="rounded-xl block mx-auto max-w-full" loading="lazy" />
+                    )}
+                    {alt && <figcaption>{alt}</figcaption>}
+                </figure>
             );
-            continue;
-        }
+        },
+        iframe({ src = "" }) {
+            if (!isAllowedIframeSrc(src)) return null;
+            return (
+                <div className="iframe-wrapper">
+                    <iframe src={src} className="w-full aspect-video rounded-xl border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" referrerPolicy="no-referrer" title="嵌入内容" />
+                </div>
+            );
+        },
+        code({ children, className }) {
+            const highlighted = highlightedCode(children, className);
+            if (highlighted) {
+                return <code className={`${className ?? ""} hljs text-sm font-mono leading-relaxed`} dangerouslySetInnerHTML={{ __html: highlighted }} />;
+            }
+            return <code className={`${className ?? ""} rounded-md bg-foreground/10 px-1.5 py-0.5 text-foreground text-sm font-mono break-all`}>{children}</code>;
+        },
+        pre({ children }) {
+            return <pre className="rounded-xl bg-foreground/5 p-3 sm:p-4 overflow-x-auto">{children}</pre>;
+        },
+        p({ children, node }) {
+            const containsMedia = node?.children.some((child) => child.type === "element" && child.tagName === "img");
+            return containsMedia ? <>{children}</> : <p>{children}</p>;
+        },
+        table({ children }) {
+            return <div className="overflow-x-auto"><table className="w-full text-sm border-collapse">{children}</table></div>;
+        },
+    };
+}
 
-        elements.push(
-            <p key={index} className="text-muted">
-                {renderInline(trimmed)}
-            </p>
-        );
-    }
-
-    flushUnordered();
-    flushOrdered();
-    flushQuote();
-    flushCodeBlock();
-    flushIframe();
-    return elements;
+export function renderMarkdown(content: string, options: { forRss?: boolean } = {}): React.ReactElement {
+    return (
+        <ReactMarkdown
+            remarkPlugins={[remarkGfm, [remarkAlert, { legacyTitle: true }]]}
+            remarkRehypeOptions={{ allowDangerousHtml: true }}
+            rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
+            components={markdownComponents(options.forRss ?? false)}
+        >
+            {normalizeMediaDimensions(content)}
+        </ReactMarkdown>
+    );
 }

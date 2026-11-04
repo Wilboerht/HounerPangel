@@ -16,32 +16,32 @@ const VOID_ELEMENTS = new Set(["br", "hr", "img", "input", "link", "meta", "sour
 const ATTRIBUTE_NAMES: Record<string, string> = {
     className: "class",
     allowFullScreen: "allowfullscreen",
+    ariaHidden: "aria-hidden",
     referrerPolicy: "referrerpolicy",
     srcSet: "srcset",
     strokeWidth: "stroke-width",
+    strokeLinecap: "stroke-linecap",
+    strokeLinejoin: "stroke-linejoin",
 };
 
 function renderNode(node: ReactNode): string {
     if (node === null || node === undefined || typeof node === "boolean") return "";
-    if (typeof node === "string" || typeof node === "number" || typeof node === "bigint") {
-        return escapeXml(String(node));
-    }
+    if (typeof node === "string" || typeof node === "number" || typeof node === "bigint") return escapeXml(String(node));
     if (Array.isArray(node)) return node.map(renderNode).join("");
     if (!isValidElement(node)) return "";
 
     const props = node.props as Record<string, unknown>;
     if (node.type === Fragment) return renderNode(props.children as ReactNode);
-    if (typeof node.type !== "string") throw new Error("RSS renderer only supports intrinsic elements");
+    if (typeof node.type === "function") {
+        return renderNode((node.type as (props: Record<string, unknown>) => ReactNode)(props));
+    }
+    if (typeof node.type !== "string") throw new Error("RSS renderer received an unsupported component");
 
     const attributes = Object.entries(props).flatMap(([name, value]) => {
-        if (name === "children" || name === "dangerouslySetInnerHTML" || value === null || value === undefined || value === false) {
-            return [];
-        }
+        if (name === "children" || name === "dangerouslySetInnerHTML" || value === null || value === undefined || value === false) return [];
         const attributeName = ATTRIBUTE_NAMES[name] ?? name;
         if (value === true) return [`${attributeName}=""`];
-        if (typeof value !== "string" && typeof value !== "number") {
-            throw new Error(`Unsupported RSS attribute: ${name}`);
-        }
+        if (typeof value !== "string" && typeof value !== "number") throw new Error(`Unsupported RSS attribute: ${name}`);
         return [`${attributeName}="${escapeXml(String(value))}"`];
     });
     const openingTag = `<${node.type}${attributes.length > 0 ? ` ${attributes.join(" ")}` : ""}>`;
