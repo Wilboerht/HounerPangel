@@ -1,4 +1,4 @@
-import { isValidElement, type ReactNode } from "react";
+import { Children, isValidElement, type ReactNode } from "react";
 import hljs from "highlight.js/lib/core";
 import Image from "next/image";
 import ReactMarkdown, { type Components } from "react-markdown";
@@ -198,6 +198,14 @@ function reactText(node: ReactNode): string {
     return "";
 }
 
+const ALERT_LABELS: Record<string, string> = {
+    NOTE: "注意",
+    TIP: "提示",
+    IMPORTANT: "重要",
+    WARNING: "警告",
+    CAUTION: "提醒",
+};
+
 interface MarkdownAstNode {
     type: string;
     tagName?: string;
@@ -280,7 +288,12 @@ function markdownComponents(forRss: boolean): Components {
         pre({ children }) {
             return <pre className="rounded-xl bg-foreground/5 p-3 sm:p-4 overflow-x-auto">{children}</pre>;
         },
-        p({ children, node }) {
+        p({ children, node, className }) {
+            if (className?.includes("markdown-alert-title")) {
+                const label = reactText(children).trim();
+                const icon = Children.toArray(children).filter((child) => isValidElement(child) && child.type === "svg");
+                return <p className={className}>{icon}<span>{ALERT_LABELS[label] ?? label}</span></p>;
+            }
             return node && containsImage(node as MarkdownAstNode) ? <>{children}</> : <p>{children}</p>;
         },
         table({ children }) {
