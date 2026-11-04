@@ -19,7 +19,6 @@ export const blogPostSchema = z.object({
     }, "日期不合法"),
     tags: z.array(z.string().min(1).max(50)).max(20, "标签数量过多").default([]),
     published: z.boolean().default(false),
-    scheduledAt: nullableDateTime,
     archivedAt: nullableDateTime,
     excerpt: nullableText(2000),
     seoTitle: nullableText(500),

@@ -7,7 +7,6 @@ export interface BlogPost {
     content: string;
     published: boolean;
     deletedAt: string | null;
-    scheduledAt: string | null;
     publishedAt: string | null;
     archivedAt: string | null;
     excerpt: string | null;
@@ -42,7 +41,6 @@ export interface BlogRevision extends BlogRevisionSummary {
     tags: string[];
     content: string;
     deletedAt: string | null;
-    scheduledAt: string | null;
     publishedAt: string | null;
     archivedAt: string | null;
     excerpt: string | null;

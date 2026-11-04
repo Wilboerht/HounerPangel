@@ -15,7 +15,6 @@ export function LivePostPreview({ values, updatedAt, onClose }: { values: PostFo
     useScrollLock(true);
     const post: BlogPost = {
         ...values,
-        scheduledAt: values.scheduledAt ? new Date(values.scheduledAt).toISOString() : null,
         publishedAt: values.published ? updatedAt : null,
         updatedAt,
         deletedAt: null,

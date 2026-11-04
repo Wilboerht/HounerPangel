@@ -52,7 +52,6 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
         const updated = await updateBlogPost(slug, {
             ...post,
-            scheduledAt: post.published || !post.scheduledAt ? null : new Date(post.scheduledAt).toISOString(),
             archivedAt: post.published || !post.archivedAt ? null : new Date(post.archivedAt).toISOString(),
         }, expectedUpdatedAt);
 
@@ -60,7 +59,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
             return NextResponse.json({ error: "文章已被其他会话修改，请刷新后重试" }, { status: 409 });
         }
 
-        await recordAudit(request, "update", "blog_post", slug, { published: post.published, scheduled: Boolean(post.scheduledAt) });
+        await recordAudit(request, "update", "blog_post", slug, { published: post.published });
         revalidateBlogPaths(slug);
 
         return NextResponse.json({ success: true, updatedAt: updated.updatedAt });

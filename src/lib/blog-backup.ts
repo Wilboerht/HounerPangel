@@ -38,7 +38,6 @@ slug: ${JSON.stringify(post.slug)}
 date: ${JSON.stringify(post.date)}
 published: ${post.published}
 tags: ${JSON.stringify(post.tags)}
-scheduled_at: ${JSON.stringify(post.scheduledAt)}
 archived_at: ${JSON.stringify(post.archivedAt)}
 excerpt: ${JSON.stringify(post.excerpt)}
 seo_title: ${JSON.stringify(post.seoTitle)}
@@ -63,7 +62,6 @@ export async function createBlogBackup(slugs?: string[]): Promise<BlogBackup> {
             date: post.date,
             tags: post.tags,
             published: post.published,
-            scheduledAt: post.scheduledAt,
             publishedAt: post.publishedAt,
             archivedAt: post.archivedAt,
             excerpt: post.excerpt,
@@ -128,8 +126,7 @@ export async function applyBlogImport(backup: BlogBackup, conflictMode: BackupCo
                 date: post.date,
                 tags: post.tags,
                 published: post.published,
-                scheduledAt: post.scheduledAt,
-                publishedAt: post.publishedAt,
+                    publishedAt: post.publishedAt,
                 archivedAt: post.archivedAt,
                 excerpt: post.excerpt,
                 seoTitle: post.seoTitle,

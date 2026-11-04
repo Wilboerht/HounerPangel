@@ -45,7 +45,6 @@ export function BlogEditClient({ slug }: { slug: string }) {
         content: d.content ?? "",
         date: d.date ?? "",
         published: d.published ?? false,
-        scheduledAt: d.scheduledAt ?? null,
         archivedAt: d.archivedAt ?? null,
         excerpt: d.excerpt ?? null,
         seoTitle: d.seoTitle ?? null,
@@ -87,7 +86,6 @@ export function BlogEditClient({ slug }: { slug: string }) {
           content: data.content,
           date: data.date,
           published: data.published ?? false,
-          scheduledAt: data.scheduledAt ?? null,
           archivedAt: data.archivedAt ?? null,
           excerpt: data.excerpt ?? null,
           seoTitle: data.seoTitle ?? null,
@@ -109,7 +107,6 @@ export function BlogEditClient({ slug }: { slug: string }) {
           (saved.content ?? "") === loaded.content &&
           (saved.date ?? "") === loaded.date &&
           (saved.published ?? false) === loaded.published &&
-          (saved.scheduledAt ?? null) === loaded.scheduledAt &&
           (saved.archivedAt ?? null) === loaded.archivedAt &&
           (saved.excerpt ?? null) === loaded.excerpt &&
           (saved.seoTitle ?? null) === loaded.seoTitle &&
@@ -236,7 +233,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
 
       <PageHeader
         title="编辑文章"
-        accessory={liveValues?.archivedAt ? <Badge variant="outline">已归档</Badge> : liveValues?.scheduledAt && !currentPublished ? <Badge>定时发布</Badge> : !currentPublished && <Badge variant="warning">草稿</Badge>}
+        accessory={liveValues?.archivedAt ? <Badge variant="outline">已归档</Badge> : !currentPublished && <Badge variant="warning">草稿</Badge>}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
             <button

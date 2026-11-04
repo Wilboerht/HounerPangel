@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
             // Rely on the database unique constraint for slug conflicts (TOCTOU-safe)
             await createBlogPost({
                 ...post,
-                scheduledAt: post.published || !post.scheduledAt ? null : new Date(post.scheduledAt).toISOString(),
                 archivedAt: post.published || !post.archivedAt ? null : new Date(post.archivedAt).toISOString(),
                 publishedAt: post.published ? new Date().toISOString() : null,
             });
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
             throw error;
         }
 
-        await recordAudit(request, "create", "blog_post", post.slug, { published: post.published, scheduled: Boolean(post.scheduledAt) });
+        await recordAudit(request, "create", "blog_post", post.slug, { published: post.published });
         revalidateBlogPaths(post.slug);
 
         return NextResponse.json({ success: true }, { status: 201 });

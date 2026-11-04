@@ -5,7 +5,7 @@ import { queryBlogPostSummaries } from "@/lib/blog-admin";
 
 const querySchema = z.object({
     search: z.string().max(200).default(""),
-    status: z.enum(["all", "published", "draft", "scheduled", "archived"]).default("all"),
+    status: z.enum(["all", "published", "draft", "archived"]).default("all"),
     tag: z.string().max(50).default(""),
     sort: z.enum(["date", "updated"]).default("date"),
     page: z.coerce.number().int().min(1).default(1),

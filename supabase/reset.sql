@@ -69,7 +69,6 @@ CREATE TABLE public.blog_posts (
   tags text[] NOT NULL DEFAULT '{}',
   published boolean NOT NULL DEFAULT false,
   deleted_at timestamptz,
-  scheduled_at timestamptz,
   published_at timestamptz,
   archived_at timestamptz,
   excerpt text,
@@ -82,8 +81,6 @@ CREATE TABLE public.blog_posts (
 
 CREATE INDEX blog_posts_deleted_at_idx ON public.blog_posts (deleted_at)
   WHERE deleted_at IS NOT NULL;
-CREATE INDEX blog_posts_scheduled_at_idx ON public.blog_posts (scheduled_at)
-  WHERE scheduled_at IS NOT NULL AND published = false AND deleted_at IS NULL;
 
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 
@@ -114,7 +111,6 @@ CREATE TABLE public.post_revisions (
   tags text[] NOT NULL DEFAULT '{}',
   published boolean NOT NULL DEFAULT false,
   deleted_at timestamptz,
-  scheduled_at timestamptz,
   published_at timestamptz,
   archived_at timestamptz,
   excerpt text,
@@ -154,12 +150,12 @@ BEGIN
 
   INSERT INTO public.post_revisions (
     post_id, slug, title, content, date, tags, published, deleted_at,
-    scheduled_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image,
+    published_at, archived_at, excerpt, seo_title, seo_description, cover_image,
     source_updated_at, action
   ) VALUES (
     v_post.id, v_post.slug, v_post.title, v_post.content, v_post.date,
     v_post.tags, v_post.published, v_post.deleted_at,
-    v_post.scheduled_at, v_post.published_at, v_post.archived_at,
+    v_post.published_at, v_post.archived_at,
     v_post.excerpt, v_post.seo_title, v_post.seo_description, v_post.cover_image,
     v_post.updated_at, v_action
   );

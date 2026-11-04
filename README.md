@@ -4,7 +4,7 @@ Personal website of Hank Wong (wilboerht). A digital space for showcasing projec
 
 ## Features
 
-- **Blog** — Markdown posts with tags, scheduling, archives, custom SEO/share metadata, RSS feed (`/rss.xml`), sitemap, and SEO metadata included
+- **Blog** — Markdown posts with tags, archives, custom SEO/share metadata, RSS feed (`/rss.xml`), sitemap, and SEO metadata included
 - **Admin panel** (`/admin`) — revision history, restorable trash, server-side list filtering and bulk actions, JSON backup import/export, media library, live unsaved preview, link checks, lightweight page-view analytics, session management, and audit logs
 - **Footprint map** (`/map`) — fullscreen MapLibre GL map with CARTO Positron; cities are managed in the admin panel and stored in Supabase, with `src/data/cities.ts` as a build-time fallback
 - **About** (`/me`) — a short introduction
@@ -32,8 +32,6 @@ Personal website of Hank Wong (wilboerht). A digital space for showcasing projec
    ADMIN_PASSWORD=your-admin-password
    # optional, used for absolute URLs in sitemap/RSS/OG
    NEXT_PUBLIC_SITE_URL=https://your-domain.com
-   # required for scheduled publishing: used by the Vercel Cron endpoint in vercel.json
-   CRON_SECRET=your-long-random-cron-secret
    # optional but strongly recommended in production: enables distributed rate
    # limiting via Upstash Redis (in-memory fallback is per-instance only and
    # barely effective on serverless); a startup warning is logged when missing

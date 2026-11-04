@@ -24,7 +24,7 @@ const NEW_DRAFT_KEY = "draft:blog:new";
 
 function blankValues(date: string): PostFormValues {
   return {
-    slug: "", title: "", date, published: false, scheduledAt: null, archivedAt: null,
+    slug: "", title: "", date, published: false, archivedAt: null,
     excerpt: null, seoTitle: null, seoDescription: null, coverImage: null, tags: [], content: "",
   };
 }
@@ -98,7 +98,6 @@ export function BlogAdminClient() {
         title: d.title ?? "",
         date: d.date || todayLocal(),
         published: d.published ?? false,
-        scheduledAt: d.scheduledAt ?? null,
         archivedAt: d.archivedAt ?? null,
         excerpt: d.excerpt ?? null,
         seoTitle: d.seoTitle ?? null,
@@ -226,7 +225,7 @@ export function BlogAdminClient() {
       }
       const data = await res.json();
       setPosts((prev) =>
-        prev.map((p) => (p.slug === post.slug ? { ...p, published, scheduledAt: null, archivedAt: null, updatedAt: data.updatedAt } : p))
+        prev.map((p) => (p.slug === post.slug ? { ...p, published, archivedAt: null, updatedAt: data.updatedAt } : p))
       );
       toast.success(published ? "已发布" : "已转为草稿");
     } catch (err) {
@@ -429,7 +428,7 @@ export function BlogAdminClient() {
             </div>
             <div className="grid gap-2 sm:grid-cols-3">
               <select aria-label="按状态筛选" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm">
-                <option value="all">全部状态</option><option value="published">已发布</option><option value="draft">草稿</option><option value="scheduled">定时发布</option><option value="archived">已归档</option>
+                <option value="all">全部状态</option><option value="published">已发布</option><option value="draft">草稿</option><option value="archived">已归档</option>
               </select>
               <select aria-label="按标签筛选" value={tag} onChange={(e) => { setTag(e.target.value); setPage(1); }} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm">
                 <option value="">全部标签</option>{availableTags.map((item) => <option key={item} value={item}>{item}</option>)}
@@ -482,11 +481,10 @@ export function BlogAdminClient() {
                   <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2 min-w-0">
                       <h3 className="text-sm font-medium text-foreground truncate">{post.title}</h3>
-                      {post.archivedAt ? <Badge variant="outline">已归档</Badge> : post.scheduledAt && !post.published ? <Badge>定时</Badge> : !post.published && <Badge variant="warning">草稿</Badge>}
+                      {post.archivedAt ? <Badge variant="outline">已归档</Badge> : !post.published && <Badge variant="warning">草稿</Badge>}
                     </div>
                     <p className="text-xs text-muted flex flex-wrap items-center gap-x-2">
                       <span>{post.date}</span>
-                      {post.scheduledAt && !post.published && <span>将于 {new Date(post.scheduledAt).toLocaleString("zh-CN", { hour12: false })} 发布</span>}
                       {post.tags.length > 0 && <span className="truncate">{post.tags.join(" · ")}</span>}
                     </p>
                   </div>

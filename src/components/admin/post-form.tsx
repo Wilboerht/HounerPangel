@@ -21,24 +21,11 @@ export function slugify(text: string): string {
 
 const VALID_SLUG_RE = /^[a-z0-9\-]+$/;
 
-function toDateTimeInput(value: string | null): string | null {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  const pad = (number: number) => String(number).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-function defaultScheduleTime(): string {
-  return toDateTimeInput(new Date(Date.now() + 60 * 60 * 1000).toISOString())!;
-}
-
 export interface PostFormValues {
   slug: string;
   title: string;
   date: string;
   published: boolean;
-  scheduledAt: string | null;
   archivedAt: string | null;
   excerpt: string | null;
   seoTitle: string | null;
@@ -99,7 +86,6 @@ export function PostForm({
     title: initialValues.title,
     date: initialValues.date,
     published: initialValues.published,
-    scheduledAt: toDateTimeInput(initialValues.scheduledAt),
     archivedAt: initialValues.archivedAt,
     excerpt: initialValues.excerpt,
     seoTitle: initialValues.seoTitle,
@@ -180,10 +166,6 @@ export function PostForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving || uploading) return;
-    if (!form.published && form.scheduledAt && new Date(form.scheduledAt).getTime() <= Date.now()) {
-      toast.error("定时发布时间必须晚于当前时间");
-      return;
-    }
 
     // 提交前把标签输入框里未确认的内容补进 tags，避免静默丢失
     let tags = tagManager.tags;
@@ -311,38 +293,21 @@ export function PostForm({
           <label htmlFor={`${idPrefix}-status`} className="text-sm font-medium text-foreground">发布状态</label>
           <select
             id={`${idPrefix}-status`}
-            value={form.published ? "published" : form.archivedAt ? "archived" : form.scheduledAt ? "scheduled" : "draft"}
+            value={form.published ? "published" : form.archivedAt ? "archived" : "draft"}
             onChange={(e) => {
               const status = e.target.value;
-              if (status === "published") updateField({ published: true, scheduledAt: null, archivedAt: null });
-              else if (status === "scheduled") updateField({ published: false, scheduledAt: form.scheduledAt || defaultScheduleTime(), archivedAt: null });
-              else if (status === "archived") updateField({ published: false, scheduledAt: null, archivedAt: new Date().toISOString() });
-              else updateField({ published: false, scheduledAt: null, archivedAt: null });
+              if (status === "published") updateField({ published: true, archivedAt: null });
+              else if (status === "archived") updateField({ published: false, archivedAt: new Date().toISOString() });
+              else updateField({ published: false, archivedAt: null });
             }}
             className="w-full rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm text-foreground focus:outline-none focus:border-accent/50"
           >
             <option value="draft">草稿</option>
-            <option value="scheduled">定时发布</option>
             <option value="published">已发布</option>
             <option value="archived">已归档</option>
           </select>
         </div>
       </div>
-
-      {!form.published && form.scheduledAt !== null && (
-        <div className="flex flex-col gap-2">
-          <label htmlFor={`${idPrefix}-scheduled-at`} className="text-sm font-medium text-foreground">定时发布时间（本地时间）</label>
-          <input
-            id={`${idPrefix}-scheduled-at`}
-            type="datetime-local"
-            required
-            value={form.scheduledAt}
-            onChange={(e) => updateField({ scheduledAt: e.target.value })}
-            className="w-full rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-foreground focus:outline-none focus:border-accent/50"
-          />
-          <p className="text-xs text-muted">由 Vercel Cron 每 15 分钟处理一次，实际发布时间可能略有延迟。</p>
-        </div>
-      )}
 
       <div className="flex flex-col gap-2">
         <label htmlFor={`${idPrefix}-tags`} className="text-sm font-medium text-foreground">

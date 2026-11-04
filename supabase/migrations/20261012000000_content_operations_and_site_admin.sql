@@ -1,7 +1,6 @@
 -- Publishing workflow, SEO metadata, media metadata, footprints, analytics and audit logs.
 
 ALTER TABLE public.blog_posts
-  ADD COLUMN IF NOT EXISTS scheduled_at timestamptz,
   ADD COLUMN IF NOT EXISTS published_at timestamptz,
   ADD COLUMN IF NOT EXISTS archived_at timestamptz,
   ADD COLUMN IF NOT EXISTS excerpt text,
@@ -9,12 +8,7 @@ ALTER TABLE public.blog_posts
   ADD COLUMN IF NOT EXISTS seo_description text,
   ADD COLUMN IF NOT EXISTS cover_image text;
 
-CREATE INDEX IF NOT EXISTS blog_posts_scheduled_at_idx
-  ON public.blog_posts (scheduled_at)
-  WHERE scheduled_at IS NOT NULL AND published = false AND deleted_at IS NULL;
-
 ALTER TABLE public.post_revisions
-  ADD COLUMN IF NOT EXISTS scheduled_at timestamptz,
   ADD COLUMN IF NOT EXISTS published_at timestamptz,
   ADD COLUMN IF NOT EXISTS archived_at timestamptz,
   ADD COLUMN IF NOT EXISTS excerpt text,
@@ -46,12 +40,12 @@ BEGIN
 
   INSERT INTO public.post_revisions (
     post_id, slug, title, content, date, tags, published, deleted_at,
-    scheduled_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image,
+    published_at, archived_at, excerpt, seo_title, seo_description, cover_image,
     source_updated_at, action
   ) VALUES (
     v_post.id, v_post.slug, v_post.title, v_post.content, v_post.date,
     v_post.tags, v_post.published, v_post.deleted_at,
-    v_post.scheduled_at, v_post.published_at, v_post.archived_at,
+    v_post.published_at, v_post.archived_at,
     v_post.excerpt, v_post.seo_title, v_post.seo_description, v_post.cover_image,
     v_post.updated_at, v_action
   );
@@ -74,6 +68,7 @@ CREATE TABLE IF NOT EXISTS public.media_assets (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.media_assets ENABLE ROW LEVEL SECURITY;
+DROP TRIGGER IF EXISTS set_media_assets_updated_at ON public.media_assets;
 CREATE TRIGGER set_media_assets_updated_at
   BEFORE UPDATE ON public.media_assets
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
@@ -90,7 +85,9 @@ CREATE TABLE IF NOT EXISTS public.cities (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.cities ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read cities" ON public.cities;
 CREATE POLICY "Allow public read cities" ON public.cities FOR SELECT USING (true);
+DROP TRIGGER IF EXISTS set_cities_updated_at ON public.cities;
 CREATE TRIGGER set_cities_updated_at
   BEFORE UPDATE ON public.cities
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

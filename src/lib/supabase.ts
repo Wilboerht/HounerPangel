@@ -4,8 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 import type { BlogPost, BlogPostSummary } from "./types/blog";
 import { env } from "./env";
 
-const POST_COLUMNS = "slug, title, content, date, updated_at, tags, published, deleted_at, scheduled_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
-const SUMMARY_COLUMNS = "slug, title, date, updated_at, tags, published, deleted_at, scheduled_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
+const POST_COLUMNS = "slug, title, content, date, updated_at, tags, published, deleted_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
+const SUMMARY_COLUMNS = "slug, title, date, updated_at, tags, published, deleted_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
 
 export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
@@ -17,7 +17,6 @@ export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_
 function mapPost<T extends {
     updated_at: string;
     deleted_at: string | null;
-    scheduled_at: string | null;
     published_at: string | null;
     archived_at: string | null;
     seo_title: string | null;
@@ -30,7 +29,6 @@ function mapPost<T extends {
         ...row,
         updatedAt: row.updated_at,
         deletedAt: row.deleted_at,
-        scheduledAt: row.scheduled_at,
         publishedAt: row.published_at,
         archivedAt: row.archived_at,
         seoTitle: row.seo_title,
@@ -114,7 +112,6 @@ export async function createBlogPost(
         date: post.date,
         tags: post.tags,
         published: post.published,
-        scheduled_at: post.scheduledAt,
         published_at: post.publishedAt,
         archived_at: post.archivedAt,
         excerpt: post.excerpt,
@@ -151,7 +148,6 @@ export async function updateBlogPost(
             seo_description: post.seoDescription,
             cover_image: post.coverImage,
             published_at: post.published ? oldPost?.published_at ?? new Date().toISOString() : null,
-            scheduled_at: post.published ? null : post.scheduledAt,
             archived_at: post.published ? null : post.archivedAt,
         })
         .eq("slug", slug)
@@ -179,7 +175,6 @@ export async function setBlogPostPublished(
         .from("blog_posts")
         .update({
             published,
-            scheduled_at: null,
             archived_at: null,
             published_at: published ? new Date().toISOString() : null,
         })
@@ -332,7 +327,6 @@ export async function importBlogPost(
         tags: post.tags,
         published: post.published,
         deleted_at: post.deletedAt,
-        scheduled_at: post.scheduledAt,
         published_at: post.publishedAt,
         archived_at: post.archivedAt,
         excerpt: post.excerpt,

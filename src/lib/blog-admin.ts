@@ -3,11 +3,11 @@ import "server-only";
 import { supabase } from "./supabase";
 import type { BlogPostSummary } from "./types/blog";
 
-const SUMMARY_COLUMNS = "slug, title, date, updated_at, tags, published, deleted_at, scheduled_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
+const SUMMARY_COLUMNS = "slug, title, date, updated_at, tags, published, deleted_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
 
 export interface BlogListQuery {
     search: string;
-    status: "all" | "published" | "draft" | "scheduled" | "archived";
+    status: "all" | "published" | "draft" | "archived";
     tag: string;
     sort: "date" | "updated";
     page: number;
@@ -23,7 +23,6 @@ function mapSummary(row: Record<string, unknown>): BlogPostSummary {
         tags: (row.tags as string[] | null) ?? [],
         published: Boolean(row.published),
         deletedAt: row.deleted_at as string | null,
-        scheduledAt: row.scheduled_at as string | null,
         publishedAt: row.published_at as string | null,
         archivedAt: row.archived_at as string | null,
         excerpt: row.excerpt as string | null,
@@ -40,8 +39,7 @@ export async function queryBlogPostSummaries(options: BlogListQuery) {
         .is("deleted_at", null);
 
     if (options.status === "published") query = query.eq("published", true).is("archived_at", null);
-    if (options.status === "draft") query = query.eq("published", false).is("scheduled_at", null).is("archived_at", null);
-    if (options.status === "scheduled") query = query.eq("published", false).not("scheduled_at", "is", null).is("archived_at", null);
+    if (options.status === "draft") query = query.eq("published", false).is("archived_at", null);
     if (options.status === "archived") query = query.not("archived_at", "is", null);
     if (options.tag) query = query.contains("tags", [options.tag]);
     if (options.search) {
@@ -78,11 +76,11 @@ export async function bulkUpdateBlogPosts(slugs: string[], action: BlogBulkActio
         try {
             let values: Record<string, unknown>;
             if (action === "publish") {
-                values = { published: true, scheduled_at: null, archived_at: null, published_at: new Date().toISOString() };
+                values = { published: true, archived_at: null, published_at: new Date().toISOString() };
             } else if (action === "unpublish") {
-                values = { published: false, scheduled_at: null, archived_at: null, published_at: null };
+                values = { published: false, archived_at: null, published_at: null };
             } else if (action === "archive") {
-                values = { published: false, scheduled_at: null, archived_at: new Date().toISOString(), published_at: null };
+                values = { published: false, archived_at: new Date().toISOString(), published_at: null };
             } else if (action === "unarchive") {
                 values = { archived_at: null };
             } else if (action === "delete") {
@@ -107,34 +105,4 @@ export async function bulkUpdateBlogPosts(slugs: string[], action: BlogBulkActio
         }
     }
     return results;
-}
-
-export async function publishDueBlogPosts(): Promise<string[]> {
-    const { data, error } = await supabase
-        .from("blog_posts")
-        .select("slug")
-        .eq("published", false)
-        .is("deleted_at", null)
-        .is("archived_at", null)
-        .not("scheduled_at", "is", null)
-        .lte("scheduled_at", new Date().toISOString())
-        .limit(200);
-    if (error) throw error;
-    if (!data || data.length === 0) return [];
-
-    const slugs = data.map((row) => row.slug);
-    const { error: updateError } = await supabase
-        .from("blog_posts")
-        .update({
-            published: true,
-            published_at: new Date().toISOString(),
-            scheduled_at: null,
-        })
-        .in("slug", slugs)
-        .eq("published", false)
-        .is("deleted_at", null)
-        .is("archived_at", null)
-        .lte("scheduled_at", new Date().toISOString());
-    if (updateError) throw updateError;
-    return slugs;
 }
