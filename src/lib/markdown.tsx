@@ -64,14 +64,27 @@ function stripFencedCodeBlocks(content: string): string {
     return mapFencedLines(content, (line) => line, () => "");
 }
 
+function mapInlineCode(line: string, transform: (text: string) => string): string {
+    let inCode = false;
+    return line.split(/(`+)/).map((part) => {
+        if (/^`+$/.test(part)) {
+            inCode = !inCode;
+            return part;
+        }
+        return inCode ? part : transform(part);
+    }).join("");
+}
+
 export function plainTextExcerpt(content: string, max = 160): string {
     return stripFencedCodeBlocks(content)
         .replace(/^\s*>\s*\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)(?:\/[^\]]+)?\]\s*$/gim, "")
+        .replace(/^\s*\[\^[^\]]+\]:.*$/gm, "")
+        .replace(/\[\^[^\]]+\]/g, "")
         .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
         .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-        .replace(/<[^>]+>/g, " ")
+        .replace(/<\/?[a-z][^>]*>/gi, " ")
         .replace(/^\s*>\s?/gm, "")
-        .replace(/[#>*`_~|]/g, "")
+        .replace(/[#*`_~|]/g, "")
         .replace(/\s+/g, " ")
         .trim()
         .slice(0, max);
@@ -79,10 +92,10 @@ export function plainTextExcerpt(content: string, max = 160): string {
 
 export function firstImageUrl(content: string): string | undefined {
     let url: string | undefined;
-    mapFencedLines(content, (line) => {
-        if (!url) url = line.match(/^!\[[^\]]*\]\((\S+)(?:\s+[^)]*)?\)\s*$/)?.[1];
-        return line;
-    }, (line) => line);
+    mapFencedLines(content, (line) => mapInlineCode(line, (text) => {
+        if (!url) url = text.match(/!\[[^\]]*\]\((\S+)(?:\s+[^)]*)?\)/)?.[1];
+        return text;
+    }), (line) => line);
     if (url && /\.(mp4|webm|mov|avi|mkv)(?:$|[?#])/i.test(url)) return undefined;
     return url;
 }
@@ -148,9 +161,9 @@ function isAllowedIframeSrc(src: string): boolean {
 }
 
 function normalizeMediaDimensions(content: string): string {
-    return mapFencedLines(content, (line) => line.replace(/^!\[([^\]]*)\]\((\S+)\s+=(\d+)x(\d+)\)\s*$/, (_match, alt: string, url: string, width: string, height: string) =>
+    return mapFencedLines(content, (line) => mapInlineCode(line, (text) => text.replace(/!\[([^\]]*)\]\((\S+)\s+=(\d+)x(\d+)\)/g, (_match, alt: string, url: string, width: string, height: string) =>
         `![${alt}](${url} "${width}x${height}")`
-    ), (line) => line);
+    )), (line) => line);
 }
 
 const sanitizeSchema = {
@@ -185,6 +198,16 @@ function reactText(node: ReactNode): string {
     return "";
 }
 
+interface MarkdownAstNode {
+    type: string;
+    tagName?: string;
+    children?: MarkdownAstNode[];
+}
+
+function containsImage(node: MarkdownAstNode): boolean {
+    return node.tagName === "img" || (node.children?.some(containsImage) ?? false);
+}
+
 function markdownComponents(forRss: boolean): Components {
     return {
         a({ href = "", children, title }) {
@@ -206,7 +229,8 @@ function markdownComponents(forRss: boolean): Components {
                     </a>
                 );
             }
-            return <a href={href} target="_blank" rel="noopener noreferrer" title={title} className="markdown-link">{children}{!forRss && <span className="markdown-link-detail">{href}</span>}</a>;
+            const newTab = /^(https?:\/\/|mailto:)/i.test(href);
+            return <a href={href} target={newTab ? "_blank" : undefined} rel={newTab ? "noopener noreferrer" : undefined} title={title} className="markdown-link">{children}{!forRss && <span className="markdown-link-detail">{href}</span>}</a>;
         },
         img({ src = "", alt = "", width, height, title }) {
             const source = typeof src === "string" ? src : "";
@@ -232,7 +256,7 @@ function markdownComponents(forRss: boolean): Components {
                         <Image src={source} alt={alt} title={displayTitle} width={numericWidth} height={numericHeight} sizes="(max-width: 768px) 100vw, 672px" className="rounded-xl block mx-auto max-w-full h-auto" />
                     ) : (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={source} alt={alt} title={displayTitle} width={resolvedWidth} height={resolvedHeight} className="rounded-xl block mx-auto max-w-full" loading="lazy" />
+                        <img src={source} alt={alt} title={displayTitle} width={resolvedWidth} height={resolvedHeight} className="rounded-xl block mx-auto max-w-full h-auto" loading="lazy" />
                     )}
                     {alt && <figcaption>{alt}</figcaption>}
                 </figure>
@@ -257,8 +281,7 @@ function markdownComponents(forRss: boolean): Components {
             return <pre className="rounded-xl bg-foreground/5 p-3 sm:p-4 overflow-x-auto">{children}</pre>;
         },
         p({ children, node }) {
-            const containsMedia = node?.children.some((child) => child.type === "element" && child.tagName === "img");
-            return containsMedia ? <>{children}</> : <p>{children}</p>;
+            return node && containsImage(node as MarkdownAstNode) ? <>{children}</> : <p>{children}</p>;
         },
         table({ children }) {
             return <div className="overflow-x-auto"><table className="w-full text-sm border-collapse">{children}</table></div>;

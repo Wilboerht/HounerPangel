@@ -41,6 +41,13 @@ function renderNode(node: ReactNode): string {
         if (name === "children" || name === "dangerouslySetInnerHTML" || value === null || value === undefined || value === false) return [];
         const attributeName = ATTRIBUTE_NAMES[name] ?? name;
         if (value === true) return [`${attributeName}=""`];
+        if (name === "style" && typeof value === "object") {
+            const css = Object.entries(value as Record<string, unknown>)
+                .filter((entry): entry is [string, string | number] => typeof entry[1] === "string" || typeof entry[1] === "number")
+                .map(([property, propertyValue]) => `${property.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}:${propertyValue}`)
+                .join(";");
+            return [`style="${escapeXml(css)}"`];
+        }
         if (typeof value !== "string" && typeof value !== "number") throw new Error(`Unsupported RSS attribute: ${name}`);
         return [`${attributeName}="${escapeXml(String(value))}"`];
     });

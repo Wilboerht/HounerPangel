@@ -2,14 +2,16 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { File, Film, Image as ImageIcon, Search, X } from "lucide-react";
 import { IconButton } from "@/components/admin/icon-button";
 import { useFocusTrap } from "@/lib/focus-trap";
 import { useScrollLock } from "@/lib/use-scroll-lock";
+import { useAuthExpired } from "@/lib/use-auth-expired";
 import type { MediaAsset } from "@/lib/types/media";
 
 export function MediaPicker({ onSelect, onClose }: { onSelect: (asset: MediaAsset) => void; onClose: () => void }) {
+    const authExpired = useAuthExpired();
     const [assets, setAssets] = useState<MediaAsset[]>([]);
     const [loading, setLoading] = useState(true);
     const [failed, setFailed] = useState(false);
@@ -19,24 +21,25 @@ export function MediaPicker({ onSelect, onClose }: { onSelect: (asset: MediaAsse
     useScrollLock(true);
     const loadedRef = useRef(false);
 
-    const load = () => {
+    const load = useCallback(() => {
         setLoading(true);
         setFailed(false);
         fetch("/api/admin/media")
             .then(async (res) => {
+                if (res.status === 401) { authExpired(); return null; }
                 if (!res.ok) throw new Error("加载失败");
                 return await res.json() as MediaAsset[];
             })
-            .then((items) => setAssets(items))
+            .then((items) => { if (items) setAssets(items); })
             .catch(() => setFailed(true))
             .finally(() => setLoading(false));
-    };
+    }, [authExpired]);
 
     useEffect(() => {
         if (loadedRef.current) return;
         loadedRef.current = true;
         load();
-    }, []);
+    }, [load]);
 
     const filtered = assets.filter((asset) =>
         (kind === "all" || asset.kind === kind) &&

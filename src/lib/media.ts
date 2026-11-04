@@ -77,6 +77,8 @@ export async function registerMediaAsset(input: {
     size: number;
     width: number | null;
     height: number | null;
+    alt?: string;
+    caption?: string;
 }) {
     const { error } = await supabase.from("media_assets").upsert({
         path: input.path,
@@ -86,6 +88,8 @@ export async function registerMediaAsset(input: {
         size: input.size,
         width: input.width,
         height: input.height,
+        alt: input.alt ?? "",
+        caption: input.caption ?? "",
     }, { onConflict: "path" });
     if (error) throw error;
 }

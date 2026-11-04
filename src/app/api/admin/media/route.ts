@@ -13,6 +13,8 @@ const registerSchema = z.object({
     size: z.number().int().min(1).max(100 * 1024 * 1024),
     width: z.number().int().min(1).max(100000).nullable().default(null),
     height: z.number().int().min(1).max(100000).nullable().default(null),
+    alt: z.string().max(500).default(""),
+    caption: z.string().max(1000).default(""),
 });
 
 export async function GET(request: NextRequest) {

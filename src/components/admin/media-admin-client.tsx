@@ -140,10 +140,25 @@ export function MediaAdminClient() {
         if (!editing) return;
         setSaving(true);
         try {
-            const res = await fetch(`/api/admin/media/${editing.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ alt, caption }) });
+            const isRegistered = /^[0-9a-f-]{36}$/.test(editing.id);
+            const res = await fetch(isRegistered ? `/api/admin/media/${editing.id}` : "/api/admin/media", {
+                method: isRegistered ? "PATCH" : "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(isRegistered ? { alt, caption } : {
+                    path: editing.path,
+                    fileName: editing.fileName,
+                    kind: editing.kind,
+                    mimeType: editing.mimeType,
+                    size: editing.size,
+                    width: editing.width,
+                    height: editing.height,
+                    alt,
+                    caption,
+                }),
+            });
             if (res.status === 401) { authExpired(); return; }
             if (!res.ok) { toast.error("保存媒体信息失败"); return; }
-            setAssets((items) => items.map((item) => item.id === editing.id ? { ...item, alt, caption } : item));
+            await load();
             setEditing(null);
             toast.success("媒体信息已保存");
         } catch { toast.error("网络错误，请重试"); } finally { setSaving(false); }
@@ -196,7 +211,7 @@ export function MediaAdminClient() {
                             </div>
                             <div className="flex flex-shrink-0 items-center gap-1">
                                 <IconButton label="复制媒体地址" onClick={async () => { try { await navigator.clipboard.writeText(asset.url); toast.success("地址已复制"); } catch { toast.error("复制失败，请检查浏览器剪贴板权限"); } }}><Copy className="h-4 w-4" /></IconButton>
-                                <IconButton label="编辑媒体信息" disabled={!asset.id.match(/^[0-9a-f-]{36}$/)} onClick={() => { setEditing(asset); setAlt(asset.alt); setCaption(asset.caption); }}><Pencil className="h-4 w-4" /></IconButton>
+                                <IconButton label="编辑媒体信息" onClick={() => { setEditing(asset); setAlt(asset.alt); setCaption(asset.caption); }}><Pencil className="h-4 w-4" /></IconButton>
                                 <IconButton label="删除零引用媒体" variant="danger" disabled={asset.references > 0} onClick={() => setDeleting(asset)}><Trash2 className="h-4 w-4" /></IconButton>
                             </div>
                         </div>

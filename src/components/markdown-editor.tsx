@@ -114,6 +114,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const videoInputRef = useRef<HTMLInputElement>(null);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
+  const tabReleaseRef = useRef(false);
   const toast = useToast();
 
   // tab/面板 id 基于传入的 id 派生，保证 aria-controls 指向真实存在的元素
@@ -456,13 +457,25 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   return (
     <div className="border border-border/50 rounded-lg overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 bg-foreground/5 border-b border-border/50">
-        <div className="flex items-center gap-1" role="tablist" aria-label="编辑器视图切换">
+        <div
+          className="flex items-center gap-1"
+          role="tablist"
+          aria-label="编辑器视图切换"
+          onKeyDown={(event) => {
+            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+            event.preventDefault();
+            const next = tab === "edit" ? "preview" : "edit";
+            setTab(next);
+            requestAnimationFrame(() => document.getElementById(`${editorId}-tab-${next}`)?.focus());
+          }}
+        >
           <button
             type="button"
             id={`${editorId}-tab-edit`}
             onClick={() => setTab("edit")}
             role="tab"
             aria-selected={tab === "edit"}
+            tabIndex={tab === "edit" ? 0 : -1}
             aria-controls={editorId}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
               tab === "edit" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
@@ -477,6 +490,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             onClick={() => setTab("preview")}
             role="tab"
             aria-selected={tab === "preview"}
+            tabIndex={tab === "preview" ? 0 : -1}
             aria-controls={previewPanelId}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
               tab === "preview" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
@@ -622,6 +636,17 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           }
         }}
         onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            tabReleaseRef.current = true;
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+          if (e.key === "Tab" && tabReleaseRef.current) {
+            tabReleaseRef.current = false;
+            return;
+          }
+          if (e.key !== "Tab") tabReleaseRef.current = false;
           if (e.key === "Tab" && !e.ctrlKey && !e.metaKey && !e.altKey) {
             e.preventDefault();
             indentSelection(e.shiftKey);
@@ -646,9 +671,11 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             insertText("~~", "~~", "删除线");
           }
         }}
+        aria-describedby={`${editorId}-keyboard-hint`}
         placeholder="写点什么..."
         className={`md-editor-textarea w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px] ${tab === "edit" ? "" : "hidden"}`}
       />
+      {tab === "edit" && <p id={`${editorId}-keyboard-hint`} className="border-t border-border/50 px-3 py-2 text-xs text-muted">Tab 缩进，Shift+Tab 反缩进，Escape 后按 Tab 可移出编辑器</p>}
       {tab === "preview" && (
         <div id={previewPanelId} role="tabpanel" aria-labelledby={`${editorId}-tab-preview`} className="px-4 py-3 bg-foreground/[0.02] min-h-[300px] text-sm leading-relaxed">
           <MarkdownPreview value={value} />
