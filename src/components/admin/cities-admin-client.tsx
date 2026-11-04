@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MapPin, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { LoaderCircle, MapPin, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
 import { IconButton } from "@/components/admin/icon-button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -18,6 +18,13 @@ interface CityForm {
     status: "visited" | "planned";
     visitDate: string;
     note: string;
+}
+
+interface CitySearchResult {
+    id: string;
+    name: string;
+    displayName: string;
+    coordinates: [number, number];
 }
 
 const blankForm: CityForm = { name: "", longitude: "116.3974", latitude: "39.9093", status: "visited", visitDate: "", note: "" };
@@ -41,6 +48,7 @@ export function CitiesAdminClient() {
     const toast = useToast();
     const authExpired = useAuthExpired();
     const fileRef = useRef<HTMLInputElement>(null);
+    const searchRef = useRef<AbortController | null>(null);
     const [cities, setCities] = useState<ManagedCity[]>([]);
     const [loading, setLoading] = useState(true);
     const [failed, setFailed] = useState(false);
@@ -50,6 +58,10 @@ export function CitiesAdminClient() {
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState<ManagedCity | null>(null);
     const [importing, setImporting] = useState(false);
+    const [searching, setSearching] = useState(false);
+    const [searchResults, setSearchResults] = useState<CitySearchResult[]>([]);
+    const [searchMessage, setSearchMessage] = useState("");
+    const [mapFocus, setMapFocus] = useState<[number, number] | null>(null);
 
     const load = useCallback(async (signal?: AbortSignal) => {
         try {
@@ -66,13 +78,66 @@ export function CitiesAdminClient() {
         const controller = new AbortController();
         // eslint-disable-next-line react-hooks/set-state-in-effect -- 挂载时加载城市数据
         load(controller.signal);
-        return () => controller.abort();
+        return () => {
+            controller.abort();
+            searchRef.current?.abort();
+        };
     }, [load]);
 
     const openForm = (city?: ManagedCity) => {
+        searchRef.current?.abort();
         setEditing(city ?? null);
         setForm(city ? { name: city.name, longitude: String(city.coordinates[0]), latitude: String(city.coordinates[1]), status: city.status ?? "visited", visitDate: city.visitDate ?? "", note: city.note ?? "" } : blankForm);
+        setSearching(false);
+        setSearchResults([]);
+        setSearchMessage("");
+        setMapFocus(null);
         setFormOpen(true);
+    };
+
+    const closeForm = () => {
+        searchRef.current?.abort();
+        setFormOpen(false);
+    };
+
+    const updateName = (name: string) => {
+        searchRef.current?.abort();
+        setForm((current) => ({ ...current, name }));
+        setSearching(false);
+        setSearchResults([]);
+        setSearchMessage("");
+    };
+
+    const searchCity = async () => {
+        const query = form.name.trim();
+        if (!query) { setSearchMessage("请先输入城市名称"); return; }
+        searchRef.current?.abort();
+        const controller = new AbortController();
+        searchRef.current = controller;
+        setSearching(true);
+        setSearchResults([]);
+        setSearchMessage("");
+        try {
+            const res = await fetch(`/api/admin/cities/geocode?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+            if (res.status === 401) { authExpired(); return; }
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "城市搜索失败");
+            const results = data.results as CitySearchResult[];
+            setSearchResults(results);
+            setSearchMessage(results.length === 0 ? "未找到匹配地点，请尝试添加国家或省份，或点击地图选点" : "");
+        } catch (error) {
+            if (error instanceof DOMException && error.name === "AbortError") return;
+            setSearchMessage(error instanceof Error ? error.message : "城市搜索失败，请稍后重试");
+        } finally {
+            if (searchRef.current === controller) setSearching(false);
+        }
+    };
+
+    const selectSearchResult = (result: CitySearchResult) => {
+        setForm((current) => ({ ...current, longitude: result.coordinates[0].toFixed(6), latitude: result.coordinates[1].toFixed(6) }));
+        setMapFocus(result.coordinates);
+        setSearchResults([]);
+        setSearchMessage("已填入坐标并定位地图，你也可以继续手动微调");
     };
 
     const save = async (event: React.FormEvent) => {
@@ -85,7 +150,7 @@ export function CitiesAdminClient() {
             const data = await res.json();
             if (!res.ok) { toast.error(data.error || "保存失败"); return; }
             toast.success(editing ? "城市已更新" : "城市已新增");
-            setFormOpen(false);
+            closeForm();
             await load();
         } catch { toast.error("网络错误，请重试"); } finally { setSaving(false); }
     };
@@ -142,14 +207,47 @@ export function CitiesAdminClient() {
                 <form onSubmit={save} className="grid gap-4 rounded-xl border border-border/50 p-4 lg:grid-cols-2">
                     <div className="flex flex-col gap-3">
                         <h2 className="text-sm font-semibold">{editing ? "编辑城市" : "新增城市"}</h2>
-                        <input aria-label="城市名称" required maxLength={100} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="城市名称" className={inputClass} />
+                        <div className="flex gap-2">
+                            <input
+                                aria-label="城市名称"
+                                required
+                                maxLength={100}
+                                value={form.name}
+                                onChange={(event) => updateName(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                                        event.preventDefault();
+                                        void searchCity();
+                                    }
+                                }}
+                                placeholder="输入城市名称，如：杭州"
+                                className={inputClass}
+                            />
+                            <button type="button" disabled={searching} onClick={() => void searchCity()} className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg border border-border/50 px-3 py-2 text-sm disabled:opacity-50">
+                                {searching ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                                {searching ? "搜索中" : "搜索"}
+                            </button>
+                        </div>
+                        {searchResults.length > 0 && (
+                            <ul aria-label="城市搜索结果" className="max-h-40 divide-y divide-border/50 overflow-y-auto rounded-lg border border-border/50">
+                                {searchResults.map((result) => (
+                                    <li key={result.id}>
+                                        <button type="button" onClick={() => selectSearchResult(result)} className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-foreground/5">
+                                            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted" />
+                                            <span className="min-w-0"><span className="block text-sm font-medium">{result.name}</span><span className="block text-xs text-muted">{result.displayName}</span></span>
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {searchMessage && <p role="status" className="text-xs text-muted">{searchMessage}</p>}
                         <div className="grid grid-cols-2 gap-2"><input aria-label="经度" required type="number" step="any" min={-180} max={180} value={form.longitude} onChange={(event) => setForm({ ...form, longitude: event.target.value })} placeholder="经度" className={inputClass} /><input aria-label="纬度" required type="number" step="any" min={-90} max={90} value={form.latitude} onChange={(event) => setForm({ ...form, latitude: event.target.value })} placeholder="纬度" className={inputClass} /></div>
                         <select aria-label="足迹状态" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as "visited" | "planned" })} className={inputClass}><option value="visited">已到访</option><option value="planned">计划前往</option></select>
                         <input aria-label="到访时间" value={form.visitDate} onChange={(event) => setForm({ ...form, visitDate: event.target.value })} placeholder="到访时间，如 2026-10" pattern="\d{4}-\d{2}" className={inputClass} />
                         <textarea aria-label="备注" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} placeholder="一句话备注" maxLength={1000} rows={3} className={inputClass} />
-                        <div className="flex gap-2"><button disabled={saving} className="rounded-lg bg-foreground px-4 py-2 text-sm text-background">{saving ? "保存中..." : "保存城市"}</button><button type="button" onClick={() => setFormOpen(false)} className="rounded-lg border border-border/50 px-4 py-2 text-sm">取消</button></div>
+                        <div className="flex gap-2"><button disabled={saving} className="rounded-lg bg-foreground px-4 py-2 text-sm text-background">{saving ? "保存中..." : "保存城市"}</button><button type="button" onClick={closeForm} className="rounded-lg border border-border/50 px-4 py-2 text-sm">取消</button></div>
                     </div>
-                    <div className="h-72 overflow-hidden rounded-lg border border-border/50"><FootprintMapLazy cities={[...cities, ...draftCity]} onLocationSelect={([longitude, latitude]) => setForm((current) => ({ ...current, longitude: longitude.toFixed(6), latitude: latitude.toFixed(6) }))} /></div>
+                    <div className="h-72 overflow-hidden rounded-lg border border-border/50"><FootprintMapLazy cities={[...cities, ...draftCity]} focusCoordinates={mapFocus} onLocationSelect={([longitude, latitude]) => setForm((current) => ({ ...current, longitude: longitude.toFixed(6), latitude: latitude.toFixed(6) }))} /></div>
                 </form>
             )}
 

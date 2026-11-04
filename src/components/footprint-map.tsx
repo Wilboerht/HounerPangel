@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Map, { Marker, Popup, NavigationControl } from "react-map-gl/maplibre";
+import type { MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { City } from "@/data/cities";
 
@@ -17,11 +18,22 @@ function computeBounds(cities: City[]): [number, number, number, number] | undef
     ];
 }
 
-export function FootprintMap({ cities, onLocationSelect }: { cities: City[]; onLocationSelect?: (coordinates: [number, number]) => void }) {
+interface FootprintMapProps {
+    cities: City[];
+    onLocationSelect?: (coordinates: [number, number]) => void;
+    focusCoordinates?: [number, number] | null;
+}
+
+export function FootprintMap({ cities, onLocationSelect, focusCoordinates }: FootprintMapProps) {
+    const mapRef = useRef<MapRef>(null);
     const [selected, setSelected] = useState<City | null>(null);
     const [mapError, setMapError] = useState(false);
     const [resourceError, setResourceError] = useState(false);
     const bounds = useMemo(() => computeBounds(cities), [cities]);
+
+    useEffect(() => {
+        if (focusCoordinates) mapRef.current?.flyTo({ center: focusCoordinates, zoom: 10, duration: 1200 });
+    }, [focusCoordinates]);
 
     if (mapError) {
         return (
@@ -41,6 +53,7 @@ export function FootprintMap({ cities, onLocationSelect }: { cities: City[]; onL
     return (
         <div className="relative h-full w-full">
             <Map
+                ref={mapRef}
                 initialViewState={
                     bounds
                         ? { bounds, fitBoundsOptions: { padding: 60, maxZoom: 6 } }
@@ -49,6 +62,9 @@ export function FootprintMap({ cities, onLocationSelect }: { cities: City[]; onL
                 style={{ width: "100%", height: "100%" }}
                 mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
                 workerUrl="/vendor/maplibre-gl-worker.mjs"
+                onLoad={() => {
+                    if (focusCoordinates) mapRef.current?.flyTo({ center: focusCoordinates, zoom: 10, duration: 1200 });
+                }}
                 onClick={(event) => onLocationSelect?.([event.lngLat.lng, event.lngLat.lat])}
                 onError={(event) => {
                     const resourceEvent = event as typeof event & {
