@@ -1,13 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { LoaderCircle, MapPin, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { LoaderCircle, MapPin, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
 import { IconButton } from "@/components/admin/icon-button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FootprintMapLazy } from "@/components/footprint-map-lazy";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
+import { safeAnimate, springModal, useSafeMotion } from "@/lib/animation";
+import { useFocusTrap } from "@/lib/focus-trap";
+import { useScrollLock } from "@/lib/use-scroll-lock";
 import type { ManagedCity } from "@/lib/cities";
 import type { City } from "@/data/cities";
 
@@ -99,6 +103,11 @@ export function CitiesAdminClient() {
         searchRef.current?.abort();
         setFormOpen(false);
     };
+
+    const reduce = useSafeMotion();
+    const formTrapRef = useFocusTrap(formOpen, closeForm);
+    const formTitleId = useId();
+    useScrollLock(formOpen);
 
     const updateName = (name: string) => {
         searchRef.current?.abort();
@@ -203,53 +212,78 @@ export function CitiesAdminClient() {
             } />
             <p className="text-xs text-muted">CSV 表头：name,longitude,latitude,status,visitDate,note；status 为 visited 或 planned，日期格式为 YYYY-MM。</p>
 
-            {formOpen && (
-                <form onSubmit={save} className="grid gap-4 rounded-xl border border-border/50 p-4 lg:grid-cols-2">
-                    <div className="flex flex-col gap-3">
-                        <h2 className="text-sm font-semibold">{editing ? "编辑城市" : "新增城市"}</h2>
-                        <div className="flex gap-2">
-                            <input
-                                aria-label="城市名称"
-                                required
-                                maxLength={100}
-                                value={form.name}
-                                onChange={(event) => updateName(event.target.value)}
-                                onKeyDown={(event) => {
-                                    if (event.key === "Enter" && !event.nativeEvent.isComposing) {
-                                        event.preventDefault();
-                                        void searchCity();
-                                    }
-                                }}
-                                placeholder="输入城市名称，如：杭州"
-                                className={inputClass}
-                            />
-                            <button type="button" disabled={searching} onClick={() => void searchCity()} className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg border border-border/50 px-3 py-2 text-sm disabled:opacity-50">
-                                {searching ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                                {searching ? "搜索中" : "搜索"}
-                            </button>
-                        </div>
-                        {searchResults.length > 0 && (
-                            <ul aria-label="城市搜索结果" className="max-h-40 divide-y divide-border/50 overflow-y-auto rounded-lg border border-border/50">
-                                {searchResults.map((result) => (
-                                    <li key={result.id}>
-                                        <button type="button" onClick={() => selectSearchResult(result)} className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-foreground/5">
-                                            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted" />
-                                            <span className="min-w-0"><span className="block text-sm font-medium">{result.name}</span><span className="block text-xs text-muted">{result.displayName}</span></span>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                        {searchMessage && <p role="status" className="text-xs text-muted">{searchMessage}</p>}
-                        <div className="grid grid-cols-2 gap-2"><input aria-label="经度" required type="number" step="any" min={-180} max={180} value={form.longitude} onChange={(event) => setForm({ ...form, longitude: event.target.value })} placeholder="经度" className={inputClass} /><input aria-label="纬度" required type="number" step="any" min={-90} max={90} value={form.latitude} onChange={(event) => setForm({ ...form, latitude: event.target.value })} placeholder="纬度" className={inputClass} /></div>
-                        <select aria-label="足迹状态" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as "visited" | "planned" })} className={inputClass}><option value="visited">已到访</option><option value="planned">计划前往</option></select>
-                        <input aria-label="到访时间" value={form.visitDate} onChange={(event) => setForm({ ...form, visitDate: event.target.value })} placeholder="到访时间，如 2026-10" pattern="\d{4}-\d{2}" className={inputClass} />
-                        <textarea aria-label="备注" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} placeholder="一句话备注" maxLength={1000} rows={3} className={inputClass} />
-                        <div className="flex gap-2"><button disabled={saving} className="rounded-lg bg-foreground px-4 py-2 text-sm text-background">{saving ? "保存中..." : "保存城市"}</button><button type="button" onClick={closeForm} className="rounded-lg border border-border/50 px-4 py-2 text-sm">取消</button></div>
-                    </div>
-                    <div className="h-72 overflow-hidden rounded-lg border border-border/50"><FootprintMapLazy cities={[...cities, ...draftCity]} focusCoordinates={mapFocus} onLocationSelect={([longitude, latitude]) => setForm((current) => ({ ...current, longitude: longitude.toFixed(6), latitude: latitude.toFixed(6) }))} /></div>
-                </form>
-            )}
+            <AnimatePresence>
+                {formOpen && (
+                    <>
+                        <motion.div
+                            initial={safeAnimate(reduce, { opacity: 0 })}
+                            animate={{ opacity: 1 }}
+                            exit={safeAnimate(reduce, { opacity: 0 })}
+                            onClick={closeForm}
+                            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
+                            transition={springModal}
+                            className="fixed inset-0 z-[101] flex items-center justify-center pt-[calc(1rem+env(safe-area-inset-top,0px))] pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))]"
+                        >
+                            <div ref={formTrapRef} role="dialog" aria-modal="true" aria-labelledby={formTitleId} className="flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-border/50 bg-background shadow-xl">
+                                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/50 p-4">
+                                    <h2 id={formTitleId} className="text-base font-semibold">{editing ? "编辑城市" : "新增城市"}</h2>
+                                    <IconButton label="关闭城市表单" onClick={closeForm}><X className="h-4 w-4" /></IconButton>
+                                </div>
+                                <form onSubmit={save} className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 [overscroll-behavior:contain] lg:grid-cols-2">
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex gap-2">
+                                            <input
+                                                aria-label="城市名称"
+                                                autoFocus
+                                                required
+                                                maxLength={100}
+                                                value={form.name}
+                                                onChange={(event) => updateName(event.target.value)}
+                                                onKeyDown={(event) => {
+                                                    if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                                                        event.preventDefault();
+                                                        void searchCity();
+                                                    }
+                                                }}
+                                                placeholder="输入城市名称，如：杭州"
+                                                className={inputClass}
+                                            />
+                                            <button type="button" disabled={searching} onClick={() => void searchCity()} className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg border border-border/50 px-3 py-2 text-sm disabled:opacity-50">
+                                                {searching ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                                                {searching ? "搜索中" : "搜索"}
+                                            </button>
+                                        </div>
+                                        {searchResults.length > 0 && (
+                                            <ul aria-label="城市搜索结果" className="max-h-40 divide-y divide-border/50 overflow-y-auto rounded-lg border border-border/50">
+                                                {searchResults.map((result) => (
+                                                    <li key={result.id}>
+                                                        <button type="button" onClick={() => selectSearchResult(result)} className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-foreground/5">
+                                                            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted" />
+                                                            <span className="min-w-0"><span className="block text-sm font-medium">{result.name}</span><span className="block text-xs text-muted">{result.displayName}</span></span>
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                        {searchMessage && <p role="status" className="text-xs text-muted">{searchMessage}</p>}
+                                        <div className="grid grid-cols-2 gap-2"><input aria-label="经度" required type="number" step="any" min={-180} max={180} value={form.longitude} onChange={(event) => setForm({ ...form, longitude: event.target.value })} placeholder="经度" className={inputClass} /><input aria-label="纬度" required type="number" step="any" min={-90} max={90} value={form.latitude} onChange={(event) => setForm({ ...form, latitude: event.target.value })} placeholder="纬度" className={inputClass} /></div>
+                                        <select aria-label="足迹状态" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as "visited" | "planned" })} className={inputClass}><option value="visited">已到访</option><option value="planned">计划前往</option></select>
+                                        <input aria-label="到访时间" value={form.visitDate} onChange={(event) => setForm({ ...form, visitDate: event.target.value })} placeholder="到访时间，如 2026-10" pattern="\d{4}-\d{2}" className={inputClass} />
+                                        <textarea aria-label="备注" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} placeholder="一句话备注" maxLength={1000} rows={3} className={inputClass} />
+                                    </div>
+                                    <div className="h-72 overflow-hidden rounded-lg border border-border/50"><FootprintMapLazy cities={[...cities, ...draftCity]} focusCoordinates={mapFocus} onLocationSelect={([longitude, latitude]) => setForm((current) => ({ ...current, longitude: longitude.toFixed(6), latitude: latitude.toFixed(6) }))} /></div>
+                                    <div className="flex justify-end gap-2 lg:col-span-2"><button type="button" onClick={closeForm} className="min-h-[44px] rounded-lg border border-border/50 px-4 py-2 text-sm">取消</button><button disabled={saving} className="min-h-[44px] rounded-lg bg-foreground px-4 py-2 text-sm text-background disabled:opacity-50">{saving ? "保存中..." : "保存城市"}</button></div>
+                                </form>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
 
             {loading ? <p className="py-16 text-center text-sm text-muted">加载中...</p> : failed ? <div className="py-16 text-center"><p className="text-sm text-muted">足迹加载失败</p><button onClick={() => { setLoading(true); load(); }} className="mt-3 rounded-lg border border-border/50 px-4 py-2 text-sm">重试</button></div> : (
                 <div className="grid gap-2 sm:grid-cols-2">
