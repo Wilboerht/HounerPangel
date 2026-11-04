@@ -198,6 +198,11 @@ input, textarea, select {
   padding-left: 1.5rem;
 }
 
+.article-body ul { list-style-type: disc; }
+.article-body ul ul { list-style-type: circle; }
+.article-body ul ul ul { list-style-type: square; }
+.article-body ol { list-style-type: decimal; }
+
 .article-body li + li {
   margin-top: 0.5rem;
 }
