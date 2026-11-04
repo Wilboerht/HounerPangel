@@ -2,6 +2,7 @@ import "server-only";
 
 import { env } from "./env";
 import { extractStoragePaths, supabase } from "./supabase";
+import { fetchAllPages } from "./supabase-pagination";
 import type { MediaAsset, MediaKind } from "./types/media";
 
 function publicMediaUrl(path: string) {
@@ -10,28 +11,41 @@ function publicMediaUrl(path: string) {
 
 async function referenceCounts() {
     const [posts, revisions] = await Promise.all([
-        supabase.from("blog_posts").select("content, cover_image"),
-        supabase.from("post_revisions").select("content, cover_image"),
+        fetchAllPages(async (from, to) => await supabase
+            .from("blog_posts")
+            .select("content, cover_image")
+            .order("id", { ascending: true })
+            .range(from, to)),
+        fetchAllPages(async (from, to) => await supabase
+            .from("post_revisions")
+            .select("content, cover_image")
+            .order("id", { ascending: true })
+            .range(from, to)),
     ]);
-    if (posts.error || revisions.error) throw posts.error || revisions.error;
     const counts = new Map<string, number>();
-    for (const row of [...(posts.data ?? []), ...(revisions.data ?? [])]) {
+    for (const row of [...posts, ...revisions]) {
         for (const path of extractStoragePaths(`${row.content}\n${row.cover_image ? `![](${row.cover_image})` : ""}`)) counts.set(path, (counts.get(path) ?? 0) + 1);
     }
     return counts;
 }
 
 export async function listMediaAssets(): Promise<MediaAsset[]> {
-    const [filesResult, assetsResult, references] = await Promise.all([
-        supabase.storage.from("images").list("blog", { limit: 1000, sortBy: { column: "created_at", order: "desc" } }),
-        supabase.from("media_assets").select("id, path, file_name, kind, mime_type, size, width, height, alt, caption, created_at"),
+    const [files, assets, references] = await Promise.all([
+        fetchAllPages(async (from, to) => await supabase.storage.from("images").list("blog", {
+            limit: to - from + 1,
+            offset: from,
+            sortBy: { column: "name", order: "asc" },
+        })),
+        fetchAllPages(async (from, to) => await supabase
+            .from("media_assets")
+            .select("id, path, file_name, kind, mime_type, size, width, height, alt, caption, created_at")
+            .order("id", { ascending: true })
+            .range(from, to)),
         referenceCounts(),
     ]);
-    if (filesResult.error) throw filesResult.error;
-    if (assetsResult.error) throw assetsResult.error;
 
-    const metadata = new Map((assetsResult.data ?? []).map((row) => [row.path, row]));
-    return (filesResult.data ?? []).filter((file) => file.name).map((file) => {
+    const metadata = new Map(assets.map((row) => [row.path, row]));
+    return files.filter((file) => file.name).map((file) => {
         const path = `blog/${file.name}`;
         const row = metadata.get(path);
         const fileMetadata: Record<string, unknown> = file.metadata ?? {};
@@ -52,7 +66,7 @@ export async function listMediaAssets(): Promise<MediaAsset[]> {
             createdAt: row?.created_at ?? file.created_at,
             references: references.get(path) ?? 0,
         };
-    });
+    }).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function registerMediaAsset(input: {

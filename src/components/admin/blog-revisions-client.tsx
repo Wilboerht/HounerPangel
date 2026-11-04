@@ -122,7 +122,8 @@ export function BlogRevisionsClient({ slug }: { slug: string }) {
     useEffect(() => {
         if (!selectedId) return;
         const controller = new AbortController();
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- 切换版本时立即显示加载态，后续状态更新由请求回调完成
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- 切换版本时清空旧详情并显示加载态，后续状态更新由请求回调完成
+        setSelected(null);
         setDetailLoading(true);
         fetch(`/api/admin/blog/${slug}/revisions?revisionId=${encodeURIComponent(selectedId)}`, { signal: controller.signal })
             .then(async (res) => {
@@ -184,6 +185,17 @@ export function BlogRevisionsClient({ slug }: { slug: string }) {
     }
 
     const diff = selected ? diffLines(selected.content, current.content) : [];
+    const metadataDiffs = selected ? [
+        { label: "标题", before: selected.title, after: current.title },
+        { label: "文章日期", before: selected.date, after: current.date },
+        { label: "发布状态", before: selected.published ? "已发布" : "未发布", after: current.published ? "已发布" : "未发布" },
+        { label: "归档时间", before: selected.archivedAt ?? "", after: current.archivedAt ?? "" },
+        { label: "标签", before: selected.tags.join("、"), after: current.tags.join("、") },
+        { label: "摘要", before: selected.excerpt ?? "", after: current.excerpt ?? "" },
+        { label: "SEO 标题", before: selected.seoTitle ?? "", after: current.seoTitle ?? "" },
+        { label: "SEO 描述", before: selected.seoDescription ?? "", after: current.seoDescription ?? "" },
+        { label: "封面", before: selected.coverImage ?? "", after: current.coverImage ?? "" },
+    ].filter((item) => item.before !== item.after) : [];
 
     return (
         <div className="flex flex-col gap-6">
@@ -231,6 +243,18 @@ export function BlogRevisionsClient({ slug }: { slug: string }) {
                                 <div className="rounded-lg border border-border/50 bg-foreground/[0.02] px-3 py-2 text-xs text-muted">
                                     下方对比中，红色为历史版本内容，绿色为当前版本内容。恢复会生成新的历史快照，不会删除其他版本。
                                 </div>
+                                {metadataDiffs.length > 0 && (
+                                    <div className="flex flex-col gap-2 rounded-lg border border-border/50 p-3">
+                                        <h3 className="text-xs font-medium">字段差异</h3>
+                                        {metadataDiffs.map((item) => (
+                                            <div key={item.label} className="grid gap-2 text-xs sm:grid-cols-[6rem_1fr_1fr]">
+                                                <span className="font-medium">{item.label}</span>
+                                                <span className="whitespace-pre-wrap break-words rounded bg-red-500/10 px-2 py-1 text-red-700">{item.before || "（空）"}</span>
+                                                <span className="whitespace-pre-wrap break-words rounded bg-green-500/10 px-2 py-1 text-green-700">{item.after || "（空）"}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                                 <div className="max-h-[60dvh] overflow-auto rounded-lg border border-border/50 font-mono text-xs leading-6">
                                     {diff.map((line, index) => (
                                         <div key={index} className={`grid grid-cols-[2rem_1fr] border-b border-border/30 last:border-0 ${line.type === "added" ? "bg-green-500/10 text-green-700" : line.type === "removed" ? "bg-red-500/10 text-red-700" : "text-muted"}`}>

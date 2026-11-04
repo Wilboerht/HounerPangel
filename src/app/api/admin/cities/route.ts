@@ -9,9 +9,11 @@ export const citySchema = z.object({
     name: z.string().trim().min(1).max(100),
     coordinates: z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]),
     status: z.enum(["visited", "planned"]),
-    visitDate: z.string().regex(/^\d{4}-\d{2}$/).nullable().default(null),
+    visitDate: z.string().regex(/^\d{4}-\d{2}$/).refine((value) => Number(value.slice(5)) >= 1 && Number(value.slice(5)) <= 12, "月份不合法").nullable().default(null),
     note: z.string().max(1000).nullable().default(null),
 });
+
+export const cityVersionSchema = z.object({ expectedUpdatedAt: z.string().min(1) });
 
 export async function GET(request: NextRequest) {
     const authError = await checkAuth(request);

@@ -12,7 +12,8 @@ import { useAuthExpired } from "@/lib/use-auth-expired";
 import { safeAnimate, springModal, useSafeMotion } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 import { useScrollLock } from "@/lib/use-scroll-lock";
-import type { ManagedCity } from "@/lib/cities";
+import { useDirtyGuard } from "@/lib/use-dirty-guard";
+import type { CityInput, ManagedCity } from "@/lib/cities";
 import type { City } from "@/data/cities";
 
 interface CityForm {
@@ -59,9 +60,12 @@ export function CitiesAdminClient() {
     const [editing, setEditing] = useState<ManagedCity | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [form, setForm] = useState<CityForm>(blankForm);
+    const [formBaseline, setFormBaseline] = useState<CityForm>(blankForm);
+    const [pendingClose, setPendingClose] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState<ManagedCity | null>(null);
     const [importing, setImporting] = useState(false);
+    const [pendingImport, setPendingImport] = useState<CityInput[] | null>(null);
     const [searching, setSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<CitySearchResult[]>([]);
     const [searchMessage, setSearchMessage] = useState("");
@@ -90,8 +94,11 @@ export function CitiesAdminClient() {
 
     const openForm = (city?: ManagedCity) => {
         searchRef.current?.abort();
+        const initial = city ? { name: city.name, longitude: String(city.coordinates[0]), latitude: String(city.coordinates[1]), status: city.status ?? "visited", visitDate: city.visitDate ?? "", note: city.note ?? "" } : blankForm;
         setEditing(city ?? null);
-        setForm(city ? { name: city.name, longitude: String(city.coordinates[0]), latitude: String(city.coordinates[1]), status: city.status ?? "visited", visitDate: city.visitDate ?? "", note: city.note ?? "" } : blankForm);
+        setForm(initial);
+        setFormBaseline(initial);
+        setPendingClose(false);
         setSearching(false);
         setSearchResults([]);
         setSearchMessage("");
@@ -99,11 +106,22 @@ export function CitiesAdminClient() {
         setFormOpen(true);
     };
 
-    const closeForm = () => {
+    const formDirty = formOpen && JSON.stringify(form) !== JSON.stringify(formBaseline);
+    const dismissForm = () => {
         searchRef.current?.abort();
+        setPendingClose(false);
         setFormOpen(false);
     };
+    const closeForm = () => {
+        if (saving) return;
+        if (formDirty) {
+            setPendingClose(true);
+            return;
+        }
+        dismissForm();
+    };
 
+    useDirtyGuard(formDirty, () => setPendingClose(true));
     const reduce = useSafeMotion();
     const formTrapRef = useFocusTrap(formOpen, closeForm);
     const formTitleId = useId();
@@ -151,15 +169,20 @@ export function CitiesAdminClient() {
 
     const save = async (event: React.FormEvent) => {
         event.preventDefault();
+        if (saving) return;
         setSaving(true);
         try {
-            const payload = { name: form.name.trim(), coordinates: [Number(form.longitude), Number(form.latitude)], status: form.status, visitDate: form.visitDate || null, note: form.note.trim() || null };
-            const res = await fetch(editing ? `/api/admin/cities/${editing.id}` : "/api/admin/cities", { method: editing ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            const payload: CityInput = { name: form.name.trim(), coordinates: [Number(form.longitude), Number(form.latitude)], status: form.status, visitDate: form.visitDate || null, note: form.note.trim() || null };
+            const res = await fetch(editing ? `/api/admin/cities/${editing.id}` : "/api/admin/cities", {
+                method: editing ? "PUT" : "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(editing ? { ...payload, expectedUpdatedAt: editing.updatedAt } : payload),
+            });
             if (res.status === 401) { authExpired(); return; }
             const data = await res.json();
             if (!res.ok) { toast.error(data.error || "保存失败"); return; }
             toast.success(editing ? "城市已更新" : "城市已新增");
-            closeForm();
+            dismissForm();
             await load();
         } catch { toast.error("网络错误，请重试"); } finally { setSaving(false); }
     };
@@ -167,9 +190,14 @@ export function CitiesAdminClient() {
     const remove = async () => {
         if (!deleting) return;
         try {
-            const res = await fetch(`/api/admin/cities/${deleting.id}`, { method: "DELETE" });
+            const res = await fetch(`/api/admin/cities/${deleting.id}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ expectedUpdatedAt: deleting.updatedAt }),
+            });
             if (res.status === 401) { authExpired(); return; }
-            if (!res.ok) { toast.error("删除城市失败"); return; }
+            const data = await res.json();
+            if (!res.ok) { toast.error(data.error || "删除城市失败"); return; }
             setCities((items) => items.filter((item) => item.id !== deleting.id));
             setDeleting(null);
             toast.success("城市已删除");
@@ -178,24 +206,39 @@ export function CitiesAdminClient() {
 
     const importCsv = async (file: File | undefined) => {
         if (!file) return;
-        setImporting(true);
         try {
             const lines = (await file.text()).split(/\r?\n/).filter((line) => line.trim());
             const rows = lines.slice(1).map(parseCsvLine);
-            const payload = rows.map((row) => ({
+            const payload = rows.map((row): CityInput => ({
                 name: row[0], coordinates: [Number(row[1]), Number(row[2])],
                 status: row[3] === "planned" ? "planned" : "visited",
                 visitDate: row[4] || null, note: row[5] || null,
             }));
-            if (payload.some((row) => !row.name || !Number.isFinite(row.coordinates[0]) || !Number.isFinite(row.coordinates[1]) || (row.visitDate && !/^\d{4}-\d{2}$/.test(row.visitDate)))) throw new Error("CSV 格式不正确");
-            const res = await fetch("/api/admin/cities/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            if (payload.length === 0) throw new Error("CSV 中没有可导入的城市记录");
+            if (payload.some((row) =>
+                !row.name ||
+                !Number.isFinite(row.coordinates[0]) ||
+                !Number.isFinite(row.coordinates[1]) ||
+                (row.visitDate && (!/^\d{4}-\d{2}$/.test(row.visitDate) || Number(row.visitDate.slice(5)) < 1 || Number(row.visitDate.slice(5)) > 12))
+            )) throw new Error("CSV 格式不正确");
+            setPendingImport(payload);
+        } catch (error) { toast.error(error instanceof Error ? error.message : "CSV 导入失败"); }
+        finally { if (fileRef.current) fileRef.current.value = ""; }
+    };
+
+    const performImport = async () => {
+        if (!pendingImport || importing) return;
+        setImporting(true);
+        try {
+            const res = await fetch("/api/admin/cities/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pendingImport) });
             if (res.status === 401) { authExpired(); return; }
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "导入失败");
             toast.success(`已导入或更新 ${data.count} 个城市`);
+            setPendingImport(null);
             await load();
         } catch (error) { toast.error(error instanceof Error ? error.message : "CSV 导入失败"); }
-        finally { setImporting(false); if (fileRef.current) fileRef.current.value = ""; }
+        finally { setImporting(false); }
     };
 
     const draftCity: City[] = formOpen && Number.isFinite(Number(form.longitude)) && Number.isFinite(Number(form.latitude)) ? [{ name: form.name || "当前位置", coordinates: [Number(form.longitude), Number(form.latitude)], status: form.status }] : [];
@@ -291,6 +334,23 @@ export function CitiesAdminClient() {
                 </div>
             )}
             <ConfirmDialog isOpen={deleting !== null} onClose={() => setDeleting(null)} onConfirm={remove} title="删除城市" message={`确定从足迹地图删除「${deleting?.name ?? ""}」吗？`} confirmLabel="确认删除" />
+            <ConfirmDialog
+                isOpen={pendingClose}
+                onClose={() => setPendingClose(false)}
+                onConfirm={dismissForm}
+                title="放弃城市编辑"
+                message="有尚未保存的城市信息，确定关闭并丢弃这些更改吗？"
+                confirmLabel="放弃更改"
+                danger={false}
+            />
+            <ConfirmDialog
+                isOpen={pendingImport !== null}
+                onClose={() => setPendingImport(null)}
+                onConfirm={performImport}
+                title="确认导入城市"
+                message={`将导入 ${pendingImport?.length ?? 0} 条记录。同名城市的现有坐标、状态和备注会被覆盖，确定继续吗？`}
+                confirmLabel="确认导入"
+            />
         </div>
     );
 }

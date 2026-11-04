@@ -83,7 +83,9 @@ export default async function AdminDashboardPage() {
                                             <span className="truncate text-sm text-foreground">
                                                 {post.title}
                                             </span>
-                                            {!post.published && (
+                                            {post.archivedAt ? (
+                                                <Badge variant="outline">已归档</Badge>
+                                            ) : !post.published && (
                                                 <Badge variant="warning">草稿</Badge>
                                             )}
                                         </span>

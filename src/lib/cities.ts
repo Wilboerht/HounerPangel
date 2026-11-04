@@ -1,6 +1,7 @@
 import "server-only";
 
 import { supabase } from "./supabase";
+import { fetchAllPages } from "./supabase-pagination";
 import type { City } from "@/data/cities";
 
 export interface ManagedCity extends City {
@@ -40,9 +41,13 @@ function values(input: CityInput) {
 }
 
 export async function getCities(): Promise<ManagedCity[]> {
-    const { data, error } = await supabase.from("cities").select("id, name, longitude, latitude, status, visit_date, note, updated_at").order("name", { ascending: true });
-    if (error) throw error;
-    return (data || []).map((row) => mapCity(row));
+    const data = await fetchAllPages(async (from, to) => await supabase
+        .from("cities")
+        .select("id, name, longitude, latitude, status, visit_date, note, updated_at")
+        .order("name", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to));
+    return data.map((row) => mapCity(row));
 }
 
 export async function createCity(input: CityInput): Promise<void> {
@@ -50,14 +55,14 @@ export async function createCity(input: CityInput): Promise<void> {
     if (error) throw error;
 }
 
-export async function updateCity(id: string, input: CityInput): Promise<boolean> {
-    const { data, error } = await supabase.from("cities").update(values(input)).eq("id", id).select("id").maybeSingle();
+export async function updateCity(id: string, input: CityInput, expectedUpdatedAt: string): Promise<boolean> {
+    const { data, error } = await supabase.from("cities").update(values(input)).eq("id", id).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
     if (error) throw error;
     return data !== null;
 }
 
-export async function deleteCity(id: string): Promise<boolean> {
-    const { data, error } = await supabase.from("cities").delete().eq("id", id).select("id").maybeSingle();
+export async function deleteCity(id: string, expectedUpdatedAt: string): Promise<boolean> {
+    const { data, error } = await supabase.from("cities").delete().eq("id", id).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
     if (error) throw error;
     return data !== null;
 }

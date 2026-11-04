@@ -24,6 +24,9 @@ export const blogBackupSchema = z.object({
         if (seen.has(post.slug)) {
             ctx.addIssue({ code: "custom", message: "备份中存在重复 slug", path: ["posts", index, "slug"] });
         }
+        if (post.published && post.archivedAt !== null) {
+            ctx.addIssue({ code: "custom", message: "已发布文章不能同时处于归档状态", path: ["posts", index, "archivedAt"] });
+        }
         seen.add(post.slug);
     });
 });
@@ -126,7 +129,8 @@ export async function applyBlogImport(backup: BlogBackup, conflictMode: BackupCo
                 date: post.date,
                 tags: post.tags,
                 published: post.published,
-                    publishedAt: post.publishedAt,
+                updatedAt: post.updatedAt,
+                publishedAt: post.publishedAt,
                 archivedAt: post.archivedAt,
                 excerpt: post.excerpt,
                 seoTitle: post.seoTitle,
@@ -137,7 +141,8 @@ export async function applyBlogImport(backup: BlogBackup, conflictMode: BackupCo
             results.push({ slug: post.slug, status });
         } catch (error) {
             console.error(`Failed to import blog post ${post.slug}:`, error);
-            results.push({ slug: post.slug, status: "failed", error: "数据库写入失败" });
+            const message = error instanceof Error && error.name === "ImportConflictError" ? error.message : "数据库写入失败";
+            results.push({ slug: post.slug, status: "failed", error: message });
         }
     }
 

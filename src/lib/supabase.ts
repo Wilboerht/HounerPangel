@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import type { BlogPost, BlogPostSummary } from "./types/blog";
 import { env } from "./env";
+import { fetchAllPages } from "./supabase-pagination";
 
 const POST_COLUMNS = "slug, title, content, date, updated_at, tags, published, deleted_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
 const SUMMARY_COLUMNS = "slug, title, date, updated_at, tags, published, deleted_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
@@ -44,14 +45,13 @@ export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogP
         .from("blog_posts")
         .select(POST_COLUMNS)
         .is("deleted_at", null)
-        .order("date", { ascending: false });
+        .order("date", { ascending: false })
+        .order("id", { ascending: true });
 
     if (!includeUnpublished) query = query.eq("published", true).is("archived_at", null);
 
-    const { data, error } = await query;
-
-    if (error) throw error;
-    return (data || []).map(mapPost);
+    const data = await fetchAllPages(async (from, to) => await query.range(from, to));
+    return data.map(mapPost);
 }
 
 // RSS 等场景只需要最新 N 篇：在数据库侧 limit，避免全表传输后再截断
@@ -74,14 +74,13 @@ export async function getAllBlogPostSummaries(includeUnpublished = false): Promi
         .from("blog_posts")
         .select(SUMMARY_COLUMNS)
         .is("deleted_at", null)
-        .order("date", { ascending: false });
+        .order("date", { ascending: false })
+        .order("id", { ascending: true });
 
     if (!includeUnpublished) query = query.eq("published", true).is("archived_at", null);
 
-    const { data, error } = await query;
-
-    if (error) throw error;
-    return (data || []).map(mapPost);
+    const data = await fetchAllPages(async (from, to) => await query.range(from, to));
+    return data.map(mapPost);
 }
 
 export async function getBlogPostBySlug(slug: string, includeUnpublished = false): Promise<BlogPost | null> {
@@ -225,17 +224,29 @@ export function extractStoragePaths(content: string): string[] {
 async function removeUnreferencedMedia(candidatePaths: string[], excludeSlug: string): Promise<void> {
     if (candidatePaths.length === 0) return;
 
-    const [postsResult, revisionsResult] = await Promise.all([
-        supabase.from("blog_posts").select("content, cover_image").neq("slug", excludeSlug),
-        supabase.from("post_revisions").select("content, cover_image"),
-    ]);
-    if (postsResult.error || revisionsResult.error) {
-        console.error("Failed to check media references, skipping cleanup:", postsResult.error || revisionsResult.error);
+    let rows: { content: string; cover_image: string | null }[];
+    try {
+        const [posts, revisions] = await Promise.all([
+            fetchAllPages(async (from, to) => await supabase
+                .from("blog_posts")
+                .select("content, cover_image")
+                .neq("slug", excludeSlug)
+                .order("id", { ascending: true })
+                .range(from, to)),
+            fetchAllPages(async (from, to) => await supabase
+                .from("post_revisions")
+                .select("content, cover_image")
+                .order("id", { ascending: true })
+                .range(from, to)),
+        ]);
+        rows = [...posts, ...revisions];
+    } catch (error) {
+        console.error("Failed to check media references, skipping cleanup:", error);
         return;
     }
 
     const stillReferenced = new Set<string>();
-    for (const row of [...(postsResult.data ?? []), ...(revisionsResult.data ?? [])]) {
+    for (const row of rows) {
         for (const p of extractStoragePaths(`${row.content}\n${row.cover_image ? `![](${row.cover_image})` : ""}`)) stillReferenced.add(p);
     }
     const orphaned = candidatePaths.filter((p) => !stillReferenced.has(p));
@@ -261,13 +272,14 @@ export async function deleteBlogPost(slug: string, expectedUpdatedAt: string): P
 }
 
 export async function getTrashBlogPostSummaries(): Promise<BlogPostSummary[]> {
-    const { data, error } = await supabase
+    const data = await fetchAllPages(async (from, to) => await supabase
         .from("blog_posts")
         .select(SUMMARY_COLUMNS)
         .not("deleted_at", "is", null)
-        .order("deleted_at", { ascending: false });
-    if (error) throw error;
-    return (data || []).map(mapPost);
+        .order("deleted_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, to));
+    return data.map(mapPost);
 }
 
 export async function restoreBlogPost(slug: string, expectedUpdatedAt: string): Promise<string | null> {
@@ -307,16 +319,17 @@ export async function purgeBlogPost(slug: string, expectedUpdatedAt: string): Pr
 }
 
 export async function getAllBlogPostsForBackup(): Promise<BlogPost[]> {
-    const { data, error } = await supabase
+    const data = await fetchAllPages(async (from, to) => await supabase
         .from("blog_posts")
         .select(POST_COLUMNS)
-        .order("date", { ascending: false });
-    if (error) throw error;
-    return (data || []).map(mapPost);
+        .order("date", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, to));
+    return data.map(mapPost);
 }
 
 export async function importBlogPost(
-    post: Omit<BlogPost, "updatedAt">,
+    post: BlogPost,
     overwrite: boolean
 ): Promise<"created" | "updated" | "skipped"> {
     const values = {
@@ -348,8 +361,19 @@ export async function importBlogPost(
     }
     if (!overwrite) return "skipped";
 
-    const { error } = await supabase.from("blog_posts").update(values).eq("slug", post.slug);
+    const { data, error } = await supabase
+        .from("blog_posts")
+        .update(values)
+        .eq("slug", post.slug)
+        .eq("updated_at", post.updatedAt)
+        .select("slug")
+        .maybeSingle();
     if (error) throw error;
+    if (!data) {
+        const conflict = new Error("文章在备份导出后已被修改，未覆盖");
+        conflict.name = "ImportConflictError";
+        throw conflict;
+    }
     return "updated";
 }
 

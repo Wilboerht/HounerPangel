@@ -9,6 +9,9 @@ import { IconButton } from "@/components/admin/icon-button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
+import { useDirtyGuard } from "@/lib/use-dirty-guard";
+import { useFocusTrap } from "@/lib/focus-trap";
+import { useScrollLock } from "@/lib/use-scroll-lock";
 import type { MediaAsset, MediaKind } from "@/lib/types/media";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -61,6 +64,7 @@ export function MediaAdminClient() {
     const [caption, setCaption] = useState("");
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState<MediaAsset | null>(null);
+    const [pendingClose, setPendingClose] = useState(false);
 
     const load = useCallback(async (signal?: AbortSignal) => {
         try {
@@ -82,6 +86,23 @@ export function MediaAdminClient() {
         load(controller.signal);
         return () => controller.abort();
     }, [load]);
+
+    const editingDirty = editing !== null && (alt !== editing.alt || caption !== editing.caption);
+    const dismissMetadata = () => {
+        setPendingClose(false);
+        setEditing(null);
+    };
+    const closeMetadata = () => {
+        if (saving) return;
+        if (editingDirty) {
+            setPendingClose(true);
+            return;
+        }
+        dismissMetadata();
+    };
+    const metadataTrapRef = useFocusTrap(editing !== null, closeMetadata);
+    useScrollLock(editing !== null);
+    useDirtyGuard(editingDirty, () => setPendingClose(true));
 
     const upload = async (file: File | undefined) => {
         if (!file || uploading) return;
@@ -174,7 +195,7 @@ export function MediaAdminClient() {
                                 {asset.caption && <p className="mt-1 truncate text-xs text-muted">{asset.caption}</p>}
                             </div>
                             <div className="flex flex-shrink-0 items-center gap-1">
-                                <IconButton label="复制媒体地址" onClick={async () => { await navigator.clipboard.writeText(asset.url); toast.success("地址已复制"); }}><Copy className="h-4 w-4" /></IconButton>
+                                <IconButton label="复制媒体地址" onClick={async () => { try { await navigator.clipboard.writeText(asset.url); toast.success("地址已复制"); } catch { toast.error("复制失败，请检查浏览器剪贴板权限"); } }}><Copy className="h-4 w-4" /></IconButton>
                                 <IconButton label="编辑媒体信息" disabled={!asset.id.match(/^[0-9a-f-]{36}$/)} onClick={() => { setEditing(asset); setAlt(asset.alt); setCaption(asset.caption); }}><Pencil className="h-4 w-4" /></IconButton>
                                 <IconButton label="删除零引用媒体" variant="danger" disabled={asset.references > 0} onClick={() => setDeleting(asset)}><Trash2 className="h-4 w-4" /></IconButton>
                             </div>
@@ -184,17 +205,26 @@ export function MediaAdminClient() {
             )}
 
             {editing && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => setEditing(null)}>
-                    <div role="dialog" aria-modal="true" aria-label="编辑媒体信息" className="flex w-full max-w-md flex-col gap-4 rounded-xl bg-background p-5" onClick={(event) => event.stopPropagation()}>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={closeMetadata}>
+                    <div ref={metadataTrapRef} role="dialog" aria-modal="true" aria-label="编辑媒体信息" className="flex w-full max-w-md flex-col gap-4 rounded-xl bg-background p-5" onClick={(event) => event.stopPropagation()}>
                         <h2 className="flex items-center gap-2 text-base font-semibold"><ImageIcon className="h-4 w-4" />编辑媒体信息</h2>
                         <label className="flex flex-col gap-2 text-sm">图片替代文本<input value={alt} maxLength={500} onChange={(event) => setAlt(event.target.value)} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2" /></label>
                         <label className="flex flex-col gap-2 text-sm">说明文字<textarea value={caption} maxLength={1000} onChange={(event) => setCaption(event.target.value)} rows={3} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2" /></label>
-                        <div className="flex justify-end gap-2"><button onClick={() => setEditing(null)} className="rounded-lg px-4 py-2 text-sm text-muted">取消</button><button disabled={saving} onClick={saveMetadata} className="rounded-lg bg-foreground px-4 py-2 text-sm text-background">{saving ? "保存中..." : "保存"}</button></div>
+                        <div className="flex justify-end gap-2"><button onClick={closeMetadata} className="rounded-lg px-4 py-2 text-sm text-muted">取消</button><button disabled={saving} onClick={saveMetadata} className="rounded-lg bg-foreground px-4 py-2 text-sm text-background">{saving ? "保存中..." : "保存"}</button></div>
                     </div>
                 </div>
             )}
 
             <ConfirmDialog isOpen={deleting !== null} onClose={() => setDeleting(null)} onConfirm={remove} title="删除零引用媒体" message={`确定删除「${deleting?.fileName ?? ""}」吗？该操作会移除 Storage 文件，且不可撤销。`} confirmLabel="彻底删除" />
+            <ConfirmDialog
+                isOpen={pendingClose}
+                onClose={() => setPendingClose(false)}
+                onConfirm={dismissMetadata}
+                title="放弃媒体信息更改"
+                message="有尚未保存的媒体信息，确定关闭并丢弃这些更改吗？"
+                confirmLabel="放弃更改"
+                danger={false}
+            />
         </div>
     );
 }

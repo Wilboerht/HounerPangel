@@ -1,6 +1,7 @@
 import "server-only";
 
 import { supabase } from "./supabase";
+import { fetchAllPages } from "./supabase-pagination";
 import type { BlogPostSummary } from "./types/blog";
 
 const SUMMARY_COLUMNS = "slug, title, date, updated_at, tags, published, deleted_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
@@ -53,30 +54,48 @@ export async function queryBlogPostSummaries(options: BlogListQuery) {
         .range(from, from + options.pageSize - 1);
     if (error) throw error;
 
-    const { data: tagRows, error: tagError } = await supabase
+    const tagRows = await fetchAllPages(async (from, to) => await supabase
         .from("blog_posts")
         .select("tags")
-        .is("deleted_at", null);
-    if (tagError) throw tagError;
+        .is("deleted_at", null)
+        .order("id", { ascending: true })
+        .range(from, to));
 
     return {
         items: (data || []).map((row) => mapSummary(row)),
         total: count ?? 0,
         page: options.page,
         pageSize: options.pageSize,
-        tags: Array.from(new Set((tagRows || []).flatMap((row) => row.tags ?? []))).sort((a, b) => a.localeCompare(b, "zh-CN")),
+        tags: Array.from(new Set(tagRows.flatMap((row) => row.tags ?? []))).sort((a, b) => a.localeCompare(b, "zh-CN")),
     };
 }
 
 export type BlogBulkAction = "publish" | "unpublish" | "archive" | "unarchive" | "delete" | "addTags";
 
-export async function bulkUpdateBlogPosts(slugs: string[], action: BlogBulkAction, tags: string[] = []) {
+export async function bulkUpdateBlogPosts(
+    slugs: string[],
+    action: BlogBulkAction,
+    tags: string[],
+    expectedUpdatedAt: Record<string, string>
+) {
     const results: { slug: string; success: boolean; error?: string }[] = [];
     for (const slug of slugs) {
         try {
+            const { data: current, error: fetchError } = await supabase
+                .from("blog_posts")
+                .select("tags, published_at")
+                .eq("slug", slug)
+                .is("deleted_at", null)
+                .maybeSingle();
+            if (fetchError) throw fetchError;
+            if (!current || !expectedUpdatedAt[slug]) {
+                results.push({ slug, success: false, error: "文章不存在或缺少版本信息" });
+                continue;
+            }
+
             let values: Record<string, unknown>;
             if (action === "publish") {
-                values = { published: true, archived_at: null, published_at: new Date().toISOString() };
+                values = { published: true, archived_at: null, published_at: current.published_at ?? new Date().toISOString() };
             } else if (action === "unpublish") {
                 values = { published: false, archived_at: null, published_at: null };
             } else if (action === "archive") {
@@ -86,19 +105,22 @@ export async function bulkUpdateBlogPosts(slugs: string[], action: BlogBulkActio
             } else if (action === "delete") {
                 values = { deleted_at: new Date().toISOString() };
             } else {
-                const { data, error } = await supabase.from("blog_posts").select("tags").eq("slug", slug).is("deleted_at", null).single();
-                if (error) throw error;
-                values = { tags: Array.from(new Set([...(data.tags ?? []), ...tags])).slice(0, 20) };
+                values = { tags: Array.from(new Set([...(current.tags ?? []), ...tags])).slice(0, 20) };
             }
             const { data, error } = await supabase
                 .from("blog_posts")
                 .update(values)
                 .eq("slug", slug)
+                .eq("updated_at", expectedUpdatedAt[slug])
                 .is("deleted_at", null)
                 .select("slug")
                 .maybeSingle();
             if (error) throw error;
-            results.push({ slug, success: data !== null });
+            results.push({
+                slug,
+                success: data !== null,
+                error: data === null ? "文章已被其他会话修改" : undefined,
+            });
         } catch (error) {
             console.error(`Bulk blog action ${action} failed for ${slug}:`, error);
             results.push({ slug, success: false, error: "数据库操作失败" });

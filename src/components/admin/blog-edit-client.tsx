@@ -28,7 +28,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
   // 恢复草稿时通过 formKey 重挂载 PostForm，让新的 initialValues 生效
   const [formKey, setFormKey] = useState(0);
   const [formDirty, setFormDirty] = useState(false);
-  const [pendingClose, setPendingClose] = useState(false);
+  const [pendingDestination, setPendingDestination] = useState<string | null>(null);
   // 保存请求在途时禁止返回（避免"请求还在飞、页面已离开"的竞态）
   const [saving, setSaving] = useState(false);
   // 头部"草稿"徽标跟随表单发布状态
@@ -140,17 +140,18 @@ export function BlogEditClient({ slug }: { slug: string }) {
     loadPost();
   };
 
-  useDirtyGuard(formDirty, () => setPendingClose(true));
+  useDirtyGuard(formDirty, () => setPendingDestination("/admin/blog"));
 
-  const goBack = useCallback(() => {
-    // 保存请求在途时不允许离开，避免请求完成后页面已切走的状态错乱
+  const requestNavigation = useCallback((href: string) => {
     if (saving) return;
     if (formDirty) {
-      setPendingClose(true);
+      setPendingDestination(href);
       return;
     }
-    router.push("/admin/blog");
+    router.push(href);
   }, [saving, formDirty, router]);
+
+  const goBack = useCallback(() => requestNavigation("/admin/blog"), [requestNavigation]);
 
   const handleSave = async (values: PostFormValues): Promise<boolean> => {
     try {
@@ -245,6 +246,10 @@ export function BlogEditClient({ slug }: { slug: string }) {
             </button>
             <Link
               href={`/admin/blog/history/${slug}`}
+              onClick={(event) => {
+                event.preventDefault();
+                requestNavigation(`/admin/blog/history/${slug}`);
+              }}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
             >
               <History className="w-4 h-4" />
@@ -283,12 +288,14 @@ export function BlogEditClient({ slug }: { slug: string }) {
       {previewOpen && liveValues && <LivePostPreview values={liveValues} updatedAt={updatedAt} onClose={() => setPreviewOpen(false)} />}
 
       <ConfirmDialog
-        isOpen={pendingClose}
-        onClose={() => setPendingClose(false)}
+        isOpen={pendingDestination !== null}
+        onClose={() => setPendingDestination(null)}
         onConfirm={() => {
+          const href = pendingDestination ?? "/admin/blog";
+          setPendingDestination(null);
           clearDraft();
           setFormDirty(false);
-          router.push("/admin/blog");
+          router.push(href);
         }}
         title="放弃更改"
         message="有未保存的更改，确定离开吗？"

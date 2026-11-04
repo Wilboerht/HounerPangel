@@ -175,6 +175,15 @@ export function BlogAdminClient() {
   // 关闭弹窗的所有路径都经过 resetAndCloseModal，dirty 状态在那里一并重置
   useDirtyGuard(formDirty, () => setPendingClose(true));
 
+  const removePostFromPage = (slug: string) => {
+    if (posts.length === 1 && page > 1) {
+      setPage((value) => value - 1);
+      return;
+    }
+    setPosts((prev) => prev.filter((post) => post.slug !== slug));
+    setTotal((value) => Math.max(0, value - 1));
+  };
+
   const handleDelete = async () => {
     const target = deleteTarget;
     if (!target) return;
@@ -190,7 +199,7 @@ export function BlogAdminClient() {
       }
       const data = await res.json();
       if (res.ok) {
-        setPosts((prev) => prev.filter((p) => p.slug !== target.slug));
+        removePostFromPage(target.slug);
         toast.success("文章已移至回收站");
       } else {
         toast.error(data.error || "删除失败");
@@ -224,9 +233,17 @@ export function BlogAdminClient() {
         throw new Error(data.error || "操作失败");
       }
       const data = await res.json();
-      setPosts((prev) =>
-        prev.map((p) => (p.slug === post.slug ? { ...p, published, archivedAt: null, updatedAt: data.updatedAt } : p))
-      );
+      const stillMatches =
+        status === "all" ||
+        (status === "published" && published) ||
+        (status === "draft" && !published);
+      if (stillMatches) {
+        setPosts((prev) =>
+          prev.map((p) => (p.slug === post.slug ? { ...p, published, archivedAt: null, updatedAt: data.updatedAt } : p))
+        );
+      } else {
+        removePostFromPage(post.slug);
+      }
       toast.success(published ? "已发布" : "已转为草稿");
     } catch (err) {
       toast.error(
@@ -245,13 +262,15 @@ export function BlogAdminClient() {
     if (selectedSlugs.size === 0 || bulkWorking) return;
     setBulkWorking(true);
     try {
+      const slugs = Array.from(selectedSlugs);
       const res = await fetch("/api/admin/blog/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          slugs: Array.from(selectedSlugs),
+          slugs,
           action,
           tags: action === "addTags" ? bulkTag.split(/[，,]/).map((item) => item.trim()).filter(Boolean) : [],
+          expectedUpdatedAt: Object.fromEntries(slugs.map((slug) => [slug, posts.find((post) => post.slug === slug)?.updatedAt ?? ""])),
         }),
       });
       if (res.status === 401) {

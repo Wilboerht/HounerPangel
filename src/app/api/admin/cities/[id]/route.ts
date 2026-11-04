@@ -3,10 +3,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { checkAuth } from "@/lib/auth";
 import { deleteCity, updateCity } from "@/lib/cities";
-import { citySchema } from "../route";
+import { citySchema, cityVersionSchema } from "../route";
 import { recordAudit } from "@/lib/audit";
 
 interface Params { params: Promise<{ id: string }> }
+
+const updateSchema = citySchema.extend(cityVersionSchema.shape);
 
 export async function PUT(request: NextRequest, { params }: Params) {
     const authError = await checkAuth(request);
@@ -14,9 +16,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const parsedId = z.string().uuid().safeParse(id);
-        const parsed = citySchema.safeParse(await request.json());
+        const parsed = updateSchema.safeParse(await request.json());
         if (!parsedId.success || !parsed.success) return NextResponse.json({ error: "城市信息不合法" }, { status: 400 });
-        if (!(await updateCity(id, parsed.data))) return NextResponse.json({ error: "城市不存在" }, { status: 404 });
+        const { expectedUpdatedAt, ...input } = parsed.data;
+        if (!(await updateCity(id, input, expectedUpdatedAt))) return NextResponse.json({ error: "城市已被其他会话修改或不存在，请刷新后重试" }, { status: 409 });
         await recordAudit(request, "update", "city", id, { name: parsed.data.name });
         revalidatePath("/map");
         return NextResponse.json({ success: true });
@@ -28,8 +31,10 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     if (authError) return authError;
     try {
         const { id } = await params;
-        if (!z.string().uuid().safeParse(id).success) return NextResponse.json({ error: "城市 ID 不合法" }, { status: 400 });
-        if (!(await deleteCity(id))) return NextResponse.json({ error: "城市不存在" }, { status: 404 });
+        const parsedId = z.string().uuid().safeParse(id);
+        const parsedBody = cityVersionSchema.safeParse(await request.json());
+        if (!parsedId.success || !parsedBody.success) return NextResponse.json({ error: "请求参数不合法" }, { status: 400 });
+        if (!(await deleteCity(id, parsedBody.data.expectedUpdatedAt))) return NextResponse.json({ error: "城市已被其他会话修改或不存在，请刷新后重试" }, { status: 409 });
         await recordAudit(request, "delete", "city", id);
         revalidatePath("/map");
         return NextResponse.json({ success: true });

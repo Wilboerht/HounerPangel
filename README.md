@@ -32,9 +32,8 @@ Personal website of Hank Wong (wilboerht). A digital space for showcasing projec
    ADMIN_PASSWORD=your-admin-password
    # optional, used for absolute URLs in sitemap/RSS/OG
    NEXT_PUBLIC_SITE_URL=https://your-domain.com
-   # optional but strongly recommended in production: enables distributed rate
-   # limiting via Upstash Redis (in-memory fallback is per-instance only and
-   # barely effective on serverless); a startup warning is logged when missing
+   # optional: use Upstash Redis for distributed rate limiting; without it,
+   # the app uses atomic Supabase-backed counters from the latest migration
    UPSTASH_REDIS_REST_URL=your-upstash-rest-url
    UPSTASH_REDIS_REST_TOKEN=your-upstash-rest-token
    ```

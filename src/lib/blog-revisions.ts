@@ -1,20 +1,22 @@
 import "server-only";
 
 import { supabase, updateBlogPost } from "./supabase";
+import { fetchAllPages } from "./supabase-pagination";
 import type { BlogRevision, BlogRevisionAction, BlogRevisionSummary, BlogPost } from "./types/blog";
 
 export async function getBlogRevisionSummaries(slug: string): Promise<BlogRevisionSummary[] | null> {
     const postId = await getPostId(slug);
     if (!postId) return null;
 
-    const { data, error } = await supabase
+    const data = await fetchAllPages(async (from, to) => await supabase
         .from("post_revisions")
         .select("id, title, date, published, action, source_updated_at, created_at")
         .eq("post_id", postId)
-        .order("created_at", { ascending: false });
-    if (error) throw error;
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, to));
 
-    return (data || []).map((row) => ({
+    return data.map((row) => ({
         id: row.id,
         title: row.title,
         date: row.date,

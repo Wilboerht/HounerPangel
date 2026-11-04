@@ -10,6 +10,7 @@ const bulkSchema = z.object({
     slugs: z.array(z.string().min(1).max(255)).min(1).max(100),
     action: z.enum(["publish", "unpublish", "archive", "unarchive", "delete", "addTags"]),
     tags: z.array(z.string().min(1).max(50)).max(20).default([]),
+    expectedUpdatedAt: z.record(z.string(), z.string().min(1)),
 });
 
 export async function POST(request: NextRequest) {
@@ -23,8 +24,8 @@ export async function POST(request: NextRequest) {
         if (!parsed.success || (parsed.data.action === "addTags" && parsed.data.tags.length === 0)) {
             return NextResponse.json({ error: "批量操作参数不合法" }, { status: 400 });
         }
-        const { slugs, action, tags } = parsed.data;
-        const results = await bulkUpdateBlogPosts(Array.from(new Set(slugs)), action, tags);
+        const { slugs, action, tags, expectedUpdatedAt } = parsed.data;
+        const results = await bulkUpdateBlogPosts(Array.from(new Set(slugs)), action, tags, expectedUpdatedAt);
         await recordAudit(request, "bulk", "blog_post", undefined, { action, slugs, success: results.filter((item) => item.success).length });
         for (const result of results) {
             if (result.success) revalidateBlogPaths(result.slug);

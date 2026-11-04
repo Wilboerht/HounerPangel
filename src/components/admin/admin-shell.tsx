@@ -216,7 +216,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
   useScrollLock(drawerOpen);
 
   // 表单未保存时拦截侧边栏 <Link> 导航（useDirtyGuard 的 popstate 守卫拦不住 SPA 跳转）。
-  // 未保存内容已被 useLocalDraft 自动存为本地草稿，确认文案里如实告知用户
   const formDirty = useSyncExternalStore(subscribeAdminDirty, isAdminDirty, () => false);
   const [pendingNavHref, setPendingNavHref] = useState<string | null>(null);
 
@@ -316,7 +315,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           if (href) router.push(href);
         }}
         title="离开当前页面"
-        message="有未保存的内容，确定离开吗？内容已自动存为本地草稿，下次打开时可恢复。"
+        message="有未保存的内容，确定离开吗？博客文章可从本地草稿恢复，其他表单内容将丢失。"
         confirmLabel="确定离开"
         danger={false}
       />

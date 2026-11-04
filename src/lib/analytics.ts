@@ -2,17 +2,24 @@ import "server-only";
 
 import { supabase } from "./supabase";
 
+interface AnalyticsCount {
+    label: string;
+    count: number;
+}
+
+interface AnalyticsResult {
+    daily: { date: string; count: number }[];
+    pages: AnalyticsCount[];
+    referrers: AnalyticsCount[];
+}
+
 export async function getAnalyticsOverview() {
     const since = new Date();
     since.setUTCDate(since.getUTCDate() - 29);
     since.setUTCHours(0, 0, 0, 0);
-    const { data, error } = await supabase
-        .from("page_views")
-        .select("path, referrer_host, created_at")
-        .gte("created_at", since.toISOString())
-        .order("created_at", { ascending: false })
-        .limit(20000);
+    const { data, error } = await supabase.rpc("get_analytics_overview", { p_since: since.toISOString() });
     if (error) throw error;
+    const result = data as AnalyticsResult;
 
     const daily = new Map<string, number>();
     for (let index = 0; index < 30; index++) {
@@ -20,23 +27,16 @@ export async function getAnalyticsOverview() {
         date.setUTCDate(since.getUTCDate() + index);
         daily.set(date.toISOString().slice(0, 10), 0);
     }
-    const pages = new Map<string, number>();
-    const referrers = new Map<string, number>();
-    const today = new Date().toISOString().slice(0, 10);
-    let todayViews = 0;
-    for (const row of data ?? []) {
-        const day = row.created_at.slice(0, 10);
-        daily.set(day, (daily.get(day) ?? 0) + 1);
-        if (day === today) todayViews++;
-        pages.set(row.path, (pages.get(row.path) ?? 0) + 1);
-        if (row.referrer_host) referrers.set(row.referrer_host, (referrers.get(row.referrer_host) ?? 0) + 1);
+    for (const row of result.daily) {
+        if (daily.has(row.date)) daily.set(row.date, row.count);
     }
-    const top = (values: Map<string, number>) => Array.from(values, ([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count).slice(0, 8);
+    const values = Array.from(daily, ([date, count]) => ({ date, count }));
+    const today = new Date().toISOString().slice(0, 10);
     return {
-        total: data?.length ?? 0,
-        today: todayViews,
-        daily: Array.from(daily, ([date, count]) => ({ date, count })),
-        pages: top(pages),
-        referrers: top(referrers),
+        total: values.reduce((sum, item) => sum + item.count, 0),
+        today: daily.get(today) ?? 0,
+        daily: values,
+        pages: result.pages,
+        referrers: result.referrers,
     };
 }

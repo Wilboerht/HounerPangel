@@ -9,7 +9,7 @@ function extractLinks(content: string): string[] {
     const pattern = /(?<!!)\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g;
     let match: RegExpExecArray | null;
     while ((match = pattern.exec(content)) !== null) links.add(match[1]);
-    return Array.from(links).slice(0, 20);
+    return Array.from(links);
 }
 
 async function checkLink(url: string) {
@@ -37,8 +37,9 @@ export async function POST(request: NextRequest) {
         const parsed = schema.safeParse(await request.json());
         if (!parsed.success) return NextResponse.json({ error: "正文不合法" }, { status: 400 });
         const links = extractLinks(parsed.data.content);
-        const results = await Promise.all(links.map(checkLink));
-        return NextResponse.json({ total: links.length, results });
+        const checkedLinks = links.slice(0, 20);
+        const results = await Promise.all(checkedLinks.map(checkLink));
+        return NextResponse.json({ total: links.length, checked: checkedLinks.length, results });
     } catch {
         return NextResponse.json({ error: "链接检查失败" }, { status: 500 });
     }
