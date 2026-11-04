@@ -4,8 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 import type { BlogPost, BlogPostSummary } from "./types/blog";
 import { env } from "./env";
 
-const POST_COLUMNS = "slug, title, content, date, updated_at, tags, published, deleted_at";
-const SUMMARY_COLUMNS = "slug, title, date, updated_at, tags, published, deleted_at";
+const POST_COLUMNS = "slug, title, content, date, updated_at, tags, published, deleted_at, scheduled_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
+const SUMMARY_COLUMNS = "slug, title, date, updated_at, tags, published, deleted_at, scheduled_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image";
 
 export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
@@ -14,11 +14,28 @@ export const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_
     },
 });
 
-function mapPost<T extends { updated_at: string; deleted_at: string | null; tags: string[] | null; published: boolean | null }>(row: T) {
+function mapPost<T extends {
+    updated_at: string;
+    deleted_at: string | null;
+    scheduled_at: string | null;
+    published_at: string | null;
+    archived_at: string | null;
+    seo_title: string | null;
+    seo_description: string | null;
+    cover_image: string | null;
+    tags: string[] | null;
+    published: boolean | null;
+}>(row: T) {
     return {
         ...row,
         updatedAt: row.updated_at,
         deletedAt: row.deleted_at,
+        scheduledAt: row.scheduled_at,
+        publishedAt: row.published_at,
+        archivedAt: row.archived_at,
+        seoTitle: row.seo_title,
+        seoDescription: row.seo_description,
+        coverImage: row.cover_image,
         tags: row.tags ?? [],
         published: row.published ?? false,
     };
@@ -31,7 +48,7 @@ export async function getAllBlogPosts(includeUnpublished = false): Promise<BlogP
         .is("deleted_at", null)
         .order("date", { ascending: false });
 
-    if (!includeUnpublished) query = query.eq("published", true);
+    if (!includeUnpublished) query = query.eq("published", true).is("archived_at", null);
 
     const { data, error } = await query;
 
@@ -46,6 +63,7 @@ export async function getRecentBlogPosts(limit: number): Promise<BlogPost[]> {
         .select(POST_COLUMNS)
         .eq("published", true)
         .is("deleted_at", null)
+        .is("archived_at", null)
         .order("date", { ascending: false })
         .limit(limit);
 
@@ -60,7 +78,7 @@ export async function getAllBlogPostSummaries(includeUnpublished = false): Promi
         .is("deleted_at", null)
         .order("date", { ascending: false });
 
-    if (!includeUnpublished) query = query.eq("published", true);
+    if (!includeUnpublished) query = query.eq("published", true).is("archived_at", null);
 
     const { data, error } = await query;
 
@@ -75,7 +93,7 @@ export async function getBlogPostBySlug(slug: string, includeUnpublished = false
         .eq("slug", slug)
         .is("deleted_at", null);
 
-    if (!includeUnpublished) query = query.eq("published", true);
+    if (!includeUnpublished) query = query.eq("published", true).is("archived_at", null);
 
     const { data, error } = await query.single();
 
@@ -89,18 +107,32 @@ export async function getBlogPostBySlug(slug: string, includeUnpublished = false
 export async function createBlogPost(
     post: Omit<BlogPost, "tags" | "updatedAt" | "deletedAt"> & { tags: string[] }
 ): Promise<void> {
-    const { error } = await supabase.from("blog_posts").insert(post);
+    const { error } = await supabase.from("blog_posts").insert({
+        slug: post.slug,
+        title: post.title,
+        content: post.content,
+        date: post.date,
+        tags: post.tags,
+        published: post.published,
+        scheduled_at: post.scheduledAt,
+        published_at: post.publishedAt,
+        archived_at: post.archivedAt,
+        excerpt: post.excerpt,
+        seo_title: post.seoTitle,
+        seo_description: post.seoDescription,
+        cover_image: post.coverImage,
+    });
     if (error) throw error;
 }
 
 export async function updateBlogPost(
     slug: string,
-    post: Omit<BlogPost, "tags" | "slug" | "updatedAt" | "deletedAt"> & { tags: string[] },
+    post: Omit<BlogPost, "tags" | "slug" | "updatedAt" | "deletedAt" | "publishedAt"> & { tags: string[] },
     expectedUpdatedAt: string
 ): Promise<BlogPost | null> {
     const { data: oldPost, error: fetchError } = await supabase
         .from("blog_posts")
-        .select("content")
+        .select("content, cover_image, published_at")
         .eq("slug", slug)
         .is("deleted_at", null)
         .maybeSingle();
@@ -108,7 +140,20 @@ export async function updateBlogPost(
 
     const { data, error } = await supabase
         .from("blog_posts")
-        .update(post)
+        .update({
+            title: post.title,
+            content: post.content,
+            date: post.date,
+            tags: post.tags,
+            published: post.published,
+            excerpt: post.excerpt,
+            seo_title: post.seoTitle,
+            seo_description: post.seoDescription,
+            cover_image: post.coverImage,
+            published_at: post.published ? oldPost?.published_at ?? new Date().toISOString() : null,
+            scheduled_at: post.published ? null : post.scheduledAt,
+            archived_at: post.published ? null : post.archivedAt,
+        })
         .eq("slug", slug)
         .eq("updated_at", expectedUpdatedAt)
         .is("deleted_at", null)
@@ -117,8 +162,8 @@ export async function updateBlogPost(
     if (error) throw error;
 
     if (data && oldPost) {
-        const newPaths = new Set(extractStoragePaths(data.content));
-        const stalePaths = extractStoragePaths(oldPost.content).filter((p) => !newPaths.has(p));
+        const newPaths = new Set(extractStoragePaths(`${data.content}\n${data.cover_image ? `![](${data.cover_image})` : ""}`));
+        const stalePaths = extractStoragePaths(`${oldPost.content}\n${oldPost.cover_image ? `![](${oldPost.cover_image})` : ""}`).filter((p) => !newPaths.has(p));
         await removeUnreferencedMedia(stalePaths, slug);
     }
 
@@ -132,7 +177,12 @@ export async function setBlogPostPublished(
 ): Promise<string | null> {
     const { data, error } = await supabase
         .from("blog_posts")
-        .update({ published })
+        .update({
+            published,
+            scheduled_at: null,
+            archived_at: null,
+            published_at: published ? new Date().toISOString() : null,
+        })
         .eq("slug", slug)
         .eq("updated_at", expectedUpdatedAt)
         .is("deleted_at", null)
@@ -181,8 +231,8 @@ async function removeUnreferencedMedia(candidatePaths: string[], excludeSlug: st
     if (candidatePaths.length === 0) return;
 
     const [postsResult, revisionsResult] = await Promise.all([
-        supabase.from("blog_posts").select("content").neq("slug", excludeSlug),
-        supabase.from("post_revisions").select("content"),
+        supabase.from("blog_posts").select("content, cover_image").neq("slug", excludeSlug),
+        supabase.from("post_revisions").select("content, cover_image"),
     ]);
     if (postsResult.error || revisionsResult.error) {
         console.error("Failed to check media references, skipping cleanup:", postsResult.error || revisionsResult.error);
@@ -191,7 +241,7 @@ async function removeUnreferencedMedia(candidatePaths: string[], excludeSlug: st
 
     const stillReferenced = new Set<string>();
     for (const row of [...(postsResult.data ?? []), ...(revisionsResult.data ?? [])]) {
-        for (const p of extractStoragePaths(row.content)) stillReferenced.add(p);
+        for (const p of extractStoragePaths(`${row.content}\n${row.cover_image ? `![](${row.cover_image})` : ""}`)) stillReferenced.add(p);
     }
     const orphaned = candidatePaths.filter((p) => !stillReferenced.has(p));
     if (orphaned.length === 0) return;
@@ -241,7 +291,7 @@ export async function restoreBlogPost(slug: string, expectedUpdatedAt: string): 
 export async function purgeBlogPost(slug: string, expectedUpdatedAt: string): Promise<boolean> {
     const { data: post, error: fetchError } = await supabase
         .from("blog_posts")
-        .select("content")
+        .select("content, cover_image")
         .eq("slug", slug)
         .eq("updated_at", expectedUpdatedAt)
         .not("deleted_at", "is", null)
@@ -257,7 +307,7 @@ export async function purgeBlogPost(slug: string, expectedUpdatedAt: string): Pr
         .not("deleted_at", "is", null);
     if (error) throw error;
 
-    await removeUnreferencedMedia(extractStoragePaths(post.content), slug);
+    await removeUnreferencedMedia(extractStoragePaths(`${post.content}\n${post.cover_image ? `![](${post.cover_image})` : ""}`), slug);
     return true;
 }
 
@@ -282,6 +332,13 @@ export async function importBlogPost(
         tags: post.tags,
         published: post.published,
         deleted_at: post.deletedAt,
+        scheduled_at: post.scheduledAt,
+        published_at: post.publishedAt,
+        archived_at: post.archivedAt,
+        excerpt: post.excerpt,
+        seo_title: post.seoTitle,
+        seo_description: post.seoDescription,
+        cover_image: post.coverImage,
     };
     const { data: existing, error: fetchError } = await supabase
         .from("blog_posts")

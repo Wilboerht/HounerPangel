@@ -4,6 +4,7 @@ import { purgeBlogPost, restoreBlogPost } from "@/lib/blog-db";
 import { getRateLimitKey, rateLimit } from "@/lib/rate-limit";
 import { revalidateBlogPaths } from "@/lib/revalidate-blog";
 import { blogPostVersionSchema, slugParamSchema } from "@/lib/validation";
+import { recordAudit } from "@/lib/audit";
 
 interface Params {
     params: Promise<{ slug: string }>;
@@ -31,6 +32,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         const updatedAt = await restoreBlogPost(slug, body.expectedUpdatedAt);
         if (!updatedAt) return NextResponse.json({ error: "文章已被修改或恢复，请刷新后重试" }, { status: 409 });
 
+        await recordAudit(request, "restore", "blog_post", slug);
         revalidateBlogPaths(slug);
         return NextResponse.json({ success: true, updatedAt });
     } catch (error) {
@@ -54,6 +56,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         const deleted = await purgeBlogPost(slug, body.expectedUpdatedAt);
         if (!deleted) return NextResponse.json({ error: "文章已被修改或删除，请刷新后重试" }, { status: 409 });
 
+        await recordAudit(request, "purge", "blog_post", slug);
         revalidateBlogPaths(slug);
         return NextResponse.json({ success: true });
     } catch (error) {

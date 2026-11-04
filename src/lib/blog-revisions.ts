@@ -42,7 +42,7 @@ export async function getBlogRevision(slug: string, revisionId: string): Promise
 
     const { data, error } = await supabase
         .from("post_revisions")
-        .select("id, slug, title, content, date, tags, published, deleted_at, action, source_updated_at, created_at")
+        .select("id, slug, title, content, date, tags, published, deleted_at, scheduled_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image, action, source_updated_at, created_at")
         .eq("id", revisionId)
         .eq("post_id", postId)
         .maybeSingle();
@@ -58,6 +58,13 @@ export async function getBlogRevision(slug: string, revisionId: string): Promise
         tags: data.tags ?? [],
         published: data.published,
         deletedAt: data.deleted_at,
+        scheduledAt: data.scheduled_at,
+        publishedAt: data.published_at,
+        archivedAt: data.archived_at,
+        excerpt: data.excerpt,
+        seoTitle: data.seo_title,
+        seoDescription: data.seo_description,
+        coverImage: data.cover_image,
         action: data.action as BlogRevisionAction,
         sourceUpdatedAt: data.source_updated_at,
         createdAt: data.created_at,
@@ -74,5 +81,11 @@ export async function restoreBlogRevision(
         date: revision.date,
         tags: revision.tags,
         published: revision.published,
+        scheduledAt: revision.scheduledAt,
+        archivedAt: revision.archivedAt,
+        excerpt: revision.excerpt,
+        seoTitle: revision.seoTitle,
+        seoDescription: revision.seoDescription,
+        coverImage: revision.coverImage,
     }, expectedUpdatedAt);
 }

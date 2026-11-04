@@ -17,7 +17,7 @@ function computeBounds(cities: City[]): [number, number, number, number] | undef
     ];
 }
 
-export function FootprintMap({ cities }: { cities: City[] }) {
+export function FootprintMap({ cities, onLocationSelect }: { cities: City[]; onLocationSelect?: (coordinates: [number, number]) => void }) {
     const [selected, setSelected] = useState<City | null>(null);
     const [mapError, setMapError] = useState(false);
     const [resourceError, setResourceError] = useState(false);
@@ -49,6 +49,7 @@ export function FootprintMap({ cities }: { cities: City[] }) {
                 style={{ width: "100%", height: "100%" }}
                 mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
                 workerUrl="/vendor/maplibre-gl-worker.mjs"
+                onClick={(event) => onLocationSelect?.([event.lngLat.lng, event.lngLat.lat])}
                 onError={(event) => {
                     const resourceEvent = event as typeof event & {
                         source?: unknown;

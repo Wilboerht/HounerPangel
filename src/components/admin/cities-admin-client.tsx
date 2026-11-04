@@ -1,0 +1,164 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MapPin, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { PageHeader } from "@/components/admin/page-header";
+import { IconButton } from "@/components/admin/icon-button";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { FootprintMapLazy } from "@/components/footprint-map-lazy";
+import { useToast } from "@/components/toast";
+import { useAuthExpired } from "@/lib/use-auth-expired";
+import type { ManagedCity } from "@/lib/cities";
+import type { City } from "@/data/cities";
+
+interface CityForm {
+    name: string;
+    longitude: string;
+    latitude: string;
+    status: "visited" | "planned";
+    visitDate: string;
+    note: string;
+}
+
+const blankForm: CityForm = { name: "", longitude: "116.3974", latitude: "39.9093", status: "visited", visitDate: "", note: "" };
+
+function parseCsvLine(line: string): string[] {
+    const values: string[] = [];
+    let value = "";
+    let quoted = false;
+    for (let index = 0; index < line.length; index++) {
+        const char = line[index];
+        if (char === '"' && quoted && line[index + 1] === '"') { value += '"'; index++; }
+        else if (char === '"') quoted = !quoted;
+        else if (char === "," && !quoted) { values.push(value.trim()); value = ""; }
+        else value += char;
+    }
+    values.push(value.trim());
+    return values;
+}
+
+export function CitiesAdminClient() {
+    const toast = useToast();
+    const authExpired = useAuthExpired();
+    const fileRef = useRef<HTMLInputElement>(null);
+    const [cities, setCities] = useState<ManagedCity[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [failed, setFailed] = useState(false);
+    const [editing, setEditing] = useState<ManagedCity | null>(null);
+    const [formOpen, setFormOpen] = useState(false);
+    const [form, setForm] = useState<CityForm>(blankForm);
+    const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState<ManagedCity | null>(null);
+    const [importing, setImporting] = useState(false);
+
+    const load = useCallback(async (signal?: AbortSignal) => {
+        try {
+            const res = await fetch("/api/admin/cities", { signal });
+            if (res.status === 401) { authExpired(); return; }
+            if (!res.ok) throw new Error("加载失败");
+            setCities(await res.json());
+            setFailed(false);
+        } catch { if (!signal?.aborted) setFailed(true); }
+        finally { if (!signal?.aborted) setLoading(false); }
+    }, [authExpired]);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- 挂载时加载城市数据
+        load(controller.signal);
+        return () => controller.abort();
+    }, [load]);
+
+    const openForm = (city?: ManagedCity) => {
+        setEditing(city ?? null);
+        setForm(city ? { name: city.name, longitude: String(city.coordinates[0]), latitude: String(city.coordinates[1]), status: city.status ?? "visited", visitDate: city.visitDate ?? "", note: city.note ?? "" } : blankForm);
+        setFormOpen(true);
+    };
+
+    const save = async (event: React.FormEvent) => {
+        event.preventDefault();
+        setSaving(true);
+        try {
+            const payload = { name: form.name.trim(), coordinates: [Number(form.longitude), Number(form.latitude)], status: form.status, visitDate: form.visitDate || null, note: form.note.trim() || null };
+            const res = await fetch(editing ? `/api/admin/cities/${editing.id}` : "/api/admin/cities", { method: editing ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            if (res.status === 401) { authExpired(); return; }
+            const data = await res.json();
+            if (!res.ok) { toast.error(data.error || "保存失败"); return; }
+            toast.success(editing ? "城市已更新" : "城市已新增");
+            setFormOpen(false);
+            await load();
+        } catch { toast.error("网络错误，请重试"); } finally { setSaving(false); }
+    };
+
+    const remove = async () => {
+        if (!deleting) return;
+        try {
+            const res = await fetch(`/api/admin/cities/${deleting.id}`, { method: "DELETE" });
+            if (res.status === 401) { authExpired(); return; }
+            if (!res.ok) { toast.error("删除城市失败"); return; }
+            setCities((items) => items.filter((item) => item.id !== deleting.id));
+            setDeleting(null);
+            toast.success("城市已删除");
+        } catch { toast.error("网络错误，请重试"); }
+    };
+
+    const importCsv = async (file: File | undefined) => {
+        if (!file) return;
+        setImporting(true);
+        try {
+            const lines = (await file.text()).split(/\r?\n/).filter((line) => line.trim());
+            const rows = lines.slice(1).map(parseCsvLine);
+            const payload = rows.map((row) => ({
+                name: row[0], coordinates: [Number(row[1]), Number(row[2])],
+                status: row[3] === "planned" ? "planned" : "visited",
+                visitDate: row[4] || null, note: row[5] || null,
+            }));
+            if (payload.some((row) => !row.name || !Number.isFinite(row.coordinates[0]) || !Number.isFinite(row.coordinates[1]) || (row.visitDate && !/^\d{4}-\d{2}$/.test(row.visitDate)))) throw new Error("CSV 格式不正确");
+            const res = await fetch("/api/admin/cities/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            if (res.status === 401) { authExpired(); return; }
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "导入失败");
+            toast.success(`已导入或更新 ${data.count} 个城市`);
+            await load();
+        } catch (error) { toast.error(error instanceof Error ? error.message : "CSV 导入失败"); }
+        finally { setImporting(false); if (fileRef.current) fileRef.current.value = ""; }
+    };
+
+    const draftCity: City[] = formOpen && Number.isFinite(Number(form.longitude)) && Number.isFinite(Number(form.latitude)) ? [{ name: form.name || "当前位置", coordinates: [Number(form.longitude), Number(form.latitude)], status: form.status }] : [];
+    const inputClass = "w-full rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm";
+
+    return (
+        <div className="flex flex-col gap-6">
+            <PageHeader title="足迹管理" description="管理已到访和计划前往的城市，点击地图可直接选点" actions={
+                <div className="flex gap-2">
+                    <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={(event) => importCsv(event.target.files?.[0])} />
+                    <button disabled={importing} onClick={() => fileRef.current?.click()} className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border/50 px-3 py-2 text-sm"><Upload className="h-4 w-4" />{importing ? "导入中..." : "导入 CSV"}</button>
+                    <button onClick={() => openForm()} className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm text-background"><Plus className="h-4 w-4" />新增城市</button>
+                </div>
+            } />
+            <p className="text-xs text-muted">CSV 表头：name,longitude,latitude,status,visitDate,note；status 为 visited 或 planned，日期格式为 YYYY-MM。</p>
+
+            {formOpen && (
+                <form onSubmit={save} className="grid gap-4 rounded-xl border border-border/50 p-4 lg:grid-cols-2">
+                    <div className="flex flex-col gap-3">
+                        <h2 className="text-sm font-semibold">{editing ? "编辑城市" : "新增城市"}</h2>
+                        <input aria-label="城市名称" required maxLength={100} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="城市名称" className={inputClass} />
+                        <div className="grid grid-cols-2 gap-2"><input aria-label="经度" required type="number" step="any" min={-180} max={180} value={form.longitude} onChange={(event) => setForm({ ...form, longitude: event.target.value })} placeholder="经度" className={inputClass} /><input aria-label="纬度" required type="number" step="any" min={-90} max={90} value={form.latitude} onChange={(event) => setForm({ ...form, latitude: event.target.value })} placeholder="纬度" className={inputClass} /></div>
+                        <select aria-label="足迹状态" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as "visited" | "planned" })} className={inputClass}><option value="visited">已到访</option><option value="planned">计划前往</option></select>
+                        <input aria-label="到访时间" value={form.visitDate} onChange={(event) => setForm({ ...form, visitDate: event.target.value })} placeholder="到访时间，如 2026-10" pattern="\d{4}-\d{2}" className={inputClass} />
+                        <textarea aria-label="备注" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} placeholder="一句话备注" maxLength={1000} rows={3} className={inputClass} />
+                        <div className="flex gap-2"><button disabled={saving} className="rounded-lg bg-foreground px-4 py-2 text-sm text-background">{saving ? "保存中..." : "保存城市"}</button><button type="button" onClick={() => setFormOpen(false)} className="rounded-lg border border-border/50 px-4 py-2 text-sm">取消</button></div>
+                    </div>
+                    <div className="h-72 overflow-hidden rounded-lg border border-border/50"><FootprintMapLazy cities={[...cities, ...draftCity]} onLocationSelect={([longitude, latitude]) => setForm((current) => ({ ...current, longitude: longitude.toFixed(6), latitude: latitude.toFixed(6) }))} /></div>
+                </form>
+            )}
+
+            {loading ? <p className="py-16 text-center text-sm text-muted">加载中...</p> : failed ? <div className="py-16 text-center"><p className="text-sm text-muted">足迹加载失败</p><button onClick={() => { setLoading(true); load(); }} className="mt-3 rounded-lg border border-border/50 px-4 py-2 text-sm">重试</button></div> : (
+                <div className="grid gap-2 sm:grid-cols-2">
+                    {cities.map((city) => <div key={city.id} className="flex items-center gap-3 rounded-lg border border-border/50 p-3"><MapPin className={`h-4 w-4 flex-shrink-0 ${city.status === "planned" ? "text-accent" : "text-muted"}`} /><div className="min-w-0 flex-1"><p className="text-sm font-medium">{city.name}<span className="ml-2 text-xs font-normal text-muted">{city.status === "planned" ? "计划前往" : "已到访"}</span></p><p className="truncate text-xs text-muted">{city.coordinates.join(", ")}{city.visitDate ? ` · ${city.visitDate}` : ""}{city.note ? ` · ${city.note}` : ""}</p></div><IconButton label={`编辑 ${city.name}`} onClick={() => openForm(city)}><Pencil className="h-4 w-4" /></IconButton><IconButton label={`删除 ${city.name}`} variant="danger" onClick={() => setDeleting(city)}><Trash2 className="h-4 w-4" /></IconButton></div>)}
+                </div>
+            )}
+            <ConfirmDialog isOpen={deleting !== null} onClose={() => setDeleting(null)} onConfirm={remove} title="删除城市" message={`确定从足迹地图删除「${deleting?.name ?? ""}」吗？`} confirmLabel="确认删除" />
+        </div>
+    );
+}

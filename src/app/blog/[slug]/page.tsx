@@ -41,15 +41,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return { title: "Not Found" };
     }
 
-    const description = plainTextExcerpt(post.content);
-    const ogImage = firstImageUrl(post.content);
+    const description = post.seoDescription || post.excerpt || plainTextExcerpt(post.content);
+    const ogImage = post.coverImage || firstImageUrl(post.content);
+    const title = post.seoTitle || post.title;
     const url = `${SITE_URL}/blog/${post.slug}`;
     const images = ogImage
         ? [{ url: ogImage, alt: post.title }]
         : [DEFAULT_OG_IMAGE];
 
     return {
-        title: post.title,
+        title,
         description,
         alternates: {
             canonical: url,
@@ -58,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             },
         },
         openGraph: {
-            title: post.title,
+            title,
             description,
             type: "article",
             url,
@@ -69,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
         twitter: {
             card: "summary_large_image",
-            title: post.title,
+            title,
             description,
             creator: "@wilboerht",
             images: images.map((image) => image.url),
@@ -91,10 +92,10 @@ export default async function BlogPostPage({ params }: Props) {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         headline: post.title,
-        description: plainTextExcerpt(post.content),
+        description: post.seoDescription || post.excerpt || plainTextExcerpt(post.content),
         datePublished: post.date,
         dateModified: post.updatedAt || post.date,
-        ...(firstImageUrl(post.content) ? { image: [firstImageUrl(post.content)] } : {}),
+        ...(post.coverImage || firstImageUrl(post.content) ? { image: [post.coverImage || firstImageUrl(post.content)] } : {}),
         author: {
             "@type": "Person",
             name: "Hank Wong",

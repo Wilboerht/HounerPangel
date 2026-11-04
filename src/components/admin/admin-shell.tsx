@@ -9,9 +9,12 @@ import {
   DatabaseBackup,
   FileText,
   Globe,
+  Images,
   LayoutDashboard,
   LogOut,
+  MapPin,
   Menu,
+  ShieldCheck,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -43,7 +46,10 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/admin", label: "仪表盘", icon: LayoutDashboard, exact: true },
       { href: "/admin/blog", label: "博客", icon: FileText },
+      { href: "/admin/media", label: "媒体库", icon: Images },
+      { href: "/admin/cities", label: "足迹管理", icon: MapPin },
       { href: "/admin/backup", label: "备份与恢复", icon: DatabaseBackup },
+      { href: "/admin/security", label: "安全与审计", icon: ShieldCheck },
     ],
   },
 ];

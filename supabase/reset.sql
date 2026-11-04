@@ -69,17 +69,26 @@ CREATE TABLE public.blog_posts (
   tags text[] NOT NULL DEFAULT '{}',
   published boolean NOT NULL DEFAULT false,
   deleted_at timestamptz,
+  scheduled_at timestamptz,
+  published_at timestamptz,
+  archived_at timestamptz,
+  excerpt text,
+  seo_title text,
+  seo_description text,
+  cover_image text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX blog_posts_deleted_at_idx ON public.blog_posts (deleted_at)
   WHERE deleted_at IS NOT NULL;
+CREATE INDEX blog_posts_scheduled_at_idx ON public.blog_posts (scheduled_at)
+  WHERE scheduled_at IS NOT NULL AND published = false AND deleted_at IS NULL;
 
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public read published posts" ON public.blog_posts
-  FOR SELECT USING (published = true AND deleted_at IS NULL);
+  FOR SELECT USING (published = true AND deleted_at IS NULL AND archived_at IS NULL);
 
 -- Auto-update updated_at trigger
 CREATE OR REPLACE FUNCTION public.set_updated_at()
@@ -105,6 +114,13 @@ CREATE TABLE public.post_revisions (
   tags text[] NOT NULL DEFAULT '{}',
   published boolean NOT NULL DEFAULT false,
   deleted_at timestamptz,
+  scheduled_at timestamptz,
+  published_at timestamptz,
+  archived_at timestamptz,
+  excerpt text,
+  seo_title text,
+  seo_description text,
+  cover_image text,
   source_updated_at timestamptz NOT NULL,
   action text NOT NULL CHECK (action IN ('baseline', 'created', 'updated', 'published', 'unpublished', 'deleted', 'restored')),
   created_at timestamptz NOT NULL DEFAULT now()
@@ -138,10 +154,14 @@ BEGIN
 
   INSERT INTO public.post_revisions (
     post_id, slug, title, content, date, tags, published, deleted_at,
+    scheduled_at, published_at, archived_at, excerpt, seo_title, seo_description, cover_image,
     source_updated_at, action
   ) VALUES (
     v_post.id, v_post.slug, v_post.title, v_post.content, v_post.date,
-    v_post.tags, v_post.published, v_post.deleted_at, v_post.updated_at, v_action
+    v_post.tags, v_post.published, v_post.deleted_at,
+    v_post.scheduled_at, v_post.published_at, v_post.archived_at,
+    v_post.excerpt, v_post.seo_title, v_post.seo_description, v_post.cover_image,
+    v_post.updated_at, v_action
   );
   RETURN NEW;
 END;
@@ -155,15 +175,70 @@ CREATE TRIGGER capture_blog_post_revision
 CREATE TABLE public.admin_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   token_hash text UNIQUE NOT NULL,
+  user_agent text,
+  last_seen_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL
 );
 
--- Index for expired-session cleanup and expiry checks
 CREATE INDEX admin_sessions_expires_at_idx ON public.admin_sessions (expires_at);
-
--- Enable RLS with no policies: only the service role can access this table.
 ALTER TABLE public.admin_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE public.media_assets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  path text UNIQUE NOT NULL,
+  file_name text NOT NULL,
+  kind text NOT NULL CHECK (kind IN ('image', 'video', 'attachment')),
+  mime_type text NOT NULL,
+  size bigint NOT NULL,
+  width integer,
+  height integer,
+  alt text NOT NULL DEFAULT '',
+  caption text NOT NULL DEFAULT '',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.media_assets ENABLE ROW LEVEL SECURITY;
+CREATE TRIGGER set_media_assets_updated_at BEFORE UPDATE ON public.media_assets
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TABLE public.cities (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text UNIQUE NOT NULL,
+  longitude double precision NOT NULL CHECK (longitude BETWEEN -180 AND 180),
+  latitude double precision NOT NULL CHECK (latitude BETWEEN -90 AND 90),
+  status text NOT NULL DEFAULT 'visited' CHECK (status IN ('visited', 'planned')),
+  visit_date text,
+  note text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.cities ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read cities" ON public.cities FOR SELECT USING (true);
+CREATE TRIGGER set_cities_updated_at BEFORE UPDATE ON public.cities
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TABLE public.page_views (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  path text NOT NULL,
+  referrer_host text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX page_views_created_at_idx ON public.page_views (created_at DESC);
+CREATE INDEX page_views_path_created_at_idx ON public.page_views (path, created_at DESC);
+ALTER TABLE public.page_views ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE public.audit_logs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  actor_session_id uuid REFERENCES public.admin_sessions(id) ON DELETE SET NULL,
+  action text NOT NULL,
+  target_type text NOT NULL,
+  target_id text,
+  details jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX audit_logs_created_at_idx ON public.audit_logs (created_at DESC);
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Images storage bucket
 INSERT INTO storage.buckets (id, name, public, avif_autodetection)

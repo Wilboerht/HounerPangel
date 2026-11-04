@@ -7,6 +7,13 @@ export interface BlogPost {
     content: string;
     published: boolean;
     deletedAt: string | null;
+    scheduledAt: string | null;
+    publishedAt: string | null;
+    archivedAt: string | null;
+    excerpt: string | null;
+    seoTitle: string | null;
+    seoDescription: string | null;
+    coverImage: string | null;
 }
 
 export type BlogPostSummary = Omit<BlogPost, "content">;
@@ -35,4 +42,11 @@ export interface BlogRevision extends BlogRevisionSummary {
     tags: string[];
     content: string;
     deletedAt: string | null;
+    scheduledAt: string | null;
+    publishedAt: string | null;
+    archivedAt: string | null;
+    excerpt: string | null;
+    seoTitle: string | null;
+    seoDescription: string | null;
+    coverImage: string | null;
 }

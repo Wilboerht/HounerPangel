@@ -23,7 +23,10 @@ import type { BlogPostSummary } from "@/lib/types/blog";
 const NEW_DRAFT_KEY = "draft:blog:new";
 
 function blankValues(date: string): PostFormValues {
-  return { slug: "", title: "", date, published: false, tags: [], content: "" };
+  return {
+    slug: "", title: "", date, published: false, scheduledAt: null, archivedAt: null,
+    excerpt: null, seoTitle: null, seoDescription: null, coverImage: null, tags: [], content: "",
+  };
 }
 
 // 本地时区的 YYYY-MM-DD；toISOString 是 UTC 日期，UTC+8 早上 8 点前会差一天
@@ -55,6 +58,17 @@ export function BlogAdminClient() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [status, setStatus] = useState("all");
+  const [tag, setTag] = useState("");
+  const [sort, setSort] = useState("date");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
+  const [bulkWorking, setBulkWorking] = useState(false);
+  const [bulkTag, setBulkTag] = useState("");
+  const [pendingBulkAction, setPendingBulkAction] = useState<"archive" | "delete" | null>(null);
+  const pageSize = 20;
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 200);
@@ -84,6 +98,12 @@ export function BlogAdminClient() {
         title: d.title ?? "",
         date: d.date || todayLocal(),
         published: d.published ?? false,
+        scheduledAt: d.scheduledAt ?? null,
+        archivedAt: d.archivedAt ?? null,
+        excerpt: d.excerpt ?? null,
+        seoTitle: d.seoTitle ?? null,
+        seoDescription: d.seoDescription ?? null,
+        coverImage: d.coverImage ?? null,
         tags: d.tags ?? [],
         content: d.content ?? "",
       });
@@ -104,17 +124,16 @@ export function BlogAdminClient() {
   });
   useScrollLock(showNewModal);
 
-  const filteredPosts = debouncedSearch
-    ? posts.filter(
-        (p) =>
-          p.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          p.slug.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          p.tags.some((t) => t.toLowerCase().includes(debouncedSearch.toLowerCase()))
-      )
-    : posts;
-
   const loadPosts = useCallback((signal?: AbortSignal) => {
-    fetch("/api/admin/blog", { signal })
+    const params = new URLSearchParams({
+      search: debouncedSearch,
+      status,
+      tag,
+      sort,
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+    fetch(`/api/admin/blog?${params}`, { signal })
       .then(async (res) => {
         if (res.status === 401) {
           authExpired();
@@ -125,8 +144,11 @@ export function BlogAdminClient() {
       })
       .then((data) => {
         if (!data) return;
-        if (!Array.isArray(data)) throw new Error("Unexpected response shape");
-        setPosts(data);
+        if (!Array.isArray(data.items)) throw new Error("Unexpected response shape");
+        setPosts(data.items);
+        setTotal(data.total);
+        setAvailableTags(data.tags);
+        setSelectedSlugs(new Set());
         setLoadFailed(false);
       })
       .catch(() => {
@@ -136,7 +158,7 @@ export function BlogAdminClient() {
       .finally(() => {
         if (!signal?.aborted) setLoading(false);
       });
-  }, [authExpired]);
+  }, [authExpired, debouncedSearch, page, sort, status, tag]);
 
   const retryLoad = () => {
     setLoading(true);
@@ -204,7 +226,7 @@ export function BlogAdminClient() {
       }
       const data = await res.json();
       setPosts((prev) =>
-        prev.map((p) => (p.slug === post.slug ? { ...p, published, updatedAt: data.updatedAt } : p))
+        prev.map((p) => (p.slug === post.slug ? { ...p, published, scheduledAt: null, archivedAt: null, updatedAt: data.updatedAt } : p))
       );
       toast.success(published ? "已发布" : "已转为草稿");
     } catch (err) {
@@ -218,6 +240,47 @@ export function BlogAdminClient() {
     } finally {
       setTogglingSlug(null);
     }
+  };
+
+  const executeBulk = async (action: "publish" | "unpublish" | "archive" | "unarchive" | "delete" | "addTags") => {
+    if (selectedSlugs.size === 0 || bulkWorking) return;
+    setBulkWorking(true);
+    try {
+      const res = await fetch("/api/admin/blog/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slugs: Array.from(selectedSlugs),
+          action,
+          tags: action === "addTags" ? bulkTag.split(/[，,]/).map((item) => item.trim()).filter(Boolean) : [],
+        }),
+      });
+      if (res.status === 401) {
+        authExpired();
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "批量操作失败");
+        return;
+      }
+      toast.success(`批量操作完成：成功 ${data.success}，失败 ${data.failed}`);
+      setPendingBulkAction(null);
+      setBulkTag("");
+      loadPosts();
+    } catch {
+      toast.error("网络错误，请检查连接后重试");
+    } finally {
+      setBulkWorking(false);
+    }
+  };
+
+  const exportSelected = () => {
+    if (selectedSlugs.size === 0) return;
+    const anchor = document.createElement("a");
+    anchor.href = `/api/admin/backup?slugs=${encodeURIComponent(Array.from(selectedSlugs).join(","))}`;
+    anchor.download = `hank-blog-selected-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.click();
   };
 
   const resetAndCloseModal = () => {
@@ -347,86 +410,111 @@ export function BlogAdminClient() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {posts.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-lg border border-border/50 p-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
               <input
                 type="search"
                 aria-label="搜索文章"
-                placeholder="搜索文章标题、slug 或标签..."
+                placeholder="搜索文章标题或 slug..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 className="w-full pl-10 pr-10 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
               />
               {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  aria-label="清除搜索"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
-                >
+                <button onClick={() => { setSearch(""); setPage(1); }} aria-label="清除搜索" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 min-w-[32px] min-h-[32px] rounded-md text-muted hover:text-foreground">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <select aria-label="按状态筛选" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm">
+                <option value="all">全部状态</option><option value="published">已发布</option><option value="draft">草稿</option><option value="scheduled">定时发布</option><option value="archived">已归档</option>
+              </select>
+              <select aria-label="按标签筛选" value={tag} onChange={(e) => { setTag(e.target.value); setPage(1); }} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm">
+                <option value="">全部标签</option>{availableTags.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+              <select aria-label="排序方式" value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm">
+                <option value="date">按文章日期</option><option value="updated">按最近修改</option>
+              </select>
+            </div>
+          </div>
+
+          {selectedSlugs.size > 0 && (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 p-3 text-sm">
+              <span className="mr-auto">已选 {selectedSlugs.size} 篇</span>
+              <button disabled={bulkWorking} onClick={() => executeBulk("publish")} className="rounded-md border border-border/50 px-3 py-1.5">发布</button>
+              <button disabled={bulkWorking} onClick={() => executeBulk("unpublish")} className="rounded-md border border-border/50 px-3 py-1.5">下线</button>
+              <button disabled={bulkWorking} onClick={() => setPendingBulkAction("archive")} className="rounded-md border border-border/50 px-3 py-1.5">归档</button>
+              <button disabled={bulkWorking} onClick={() => executeBulk("unarchive")} className="rounded-md border border-border/50 px-3 py-1.5">取消归档</button>
+              <div className="flex items-center gap-1">
+                <input aria-label="批量添加标签" value={bulkTag} onChange={(e) => setBulkTag(e.target.value)} placeholder="标签，逗号分隔" className="w-32 rounded-md border border-border/50 bg-background px-2 py-1.5 text-xs" />
+                <button disabled={bulkWorking || !bulkTag.trim()} onClick={() => executeBulk("addTags")} className="rounded-md border border-border/50 px-3 py-1.5">加标签</button>
+              </div>
+              <button disabled={bulkWorking} onClick={exportSelected} className="rounded-md border border-border/50 px-3 py-1.5">导出所选</button>
+              <button disabled={bulkWorking} onClick={() => setPendingBulkAction("delete")} className="rounded-md border border-red-500/30 px-3 py-1.5 text-red-600">删除</button>
+            </div>
           )}
-          {filteredPosts.length > 0 ? (
+
+          {posts.length > 0 ? (
             <div className="flex flex-col gap-2">
-              {filteredPosts.map((post) => (
-                <div
-                  key={post.slug}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-border/50 hover:bg-foreground/[0.02] transition-colors"
-                >
+              <label className="flex min-h-[36px] items-center gap-2 px-2 text-xs text-muted">
+                <input
+                  type="checkbox"
+                  aria-label="选择当前页全部文章"
+                  checked={posts.every((post) => selectedSlugs.has(post.slug))}
+                  onChange={(e) => setSelectedSlugs(e.target.checked ? new Set(posts.map((post) => post.slug)) : new Set())}
+                />选择本页
+              </label>
+              {posts.map((post) => (
+                <div key={post.slug} className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-border/50 hover:bg-foreground/[0.02] transition-colors">
+                  <input
+                    type="checkbox"
+                    aria-label={`选择 ${post.title}`}
+                    checked={selectedSlugs.has(post.slug)}
+                    onChange={() => setSelectedSlugs((current) => {
+                      const next = new Set(current);
+                      if (next.has(post.slug)) next.delete(post.slug); else next.add(post.slug);
+                      return next;
+                    })}
+                    className="h-4 w-4 flex-shrink-0"
+                  />
                   <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2 min-w-0">
                       <h3 className="text-sm font-medium text-foreground truncate">{post.title}</h3>
-                      {!post.published && <Badge variant="warning">草稿</Badge>}
+                      {post.archivedAt ? <Badge variant="outline">已归档</Badge> : post.scheduledAt && !post.published ? <Badge>定时</Badge> : !post.published && <Badge variant="warning">草稿</Badge>}
                     </div>
                     <p className="text-xs text-muted flex flex-wrap items-center gap-x-2">
                       <span>{post.date}</span>
-                      {post.tags.length > 0 && (
-                        <span className="truncate">{post.tags.join(" · ")}</span>
-                      )}
+                      {post.scheduledAt && !post.published && <span>将于 {new Date(post.scheduledAt).toLocaleString("zh-CN", { hour12: false })} 发布</span>}
+                      {post.tags.length > 0 && <span className="truncate">{post.tags.join(" · ")}</span>}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <IconButton
-                      onClick={() => handleTogglePublish(post)}
-                      label={post.published ? "转为草稿" : "发布"}
-                      title={post.published ? "转为草稿" : "发布"}
-                      size="lg"
-                      disabled={togglingSlug === post.slug}
-                    >
+                    <IconButton onClick={() => handleTogglePublish(post)} label={post.published ? "转为草稿" : "发布"} title={post.published ? "转为草稿" : "发布"} size="lg" disabled={togglingSlug === post.slug}>
                       {post.published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </IconButton>
-                    <IconButton href={`/admin/blog/history/${post.slug}`} label="历史版本" title="历史版本" size="lg">
-                      <History className="w-4 h-4" />
-                    </IconButton>
-                    <IconButton href={`/admin/blog/edit/${post.slug}`} label="编辑" title="编辑" size="lg">
-                      <Pencil className="w-4 h-4" />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => setDeleteTarget(post)}
-                      label="删除"
-                      title="删除"
-                      variant="danger"
-                      size="lg"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </IconButton>
+                    <IconButton href={`/admin/blog/history/${post.slug}`} label="历史版本" title="历史版本" size="lg"><History className="w-4 h-4" /></IconButton>
+                    <IconButton href={`/admin/blog/edit/${post.slug}`} label="编辑" title="编辑" size="lg"><Pencil className="w-4 h-4" /></IconButton>
+                    <IconButton onClick={() => setDeleteTarget(post)} label="删除" title="删除" variant="danger" size="lg"><Trash2 className="w-4 h-4" /></IconButton>
                   </div>
                 </div>
               ))}
             </div>
-          ) : search ? (
-            <div className="py-16 text-center">
-              <p className="text-sm text-muted mb-3">无匹配结果</p>
-              <button onClick={() => setSearch("")} className="text-sm text-accent hover:underline">
-                清除搜索
-              </button>
-            </div>
           ) : (
-            <p className="py-16 text-center text-sm text-muted">暂无文章</p>
+            <div className="py-16 text-center">
+              <p className="text-sm text-muted mb-3">{search || tag || status !== "all" ? "无匹配结果" : "暂无文章"}</p>
+              {(search || tag || status !== "all") && <button onClick={() => { setSearch(""); setTag(""); setStatus("all"); setPage(1); }} className="text-sm text-accent hover:underline">清除筛选</button>}
+            </div>
           )}
+
+          <div className="flex items-center justify-between gap-3 text-sm text-muted">
+            <span>共 {total} 篇 · 第 {page} / {Math.max(1, Math.ceil(total / pageSize))} 页</span>
+            <div className="flex gap-2">
+              <button disabled={page <= 1} onClick={() => setPage((value) => value - 1)} className="rounded-lg border border-border/50 px-3 py-1.5 disabled:opacity-30">上一页</button>
+              <button disabled={page >= Math.ceil(total / pageSize)} onClick={() => setPage((value) => value + 1)} className="rounded-lg border border-border/50 px-3 py-1.5 disabled:opacity-30">下一页</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -513,6 +601,16 @@ export function BlogAdminClient() {
         message="检测到未保存的本地草稿，是否恢复？"
         confirmLabel="恢复"
         danger={false}
+      />
+
+      <ConfirmDialog
+        isOpen={pendingBulkAction !== null}
+        onClose={() => setPendingBulkAction(null)}
+        onConfirm={() => pendingBulkAction ? executeBulk(pendingBulkAction) : undefined}
+        title={pendingBulkAction === "delete" ? "批量移至回收站" : "批量归档"}
+        message={`确定要对已选 ${selectedSlugs.size} 篇文章执行此操作吗？每篇作品的当前版本都会保留在历史记录中。`}
+        confirmLabel="确认执行"
+        danger={pendingBulkAction === "delete"}
       />
 
       <ConfirmDialog

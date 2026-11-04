@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { FootprintMapLazy } from "@/components/footprint-map-lazy";
-import { cities } from "@/data/cities";
+import { cities as fallbackCities } from "@/data/cities";
+import { getCities } from "@/lib/cities";
 import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -32,7 +33,16 @@ export const metadata: Metadata = {
     },
 };
 
-export default function Footprints() {
+export const revalidate = 3600;
+
+export default async function Footprints() {
+    let cities;
+    try {
+        cities = await getCities();
+    } catch (error) {
+        console.error("足迹数据库加载失败，使用静态数据：", error);
+        cities = fallbackCities;
+    }
     return (
         <main className="relative h-dvh w-full">
             <h1 className="sr-only">足迹地图</h1>

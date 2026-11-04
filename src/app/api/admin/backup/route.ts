@@ -4,6 +4,7 @@ import { checkAuth } from "@/lib/auth";
 import { applyBlogImport, blogBackupSchema, createBlogBackup, previewBlogImport } from "@/lib/blog-backup";
 import { getRateLimitKey, rateLimit } from "@/lib/rate-limit";
 import { revalidateBlogPaths } from "@/lib/revalidate-blog";
+import { recordAudit } from "@/lib/audit";
 
 const importRequestSchema = z.object({
     backup: z.unknown(),
@@ -16,7 +17,8 @@ export async function GET(request: NextRequest) {
     if (authError) return authError;
 
     try {
-        const backup = await createBlogBackup();
+        const slugs = request.nextUrl.searchParams.get("slugs")?.split(",").filter(Boolean).slice(0, 100);
+        const backup = await createBlogBackup(slugs);
         const date = new Date().toISOString().slice(0, 10);
         return new Response(JSON.stringify(backup, null, 2), {
             headers: {
@@ -62,6 +64,7 @@ export async function POST(request: NextRequest) {
         }
 
         const results = await applyBlogImport(backup, conflictMode);
+        await recordAudit(request, "import", "blog_backup", undefined, { total: results.length, conflictMode, failed: results.filter((item) => item.status === "failed").length });
         for (const result of results) {
             if (result.status === "created" || result.status === "updated") revalidateBlogPaths(result.slug);
         }

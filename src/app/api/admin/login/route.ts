@@ -4,6 +4,7 @@ import { createSessionToken } from "@/lib/session";
 import { loginSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { env } from "@/lib/env";
+import { recordAudit, recordAuditForToken } from "@/lib/audit";
 
 function passwordsMatch(password: string, adminPassword: string): boolean {
     // Hash both sides so timingSafeEqual never leaks length information
@@ -39,10 +40,12 @@ export async function POST(request: NextRequest) {
         const { password } = parseResult.data;
 
         if (!passwordsMatch(password, env.ADMIN_PASSWORD)) {
+            await recordAudit(request, "login_failed", "session");
             return NextResponse.json({ error: "密码错误" }, { status: 401 });
         }
 
-        const token = await createSessionToken();
+        const token = await createSessionToken(request.headers.get("user-agent"));
+        await recordAuditForToken(token, "login_succeeded", "session");
         const response = NextResponse.json({ success: true });
         response.cookies.set("admin-session", token, {
             httpOnly: true,

@@ -4,6 +4,7 @@ import "./globals.css";
 import "highlight.js/styles/github.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SITE_URL } from "@/lib/site";
+import { PageViewTracker } from "@/components/page-view-tracker";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -96,6 +97,7 @@ export default function RootLayout({
         className={`${geistMono.variable} ${notoSerif.variable} ${notoSerifSC.variable} antialiased`}
       >
         {children}
+        <PageViewTracker />
         <Analytics />
       </body>
     </html>

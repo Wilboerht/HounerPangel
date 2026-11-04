@@ -7,6 +7,7 @@ import { blogPostSchema } from "./validation";
 
 const backupPostSchema = blogPostSchema.extend({
     updatedAt: z.string(),
+    publishedAt: z.string().nullable().default(null),
     deletedAt: z.string().nullable(),
     markdown: z.string().max(110_000),
     media: z.array(z.object({ path: z.string(), url: z.string() })),
@@ -37,14 +38,21 @@ slug: ${JSON.stringify(post.slug)}
 date: ${JSON.stringify(post.date)}
 published: ${post.published}
 tags: ${JSON.stringify(post.tags)}
+scheduled_at: ${JSON.stringify(post.scheduledAt)}
+archived_at: ${JSON.stringify(post.archivedAt)}
+excerpt: ${JSON.stringify(post.excerpt)}
+seo_title: ${JSON.stringify(post.seoTitle)}
+seo_description: ${JSON.stringify(post.seoDescription)}
+cover_image: ${JSON.stringify(post.coverImage)}
 deleted_at: ${JSON.stringify(post.deletedAt)}
 ---
 
 ${post.content}`;
 }
 
-export async function createBlogBackup(): Promise<BlogBackup> {
-    const posts = await getAllBlogPostsForBackup();
+export async function createBlogBackup(slugs?: string[]): Promise<BlogBackup> {
+    const selected = slugs ? new Set(slugs) : null;
+    const posts = (await getAllBlogPostsForBackup()).filter((post) => !selected || selected.has(post.slug));
     const storageBase = `${env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/images/`;
 
     const backupPosts = posts.map((post) => {
@@ -55,9 +63,16 @@ export async function createBlogBackup(): Promise<BlogBackup> {
             date: post.date,
             tags: post.tags,
             published: post.published,
+            scheduledAt: post.scheduledAt,
+            publishedAt: post.publishedAt,
+            archivedAt: post.archivedAt,
+            excerpt: post.excerpt,
+            seoTitle: post.seoTitle,
+            seoDescription: post.seoDescription,
+            coverImage: post.coverImage,
             updatedAt: post.updatedAt,
             deletedAt: post.deletedAt,
-            media: extractStoragePaths(post.content).map((path) => ({
+            media: extractStoragePaths(`${post.content}\n${post.coverImage ? `![](${post.coverImage})` : ""}`).map((path) => ({
                 path,
                 url: `${storageBase}${path.split("/").map(encodeURIComponent).join("/")}`,
             })),
@@ -113,6 +128,13 @@ export async function applyBlogImport(backup: BlogBackup, conflictMode: BackupCo
                 date: post.date,
                 tags: post.tags,
                 published: post.published,
+                scheduledAt: post.scheduledAt,
+                publishedAt: post.publishedAt,
+                archivedAt: post.archivedAt,
+                excerpt: post.excerpt,
+                seoTitle: post.seoTitle,
+                seoDescription: post.seoDescription,
+                coverImage: post.coverImage,
                 deletedAt: post.deletedAt,
             }, conflictMode === "overwrite");
             results.push({ slug: post.slug, status });

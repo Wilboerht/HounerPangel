@@ -4,6 +4,7 @@ import { getAllBlogPostSummaries, createBlogPost } from "@/lib/blog-db";
 import { checkAuth, isAdminRequest } from "@/lib/auth";
 import { blogPostSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { recordAudit } from "@/lib/audit";
 
 function isUniqueViolation(error: unknown): boolean {
     return typeof error === "object" && error !== null && (error as { code?: string }).code === "23505";
@@ -37,17 +38,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "输入不合法" }, { status: 400 });
         }
 
-        const { slug, title, content, date, tags, published } = parseResult.data;
+        const post = parseResult.data;
 
         try {
             // Rely on the database unique constraint for slug conflicts (TOCTOU-safe)
             await createBlogPost({
-                slug,
-                title,
-                content,
-                date,
-                tags,
-                published,
+                ...post,
+                scheduledAt: post.published || !post.scheduledAt ? null : new Date(post.scheduledAt).toISOString(),
+                archivedAt: post.published || !post.archivedAt ? null : new Date(post.archivedAt).toISOString(),
+                publishedAt: post.published ? new Date().toISOString() : null,
             });
         } catch (error) {
             if (isUniqueViolation(error)) {
@@ -56,7 +55,8 @@ export async function POST(request: NextRequest) {
             throw error;
         }
 
-        revalidateBlogPaths(slug);
+        await recordAudit(request, "create", "blog_post", post.slug, { published: post.published, scheduled: Boolean(post.scheduledAt) });
+        revalidateBlogPaths(post.slug);
 
         return NextResponse.json({ success: true }, { status: 201 });
     } catch (error) {

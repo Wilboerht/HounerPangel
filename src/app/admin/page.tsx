@@ -6,6 +6,8 @@ import { DashboardCard } from "@/components/admin/dashboard-card";
 import { Badge } from "@/components/admin/badge";
 import { PageHeader } from "@/components/admin/page-header";
 import type { BlogPostSummary } from "@/lib/types/blog";
+import { getAnalyticsOverview } from "@/lib/analytics";
+import { AnalyticsOverview } from "@/components/admin/analytics-overview";
 
 export default async function AdminDashboardPage() {
     if (!(await isAdminSession())) return null;
@@ -19,11 +21,17 @@ export default async function AdminDashboardPage() {
         loadFailed = true;
     }
 
-    const publishedCount = posts.filter((p) => p.published).length;
+    let analytics: Awaited<ReturnType<typeof getAnalyticsOverview>> | null = null;
+    try {
+        analytics = await getAnalyticsOverview();
+    } catch {}
+
+    const publishedCount = posts.filter((p) => p.published && !p.archivedAt).length;
     const stats = [
         { label: "文章总数", value: posts.length },
         { label: "已发布", value: publishedCount },
-        { label: "草稿", value: posts.length - publishedCount },
+        { label: "草稿", value: posts.filter((p) => !p.published && !p.scheduledAt && !p.archivedAt).length },
+        { label: "定时发布", value: posts.filter((p) => !p.published && p.scheduledAt && !p.archivedAt).length },
     ];
     const recent = posts.slice(0, 5);
 
@@ -40,7 +48,7 @@ export default async function AdminDashboardPage() {
                 </p>
             )}
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 {stats.map((s) => (
                     <DashboardCard key={s.label}>
                         <p className="text-xs text-muted sm:text-sm">{s.label}</p>
@@ -113,6 +121,8 @@ export default async function AdminDashboardPage() {
                     </div>
                 </DashboardCard>
             </div>
+
+            <AnalyticsOverview data={analytics} />
         </div>
     );
 }

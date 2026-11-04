@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revokeSessionToken } from "@/lib/session";
+import { recordAudit } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
     // Revoke the server-side session before clearing the cookie
     const session = request.cookies.get("admin-session");
     if (session) {
         try {
+            await recordAudit(request, "logout", "session");
             await revokeSessionToken(session.value);
         } catch (error) {
             console.error("Failed to revoke session:", error);

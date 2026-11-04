@@ -13,6 +13,7 @@ import { useDirtyGuard } from "@/lib/use-dirty-guard";
 import { useLocalDraft } from "@/lib/use-local-draft";
 import { useAuthExpired } from "@/lib/use-auth-expired";
 import { useDraftRestore } from "@/lib/use-draft-restore";
+import { LivePostPreview } from "@/components/admin/live-post-preview";
 
 export function BlogEditClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -32,18 +33,28 @@ export function BlogEditClient({ slug }: { slug: string }) {
   const [saving, setSaving] = useState(false);
   // 头部"草稿"徽标跟随表单发布状态
   const [currentPublished, setCurrentPublished] = useState(false);
+  const [liveValues, setLiveValues] = useState<PostFormValues | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { scheduleSave: scheduleDraftSave, read: readDraft, clear: clearDraft } =
     useLocalDraft<PostFormDraft>(`draft:blog:${slug}`);
   const draftRestore = useDraftRestore<PostFormDraft>({
     apply: (d) => {
-      setInitial({
+      const restored: PostFormValues = {
         slug,
         title: d.title ?? "",
         content: d.content ?? "",
         date: d.date ?? "",
         published: d.published ?? false,
+        scheduledAt: d.scheduledAt ?? null,
+        archivedAt: d.archivedAt ?? null,
+        excerpt: d.excerpt ?? null,
+        seoTitle: d.seoTitle ?? null,
+        seoDescription: d.seoDescription ?? null,
+        coverImage: d.coverImage ?? null,
         tags: d.tags ?? [],
-      });
+      };
+      setInitial(restored);
+      setLiveValues(restored);
       setInitialTagInput(d.tagInput ?? "");
       setFormKey((k) => k + 1);
       setFormDirty(true);
@@ -76,9 +87,16 @@ export function BlogEditClient({ slug }: { slug: string }) {
           content: data.content,
           date: data.date,
           published: data.published ?? false,
+          scheduledAt: data.scheduledAt ?? null,
+          archivedAt: data.archivedAt ?? null,
+          excerpt: data.excerpt ?? null,
+          seoTitle: data.seoTitle ?? null,
+          seoDescription: data.seoDescription ?? null,
+          coverImage: data.coverImage ?? null,
           tags: data.tags ?? [],
         };
         setInitial(loaded);
+        setLiveValues(loaded);
         setUpdatedAt(data.updatedAt);
         setCurrentPublished(loaded.published);
         setLoading(false);
@@ -91,6 +109,12 @@ export function BlogEditClient({ slug }: { slug: string }) {
           (saved.content ?? "") === loaded.content &&
           (saved.date ?? "") === loaded.date &&
           (saved.published ?? false) === loaded.published &&
+          (saved.scheduledAt ?? null) === loaded.scheduledAt &&
+          (saved.archivedAt ?? null) === loaded.archivedAt &&
+          (saved.excerpt ?? null) === loaded.excerpt &&
+          (saved.seoTitle ?? null) === loaded.seoTitle &&
+          (saved.seoDescription ?? null) === loaded.seoDescription &&
+          (saved.coverImage ?? null) === loaded.coverImage &&
           JSON.stringify(saved.tags ?? []) === JSON.stringify(loaded.tags) &&
           !(saved.tagInput ?? "").trim();
         if (same) {
@@ -137,11 +161,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: values.title,
-          content: values.content,
-          date: values.date,
-          tags: values.tags,
-          published: values.published,
+          ...values,
           expectedUpdatedAt: updatedAt,
         }),
       });
@@ -172,6 +192,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
 
   const handleValuesChange = useCallback((values: PostFormDraft) => {
     setCurrentPublished(values.published);
+    setLiveValues(values);
     scheduleDraftSave(values);
   }, [scheduleDraftSave]);
 
@@ -215,9 +236,16 @@ export function BlogEditClient({ slug }: { slug: string }) {
 
       <PageHeader
         title="编辑文章"
-        accessory={!currentPublished && <Badge variant="warning">草稿</Badge>}
+        accessory={liveValues?.archivedAt ? <Badge variant="outline">已归档</Badge> : liveValues?.scheduledAt && !currentPublished ? <Badge>定时发布</Badge> : !currentPublished && <Badge variant="warning">草稿</Badge>}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setPreviewOpen(true)}
+              disabled={!liveValues}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5"
+            >
+              <Eye className="w-4 h-4" />预览当前更改
+            </button>
             <Link
               href={`/admin/blog/history/${slug}`}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
@@ -254,6 +282,8 @@ export function BlogEditClient({ slug }: { slug: string }) {
           onSavingChange={setSaving}
         />
       )}
+
+      {previewOpen && liveValues && <LivePostPreview values={liveValues} updatedAt={updatedAt} onClose={() => setPreviewOpen(false)} />}
 
       <ConfirmDialog
         isOpen={pendingClose}

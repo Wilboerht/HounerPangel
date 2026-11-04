@@ -6,6 +6,7 @@ import { MarkdownEditor } from "@/components/markdown-editor";
 import { useTagManager, type TagRejectReason } from "@/lib/use-tag-manager";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
+import { ContentChecks } from "@/components/admin/content-checks";
 
 // \w 只匹配 ASCII，纯中文标题会得到空串，调用方需做兜底
 export function slugify(text: string): string {
@@ -20,11 +21,29 @@ export function slugify(text: string): string {
 
 const VALID_SLUG_RE = /^[a-z0-9\-]+$/;
 
+function toDateTimeInput(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const pad = (number: number) => String(number).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function defaultScheduleTime(): string {
+  return toDateTimeInput(new Date(Date.now() + 60 * 60 * 1000).toISOString())!;
+}
+
 export interface PostFormValues {
   slug: string;
   title: string;
   date: string;
   published: boolean;
+  scheduledAt: string | null;
+  archivedAt: string | null;
+  excerpt: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  coverImage: string | null;
   tags: string[];
   content: string;
 }
@@ -80,6 +99,12 @@ export function PostForm({
     title: initialValues.title,
     date: initialValues.date,
     published: initialValues.published,
+    scheduledAt: toDateTimeInput(initialValues.scheduledAt),
+    archivedAt: initialValues.archivedAt,
+    excerpt: initialValues.excerpt,
+    seoTitle: initialValues.seoTitle,
+    seoDescription: initialValues.seoDescription,
+    coverImage: initialValues.coverImage,
     content: initialValues.content,
   });
   const toast = useToast();
@@ -155,6 +180,10 @@ export function PostForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving || uploading) return;
+    if (!form.published && form.scheduledAt && new Date(form.scheduledAt).getTime() <= Date.now()) {
+      toast.error("定时发布时间必须晚于当前时间");
+      return;
+    }
 
     // 提交前把标签输入框里未确认的内容补进 tags，避免静默丢失
     let tags = tagManager.tags;
@@ -279,21 +308,41 @@ export function PostForm({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label htmlFor={`${idPrefix}-published`} className="text-sm font-medium text-foreground">发布状态</label>
-          {/* 整个 label（含状态文字）都是触控区：p-2 -m-2 把 36×20 的开关扩到 44px+ */}
-          <label className="relative inline-flex items-center gap-2 cursor-pointer self-start p-2 -m-2 min-h-[36px]">
-            <input
-              id={`${idPrefix}-published`}
-              type="checkbox"
-              checked={form.published}
-              onChange={(e) => updateField({ published: e.target.checked })}
-              className="sr-only peer"
-            />
-            <div className="w-9 h-5 bg-foreground/15 rounded-full peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-2 after:ml-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-            <span className="text-xs text-muted">{form.published ? "已发布" : "草稿"}</span>
-          </label>
+          <label htmlFor={`${idPrefix}-status`} className="text-sm font-medium text-foreground">发布状态</label>
+          <select
+            id={`${idPrefix}-status`}
+            value={form.published ? "published" : form.archivedAt ? "archived" : form.scheduledAt ? "scheduled" : "draft"}
+            onChange={(e) => {
+              const status = e.target.value;
+              if (status === "published") updateField({ published: true, scheduledAt: null, archivedAt: null });
+              else if (status === "scheduled") updateField({ published: false, scheduledAt: form.scheduledAt || defaultScheduleTime(), archivedAt: null });
+              else if (status === "archived") updateField({ published: false, scheduledAt: null, archivedAt: new Date().toISOString() });
+              else updateField({ published: false, scheduledAt: null, archivedAt: null });
+            }}
+            className="w-full rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm text-foreground focus:outline-none focus:border-accent/50"
+          >
+            <option value="draft">草稿</option>
+            <option value="scheduled">定时发布</option>
+            <option value="published">已发布</option>
+            <option value="archived">已归档</option>
+          </select>
         </div>
       </div>
+
+      {!form.published && form.scheduledAt !== null && (
+        <div className="flex flex-col gap-2">
+          <label htmlFor={`${idPrefix}-scheduled-at`} className="text-sm font-medium text-foreground">定时发布时间（本地时间）</label>
+          <input
+            id={`${idPrefix}-scheduled-at`}
+            type="datetime-local"
+            required
+            value={form.scheduledAt}
+            onChange={(e) => updateField({ scheduledAt: e.target.value })}
+            className="w-full rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-foreground focus:outline-none focus:border-accent/50"
+          />
+          <p className="text-xs text-muted">由 Vercel Cron 每 15 分钟处理一次，实际发布时间可能略有延迟。</p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <label htmlFor={`${idPrefix}-tags`} className="text-sm font-medium text-foreground">
@@ -338,6 +387,38 @@ export function PostForm({
           </button>
         </div>
       </div>
+
+      <details className="rounded-lg border border-border/50 p-4">
+        <summary className="cursor-pointer text-sm font-medium text-foreground">摘要、SEO 与分享设置</summary>
+        <div className="mt-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor={`${idPrefix}-excerpt`} className="text-sm font-medium">文章摘要</label>
+            <textarea id={`${idPrefix}-excerpt`} rows={3} maxLength={2000} value={form.excerpt ?? ""} onChange={(e) => updateField({ excerpt: e.target.value || null })} placeholder="留空时从正文自动提取" className="rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <label htmlFor={`${idPrefix}-seo-title`} className="text-sm font-medium">SEO 标题</label>
+              <input id={`${idPrefix}-seo-title`} maxLength={500} value={form.seoTitle ?? ""} onChange={(e) => updateField({ seoTitle: e.target.value || null })} placeholder="留空时使用文章标题" className="rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor={`${idPrefix}-cover`} className="text-sm font-medium">封面 / 分享图 URL</label>
+              <input id={`${idPrefix}-cover`} type="url" maxLength={2000} value={form.coverImage ?? ""} onChange={(e) => updateField({ coverImage: e.target.value || null })} placeholder="留空时使用正文第一张图片" className="rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor={`${idPrefix}-seo-description`} className="text-sm font-medium">SEO / 分享描述</label>
+            <textarea id={`${idPrefix}-seo-description`} rows={2} maxLength={1000} value={form.seoDescription ?? ""} onChange={(e) => updateField({ seoDescription: e.target.value || null })} placeholder="留空时使用文章摘要" className="rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm" />
+          </div>
+          <div className="rounded-lg border border-border/50 p-3">
+            <p className="text-xs text-muted">分享卡片预览</p>
+            <p className="mt-2 break-words text-sm font-semibold">{form.seoTitle || form.title || "文章标题"}</p>
+            <p className="mt-1 break-words text-xs text-muted">{form.seoDescription || form.excerpt || "将使用正文自动摘要"}</p>
+            <p className="mt-2 truncate text-xs text-muted">{form.coverImage || "使用正文首图或站点默认分享图"}</p>
+          </div>
+        </div>
+      </details>
+
+      <ContentChecks values={{ ...form, tags: tagManager.tags }} />
 
       <div className="flex flex-col gap-2">
         <label htmlFor={`${idPrefix}-content`} className="text-sm font-medium text-foreground">正文（Markdown）</label>

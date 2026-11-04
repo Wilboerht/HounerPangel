@@ -4,9 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import {
   Eye, Edit3, Bold, Italic, Heading2, Heading3,
-  Link, Code, Code2, List, Image as ImageIcon, Video, Paperclip, X,
+  Link, Code, Code2, List, Image as ImageIcon, Video, Paperclip, X, Library,
 } from "lucide-react";
 import { useToast } from "@/components/toast";
+import { MediaPicker } from "@/components/admin/media-picker";
+import type { MediaAsset } from "@/lib/types/media";
 
 // 预览渲染器（含 highlight.js）体积较大，懒加载：只有切到预览 tab 时才下载
 const MarkdownPreview = dynamic(() => import("./markdown-preview"), {
@@ -105,6 +107,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>("");
+  const [mediaOpen, setMediaOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -178,7 +181,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   // 会话过期哨兵：onAuthExpired 已统一提示并刷新出登录表单，上层 catch 遇到它不再重复 toast
   const AUTH_EXPIRED = "__auth_expired__";
 
-  const uploadToStorage = async (file: File, signal: AbortSignal): Promise<string> => {
+  const uploadToStorage = async (file: File, signal: AbortSignal): Promise<{ url: string; path: string }> => {
     const contentType = getMimeType(file);
     const res = await fetch("/api/admin/upload-url", {
       method: "POST",
@@ -202,7 +205,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       throw new Error(message);
     }
 
-    const { signedUrl, publicUrl } = await res.json();
+    const { signedUrl, publicUrl, filePath } = await res.json();
 
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -230,7 +233,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       xhr.send(file);
     });
 
-    return publicUrl as string;
+    return { url: publicUrl as string, path: filePath as string };
   };
 
   const handleFileUpload = async (file: File, getMarkdown: (url: string) => string, kind: UploadKind) => {
@@ -253,15 +256,32 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     setUploadProgress("");
     onUploadingChange?.(true);
     try {
-      const url = await uploadToStorage(file, controller.signal);
-      let markdown = getMarkdown(url);
-      // 记录图片原始尺寸（=WxH），前台据此预留宽高比，避免加载时页面跳动
-      if (kind === "image") {
-        const dims = await getImageDimensions(file);
-        if (dims) markdown = getMarkdown(`${url} =${dims.width}x${dims.height}`);
-      }
-      // 上传途中被取消或组件已卸载，不再插入内容
+      const uploaded = await uploadToStorage(file, controller.signal);
+      // 上传途中被取消或组件已卸载，不再登记或插入内容
       if (controller.signal.aborted) return;
+      const dims = kind === "image" ? await getImageDimensions(file) : null;
+      try {
+        const registerRes = await fetch("/api/admin/media", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            path: uploaded.path,
+            fileName: file.name,
+            kind,
+            mimeType: getMimeType(file),
+            size: file.size,
+            width: dims?.width ?? null,
+            height: dims?.height ?? null,
+          }),
+          signal: controller.signal,
+        });
+        if (registerRes.status === 401) onAuthExpired?.();
+        else if (!registerRes.ok) toast.info("文件已上传，但媒体信息登记失败，可在媒体库中补充");
+      } catch {
+        if (!controller.signal.aborted) toast.info("文件已上传，但媒体信息登记失败");
+      }
+      const url = dims ? `${uploaded.url} =${dims.width}x${dims.height}` : uploaded.url;
+      const markdown = getMarkdown(url);
       // 用 insertBlock 保证媒体/附件语法独占一行，否则前台解析器不会把它渲染成对应卡片
       insertBlock(markdown);
       toast.success(`${KIND_LABEL[kind]}已插入`);
@@ -368,6 +388,15 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     });
   };
 
+  const selectMedia = (asset: MediaAsset) => {
+    const dimensions = asset.width && asset.height ? ` =${asset.width}x${asset.height}` : "";
+    const url = `${asset.url}${dimensions}`;
+    const label = sanitizeLinkText(asset.alt || asset.caption || asset.fileName);
+    const markdown = asset.kind === "attachment" ? `[${label}](${asset.url})` : `![${asset.kind === "image" ? label : ""}](${url})`;
+    insertBlock(markdown);
+    setMediaOpen(false);
+  };
+
   const tools = [
     { icon: Bold, label: "加粗 (Ctrl+B)", action: () => insertText("**", "**", "粗体") },
     { icon: Italic, label: "斜体 (Ctrl+I)", action: () => insertText("*", "*", "斜体") },
@@ -441,6 +470,15 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
               </button>
             ))}
             <div className="w-px h-5 bg-border/50 mx-1 flex-shrink-0" />
+            <button
+              type="button"
+              onClick={() => setMediaOpen(true)}
+              title="从媒体库选择"
+              aria-label="从媒体库选择"
+              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors flex-shrink-0"
+            >
+              <Library className="w-4 h-4" />
+            </button>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -539,6 +577,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           <MarkdownPreview value={value} />
         </div>
       )}
+      {mediaOpen && <MediaPicker onSelect={selectMedia} onClose={() => setMediaOpen(false)} />}
     </div>
   );
 }

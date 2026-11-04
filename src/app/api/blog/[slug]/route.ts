@@ -4,6 +4,7 @@ import { checkAuth, isAdminRequest } from "@/lib/auth";
 import { blogPostUpdateSchema, blogPostPublishSchema, blogPostVersionSchema, slugParamSchema } from "@/lib/validation";
 import { revalidateBlogPaths } from "@/lib/revalidate-blog";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { recordAudit } from "@/lib/audit";
 
 interface Params {
     params: Promise<{ slug: string }>;
@@ -47,20 +48,19 @@ export async function PUT(request: NextRequest, { params }: Params) {
             return NextResponse.json({ error: "输入不合法" }, { status: 400 });
         }
 
-        const { title, content, date, tags, published, expectedUpdatedAt } = parseResult.data;
+        const { expectedUpdatedAt, ...post } = parseResult.data;
 
         const updated = await updateBlogPost(slug, {
-            title,
-            content,
-            date,
-            tags,
-            published,
+            ...post,
+            scheduledAt: post.published || !post.scheduledAt ? null : new Date(post.scheduledAt).toISOString(),
+            archivedAt: post.published || !post.archivedAt ? null : new Date(post.archivedAt).toISOString(),
         }, expectedUpdatedAt);
 
         if (!updated) {
             return NextResponse.json({ error: "文章已被其他会话修改，请刷新后重试" }, { status: 409 });
         }
 
+        await recordAudit(request, "update", "blog_post", slug, { published: post.published, scheduled: Boolean(post.scheduledAt) });
         revalidateBlogPaths(slug);
 
         return NextResponse.json({ success: true, updatedAt: updated.updatedAt });
@@ -98,6 +98,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
             return NextResponse.json({ error: "文章已被其他会话修改，请刷新后重试" }, { status: 409 });
         }
 
+        await recordAudit(request, published ? "publish" : "unpublish", "blog_post", slug);
         revalidateBlogPaths(slug);
         return NextResponse.json({ success: true, updatedAt });
     } catch (error) {
@@ -131,6 +132,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
             return NextResponse.json({ error: "文章已被其他会话修改，请刷新后重试" }, { status: 409 });
         }
 
+        await recordAudit(request, "delete", "blog_post", slug);
         revalidateBlogPaths(slug);
 
         return NextResponse.json({ success: true, updatedAt });

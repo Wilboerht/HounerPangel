@@ -5,6 +5,7 @@ import { getBlogRevision, getBlogRevisionSummaries, restoreBlogRevision } from "
 import { revalidateBlogPaths } from "@/lib/revalidate-blog";
 import { getRateLimitKey, rateLimit } from "@/lib/rate-limit";
 import { revisionRestoreSchema, slugParamSchema } from "@/lib/validation";
+import { recordAudit } from "@/lib/audit";
 
 interface Params {
     params: Promise<{ slug: string }>;
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         if (!restored) {
             return NextResponse.json({ error: "文章已被其他会话修改，请刷新后重试" }, { status: 409 });
         }
+        await recordAudit(request, "restore_revision", "blog_post", slug, { revisionId });
         revalidateBlogPaths(slug);
         return NextResponse.json({ success: true, updatedAt: restored.updatedAt });
     } catch (error) {
