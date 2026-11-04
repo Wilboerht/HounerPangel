@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Eye } from "lucide-react";
+import { ArrowLeft, Eye, History } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PostForm, type PostFormValues, type PostFormDraft } from "@/components/admin/post-form";
@@ -216,16 +217,25 @@ export function BlogEditClient({ slug }: { slug: string }) {
         title="编辑文章"
         accessory={!currentPublished && <Badge variant="warning">草稿</Badge>}
         actions={
-          // 草稿预览走管理端专属路由；公开的 /blog/[slug] 只含已发布文章（ISR 缓存）
-          <a
-            href={`/admin/blog/preview/${slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-          >
-            <Eye className="w-4 h-4" />
-            预览
-          </a>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/admin/blog/history/${slug}`}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+            >
+              <History className="w-4 h-4" />
+              历史版本
+            </Link>
+            {/* 草稿预览走管理端专属路由；公开的 /blog/[slug] 只含已发布文章（ISR 缓存） */}
+            <a
+              href={`/admin/blog/preview/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+            >
+              <Eye className="w-4 h-4" />
+              预览
+            </a>
+          </div>
         }
       />
 

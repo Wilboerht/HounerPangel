@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Pencil, Trash2, X, Search, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Search, Eye, EyeOff, History } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
@@ -157,16 +158,21 @@ export function BlogAdminClient() {
     const target = deleteTarget;
     if (!target) return;
     try {
-      const res = await fetch(`/api/blog/${target.slug}`, { method: "DELETE" });
+      const res = await fetch(`/api/blog/${target.slug}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedUpdatedAt: target.updatedAt }),
+      });
       if (res.status === 401) {
         authExpired();
         return;
       }
+      const data = await res.json();
       if (res.ok) {
         setPosts((prev) => prev.filter((p) => p.slug !== target.slug));
-        toast.success("文章已删除");
+        toast.success("文章已移至回收站");
       } else {
-        toast.error("删除失败");
+        toast.error(data.error || "删除失败");
       }
     } catch (err) {
       toast.error(err instanceof TypeError ? "网络错误，请检查连接后重试" : "删除失败");
@@ -302,13 +308,21 @@ export function BlogAdminClient() {
         title="博客"
         description="管理你的博客文章"
         actions={
-          <button
-            onClick={openNewModal}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            新建文章
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/blog/trash"
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border/50 px-3 py-2 text-sm text-muted hover:text-foreground hover:bg-foreground/5"
+            >
+              <Trash2 className="h-4 w-4" />回收站
+            </Link>
+            <button
+              onClick={openNewModal}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              新建文章
+            </button>
+          </div>
         }
       />
 
@@ -383,6 +397,9 @@ export function BlogAdminClient() {
                       disabled={togglingSlug === post.slug}
                     >
                       {post.published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </IconButton>
+                    <IconButton href={`/admin/blog/history/${post.slug}`} label="历史版本" title="历史版本" size="lg">
+                      <History className="w-4 h-4" />
                     </IconButton>
                     <IconButton href={`/admin/blog/edit/${post.slug}`} label="编辑" title="编辑" size="lg">
                       <Pencil className="w-4 h-4" />
@@ -502,9 +519,9 @@ export function BlogAdminClient() {
         isOpen={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="删除文章"
-        message={`确定要删除「${deleteTarget?.title || ""}」吗？此操作不可撤销。`}
-        confirmLabel="确认删除"
+        title="移至回收站"
+        message={`确定要删除「${deleteTarget?.title || ""}」吗？文章将移至回收站，可以稍后恢复。`}
+        confirmLabel="移至回收站"
         danger={true}
       />
     </div>

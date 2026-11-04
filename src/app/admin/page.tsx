@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, FileText, Plus } from "lucide-react";
+import { ArrowUpRight, DatabaseBackup, FileText, Plus } from "lucide-react";
 import { getAllBlogPostSummaries } from "@/lib/supabase";
 import { isAdminSession } from "@/lib/auth";
 import { DashboardCard } from "@/components/admin/dashboard-card";
@@ -101,6 +101,10 @@ export default async function AdminDashboardPage() {
                         <Link href="/admin/blog" className={quickActionCls}>
                             <FileText className="h-4 w-4 flex-shrink-0 text-muted" />
                             管理博客
+                        </Link>
+                        <Link href="/admin/backup" className={quickActionCls}>
+                            <DatabaseBackup className="h-4 w-4 flex-shrink-0 text-muted" />
+                            备份与恢复
                         </Link>
                         <Link href="/" className={quickActionCls}>
                             <ArrowUpRight className="h-4 w-4 flex-shrink-0 text-muted" />

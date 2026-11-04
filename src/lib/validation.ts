@@ -24,6 +24,14 @@ export const blogPostPublishSchema = z.object({
     expectedUpdatedAt: z.string().min(1),
 });
 
+export const blogPostVersionSchema = z.object({
+    expectedUpdatedAt: z.string().min(1),
+});
+
+export const revisionRestoreSchema = blogPostVersionSchema.extend({
+    revisionId: z.string().uuid(),
+});
+
 export const loginSchema = z.object({
     password: z.string().min(1, "密码不能为空").max(256, "密码过长"),
 });

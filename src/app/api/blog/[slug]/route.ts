@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBlogPostBySlug, updateBlogPost, setBlogPostPublished, deleteBlogPost } from "@/lib/blog-db";
 import { checkAuth, isAdminRequest } from "@/lib/auth";
-import { blogPostUpdateSchema, blogPostPublishSchema, slugParamSchema } from "@/lib/validation";
+import { blogPostUpdateSchema, blogPostPublishSchema, blogPostVersionSchema, slugParamSchema } from "@/lib/validation";
 import { revalidateBlogPaths } from "@/lib/revalidate-blog";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
@@ -121,11 +121,19 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         if (!parseResult.success) {
             return NextResponse.json({ error: "Slug 不合法" }, { status: 400 });
         }
-        await deleteBlogPost(slug);
+        const body = await request.json();
+        const bodyResult = blogPostVersionSchema.safeParse(body);
+        if (!bodyResult.success) {
+            return NextResponse.json({ error: "请求参数不合法" }, { status: 400 });
+        }
+        const updatedAt = await deleteBlogPost(slug, bodyResult.data.expectedUpdatedAt);
+        if (!updatedAt) {
+            return NextResponse.json({ error: "文章已被其他会话修改，请刷新后重试" }, { status: 409 });
+        }
 
         revalidateBlogPaths(slug);
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, updatedAt });
     } catch (error) {
         console.error("Failed to delete blog post:", error);
         return NextResponse.json({ error: "删除文章失败" }, { status: 500 });

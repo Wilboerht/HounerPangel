@@ -8,6 +8,9 @@ import {
     updateBlogPost as _updateBlogPost,
     setBlogPostPublished as _setBlogPostPublished,
     deleteBlogPost as _deleteBlogPost,
+    getTrashBlogPostSummaries as _getTrashBlogPostSummaries,
+    restoreBlogPost as _restoreBlogPost,
+    purgeBlogPost as _purgeBlogPost,
 } from "./supabase";
 
 // Cached for Server Components / SSG
@@ -22,4 +25,7 @@ export {
     _updateBlogPost as updateBlogPost,
     _setBlogPostPublished as setBlogPostPublished,
     _deleteBlogPost as deleteBlogPost,
+    _getTrashBlogPostSummaries as getTrashBlogPostSummaries,
+    _restoreBlogPost as restoreBlogPost,
+    _purgeBlogPost as purgeBlogPost,
 };

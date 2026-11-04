@@ -6,6 +6,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown,
+  DatabaseBackup,
   FileText,
   Globe,
   LayoutDashboard,
@@ -42,6 +43,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/admin", label: "仪表盘", icon: LayoutDashboard, exact: true },
       { href: "/admin/blog", label: "博客", icon: FileText },
+      { href: "/admin/backup", label: "备份与恢复", icon: DatabaseBackup },
     ],
   },
 ];
@@ -51,9 +53,11 @@ function isActive(item: NavItem, pathname: string): boolean {
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-// 移动端顶栏标题：优先匹配导航项，编辑页单独命名
+// 移动端顶栏标题：优先匹配导航项，文章子页面单独命名
 function pageTitle(pathname: string): string {
   if (pathname.startsWith("/admin/blog/edit/")) return "编辑文章";
+  if (pathname.startsWith("/admin/blog/history/")) return "版本历史";
+  if (pathname === "/admin/blog/trash") return "回收站";
   for (const section of NAV_SECTIONS) {
     const hit = section.items.find((item) => isActive(item, pathname));
     if (hit) return hit.label;

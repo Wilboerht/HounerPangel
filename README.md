@@ -5,7 +5,7 @@ Personal website of Hank Wong (wilboerht). A digital space for showcasing projec
 ## Features
 
 - **Blog** — Markdown posts with tags, stored in Supabase; RSS feed (`/rss.xml`), sitemap, and SEO metadata included
-- **Admin panel** (`/admin`) — password-protected post editor with image upload to Supabase Storage, session auth, and rate limiting
+- **Admin panel** (`/admin`) — password-protected post editor with Supabase Storage uploads, session auth, rate limiting, database-backed revision history, a restorable trash, and JSON backup import/export
 - **Footprint map** (`/map`) — fullscreen map of visited cities, built with MapLibre GL and the free CARTO Positron basemap (no API token required); city data lives in `src/data/cities.ts`
 - **About** (`/me`) — a short introduction
 
