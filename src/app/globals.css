@@ -228,11 +228,9 @@ input, textarea, select {
 
 .article-body .markdown-alert {
   --alert-color: var(--accent);
-  border-left: 4px solid var(--alert-color);
-  border-radius: 0.5rem;
-  background: color-mix(in srgb, var(--alert-color) 7%, transparent);
+  border-left: 2px solid var(--border);
   color: var(--foreground);
-  padding: 0.75rem 1rem;
+  padding-left: 1.25rem;
 }
 
 .article-body .markdown-alert-title {
@@ -241,7 +239,7 @@ input, textarea, select {
   gap: 0.5rem;
   color: var(--alert-color);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.5;
 }
 
