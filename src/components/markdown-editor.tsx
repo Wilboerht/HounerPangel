@@ -488,6 +488,9 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     { icon: Minus, label: "分隔线", action: () => insertBlock("---") },
   ];
 
+  const toolButtonCls =
+    "flex min-h-[36px] min-w-[36px] flex-shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-foreground/10 hover:text-foreground disabled:opacity-50 max-sm:min-h-[44px] max-sm:min-w-[44px]";
+
   return (
     <>
       <div className="md-editor border border-border/50 rounded-lg overflow-hidden">
@@ -536,95 +539,101 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           </button>
         </div>
         {tab === "edit" && (
-          <div className="md-editor-toolbar no-scrollbar -mx-1 px-1">
-            {uploading && (
-              <span className="text-xs text-muted flex-shrink-0 mr-1 inline-flex items-center gap-1">
-                {uploadProgress || "上传中..."}
+          <div className="md-editor-toolbar -mx-1 px-1">
+            <div className="flex flex-shrink-0 items-center gap-0.5">
+              {/* eslint-disable-next-line react-hooks/refs -- tool.action 闭包只在 onClick 中执行，内部读取 textareaRef 是合法的；规则对经由普通数组传入 JSX 的回调存在误报 */}
+              {tools.map((tool) => (
                 <button
+                  key={tool.label}
                   type="button"
-                  onClick={() => {
-                    uploadCancelGenerationRef.current += 1;
-                    uploadAbortRef.current?.abort();
-                  }}
-                  aria-label="取消上传"
-                  className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-md text-muted transition-colors hover:bg-foreground/10 hover:text-foreground"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={tool.action}
+                  title={tool.label}
+                  aria-label={tool.label}
+                  className={toolButtonCls}
                 >
-                  <X className="w-3 h-3" />
+                  <tool.icon className="w-4 h-4" />
                 </button>
-              </span>
-            )}
-            {/* eslint-disable-next-line react-hooks/refs -- tool.action 闭包只在 onClick 中执行，内部读取 textareaRef 是合法的；规则对经由普通数组传入 JSX 的回调存在误报 */}
-            {tools.map((tool) => (
-              <button
-                key={tool.label}
-                type="button"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={tool.action}
-                title={tool.label}
-                aria-label={tool.label}
-                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors flex-shrink-0"
+              ))}
+            </div>
+
+            <div className="flex flex-shrink-0 items-center gap-0.5">
+              {uploading && (
+                <span className="mr-1 inline-flex flex-shrink-0 items-center gap-1 text-xs text-muted">
+                  {uploadProgress || "上传中..."}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      uploadCancelGenerationRef.current += 1;
+                      uploadAbortRef.current?.abort();
+                    }}
+                    aria-label="取消上传"
+                    className={toolButtonCls}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              <select
+                value=""
+                aria-label="插入提示块"
+                title="插入提示块"
+                onChange={(event) => {
+                  const type = event.target.value;
+                  if (type) insertBlock(`> [!${type}]\n> `, "提示内容");
+                  event.target.value = "";
+                }}
+                className="min-h-[36px] shrink-0 rounded-md border border-border/50 bg-background px-2 text-xs text-muted max-sm:min-h-[44px]"
               >
-                <tool.icon className="w-4 h-4" />
+                <option value="">提示块</option>
+                <option value="NOTE">Note 注意</option>
+                <option value="TIP">Tip 提示</option>
+                <option value="IMPORTANT">Important 重要</option>
+                <option value="WARNING">Warning 警告</option>
+                <option value="CAUTION">Caution 谨慎</option>
+              </select>
+              <div className="mx-1 h-5 w-px flex-shrink-0 bg-border/50" />
+              <button
+                type="button"
+                onClick={() => setMediaOpen(true)}
+                title="从媒体库选择"
+                aria-label="从媒体库选择"
+                className={toolButtonCls}
+              >
+                <Library className="w-4 h-4" />
               </button>
-            ))}
-            <select
-              value=""
-              aria-label="插入提示块"
-              title="插入提示块"
-              onChange={(event) => {
-                const type = event.target.value;
-                if (type) insertBlock(`> [!${type}]\n> `, "提示内容");
-                event.target.value = "";
-              }}
-              className="min-h-[44px] shrink-0 rounded-md border border-border/50 bg-background px-2 text-xs text-muted"
-            >
-              <option value="">提示块</option>
-              <option value="NOTE">Note 注意</option>
-              <option value="TIP">Tip 提示</option>
-              <option value="IMPORTANT">Important 重要</option>
-              <option value="WARNING">Warning 警告</option>
-              <option value="CAUTION">Caution 谨慎</option>
-            </select>
-            <div className="w-px h-5 bg-border/50 mx-1 flex-shrink-0" />
-            <button
-              type="button"
-              onClick={() => setMediaOpen(true)}
-              title="从媒体库选择"
-              aria-label="从媒体库选择"
-              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors flex-shrink-0"
-            >
-              <Library className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              title="上传图片"
-              aria-label="上传图片"
-              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50 flex-shrink-0"
-            >
-              <ImageIcon className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => videoInputRef.current?.click()}
-              disabled={uploading}
-              title="上传视频"
-              aria-label="上传视频"
-              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50 flex-shrink-0"
-            >
-              <Video className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => attachmentInputRef.current?.click()}
-              disabled={uploading}
-              title="上传附件（PDF、文档、压缩包等）"
-              aria-label="上传附件"
-              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors disabled:opacity-50 flex-shrink-0"
-            >
-              <Paperclip className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                title="上传图片"
+                aria-label="上传图片"
+                className={toolButtonCls}
+              >
+                <ImageIcon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => videoInputRef.current?.click()}
+                disabled={uploading}
+                title="上传视频"
+                aria-label="上传视频"
+                className={toolButtonCls}
+              >
+                <Video className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => attachmentInputRef.current?.click()}
+                disabled={uploading}
+                title="上传附件（PDF、文档、压缩包等）"
+                aria-label="上传附件"
+                className={toolButtonCls}
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+            </div>
+
             <input
               ref={fileInputRef}
               type="file"

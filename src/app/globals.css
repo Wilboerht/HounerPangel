@@ -455,11 +455,23 @@ textarea:-webkit-autofill:focus {
   width: 100%;
   min-width: 0;
   align-items: center;
-  gap: 0.125rem;
+  justify-content: space-between;
+  gap: 0.5rem;
   padding-block: 0.25rem;
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.md-editor-toolbar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.md-editor-toolbar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--border);
 }
 
 @container (min-width: 900px) {
@@ -469,10 +481,9 @@ textarea:-webkit-autofill:focus {
   }
 
   .md-editor-toolbar {
+    flex: 1;
     width: auto;
-    flex-wrap: wrap;
     padding-block: 0;
-    overflow: visible;
   }
 }
 
