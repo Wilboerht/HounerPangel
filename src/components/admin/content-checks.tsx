@@ -8,6 +8,25 @@ import { useAuthExpired } from "@/lib/use-auth-expired";
 
 interface LinkResult { url: string; ok: boolean; status: number }
 
+// 去掉围栏代码块和行内代码，避免把代码示例里的 ![](...) 误判为缺少 alt 的图片
+function stripCode(content: string): string {
+    let fence: { marker: string; length: number } | null = null;
+    const withoutFences = content.split("\n").map((line) => {
+        if (fence) {
+            const closing = line.match(/^ {0,3}(`{3,}|~{3,})\s*$/);
+            if (closing && closing[1][0] === fence.marker && closing[1].length >= fence.length) fence = null;
+            return "";
+        }
+        const opening = line.match(/^ {0,3}(`{3,}|~{3,})/);
+        if (opening) {
+            fence = { marker: opening[1][0], length: opening[1].length };
+            return "";
+        }
+        return line;
+    }).join("\n");
+    return withoutFences.split("\n").map((line) => line.replace(/(`+)[^`]*?\1/g, "")).join("\n");
+}
+
 export function ContentChecks({ values }: { values: PostFormValues }) {
     const toast = useToast();
     const authExpired = useAuthExpired();
@@ -15,7 +34,7 @@ export function ContentChecks({ values }: { values: PostFormValues }) {
     const [links, setLinks] = useState<LinkResult[] | null>(null);
     const [checkedContent, setCheckedContent] = useState("");
     const [totalLinks, setTotalLinks] = useState(0);
-    const missingAlt = Array.from(values.content.matchAll(/!\[\s*\]\((\S+?)(?:\s+[^)]*)?\)/g))
+    const missingAlt = Array.from(stripCode(values.content).matchAll(/!\[\s*\]\((\S+?)(?:\s+[^)]*)?\)/g))
         .filter((match) => !/\.(mp4|webm|mov|avi|mkv)(?:$|[?#])/i.test(match[1]))
         .length;
     const warnings = [

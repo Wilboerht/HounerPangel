@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Eye, History } from "lucide-react";
+import { ArrowLeft, History } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PostForm, type PostFormValues, type PostFormDraft } from "@/components/admin/post-form";
 import { Badge } from "@/components/admin/badge";
 import { PageHeader } from "@/components/admin/page-header";
+import { PreviewMenu } from "@/components/admin/preview-menu";
 import { useDirtyGuard } from "@/lib/use-dirty-guard";
 import { useLocalDraft } from "@/lib/use-local-draft";
 import { useAuthExpired } from "@/lib/use-auth-expired";
@@ -246,13 +247,12 @@ export function BlogEditClient({ slug }: { slug: string }) {
         accessory={liveValues?.archivedAt ? <Badge variant="outline">已归档</Badge> : !currentPublished && <Badge variant="warning">草稿</Badge>}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setPreviewOpen(true)}
+            {/* 当前更改预览用弹窗（含未保存内容）；已保存版本走管理端专属路由，草稿也能看 */}
+            <PreviewMenu
+              savedHref={`/admin/blog/preview/${slug}`}
               disabled={!liveValues}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5"
-            >
-              <Eye className="w-4 h-4" />预览当前更改
-            </button>
+              onPreviewChanges={() => setPreviewOpen(true)}
+            />
             <Link
               href={`/admin/blog/history/${slug}`}
               onClick={(event) => {
@@ -265,16 +265,6 @@ export function BlogEditClient({ slug }: { slug: string }) {
               <History className="w-4 h-4" />
               历史版本
             </Link>
-            {/* 草稿预览走管理端专属路由；公开的 /blog/[slug] 只含已发布文章（ISR 缓存） */}
-            <a
-              href={`/admin/blog/preview/${slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-            >
-              <Eye className="w-4 h-4" />
-              预览
-            </a>
           </div>
         }
       />
@@ -303,12 +293,14 @@ export function BlogEditClient({ slug }: { slug: string }) {
         onConfirm={() => {
           const href = pendingDestination ?? "/admin/blog";
           setPendingDestination(null);
-          clearDraft();
-          setFormDirty(false);
+          // 不要在这里 setFormDirty(false)：dirty 守卫的清理会用 history.back() 抵消
+          // 即将进行的 router.push。让组件随导航卸载，守卫在卸载时会发现当前历史条目
+          // 已不是占位条目而跳过 history.back()（与侧边栏导航一致）。
+          // 本地草稿继续保留，下次进入编辑页可恢复。
           router.push(href);
         }}
-        title="放弃更改"
-        message="有未保存的更改，确定离开吗？"
+        title="离开编辑"
+        message="有未保存的更改，确定离开吗？未保存内容会保留为本地草稿，下次编辑时可恢复。"
         confirmLabel="确定离开"
         danger={false}
       />

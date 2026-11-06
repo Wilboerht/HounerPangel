@@ -218,6 +218,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   // 表单未保存时拦截侧边栏 <Link> 导航（useDirtyGuard 的 popstate 守卫拦不住 SPA 跳转）。
   const formDirty = useSyncExternalStore(subscribeAdminDirty, isAdminDirty, () => false);
   const [pendingNavHref, setPendingNavHref] = useState<string | null>(null);
+  const [pendingLogout, setPendingLogout] = useState(false);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (formDirty && href !== pathname) {
@@ -235,7 +236,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     setDrawerOpen(false);
   }
 
-  const handleLogout = async () => {
+  const performLogout = async () => {
     if (logoutLoading) return;
     setLogoutLoading(true);
     try {
@@ -248,6 +249,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
       toast.error("退出失败，请重试");
       setLogoutLoading(false);
     }
+  };
+
+  // 有未保存内容时先确认：博客文章可从本地草稿恢复，媒体/城市等表单内容会丢失
+  const handleLogout = () => {
+    if (formDirty) {
+      setPendingLogout(true);
+      return;
+    }
+    void performLogout();
   };
 
   return (
@@ -317,6 +327,19 @@ export function AdminShell({ children }: { children: ReactNode }) {
         title="离开当前页面"
         message="有未保存的内容，确定离开吗？博客文章可从本地草稿恢复，其他表单内容将丢失。"
         confirmLabel="确定离开"
+        danger={false}
+      />
+
+      <ConfirmDialog
+        isOpen={pendingLogout}
+        onClose={() => setPendingLogout(false)}
+        onConfirm={async () => {
+          setPendingLogout(false);
+          await performLogout();
+        }}
+        title="退出登录"
+        message="有未保存的内容，确定退出吗？博客文章可从本地草稿恢复，其他表单内容将丢失。"
+        confirmLabel="退出登录"
         danger={false}
       />
     </div>

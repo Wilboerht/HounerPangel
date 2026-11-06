@@ -34,6 +34,9 @@ export function useFocusTrap(active: boolean, onEscape?: () => void) {
     function handleKeyDown(e: KeyboardEvent) {
       if (trapStack[trapStack.length - 1] !== container) return;
       if (e.key === "Escape") {
+        // 内部控件（如 Markdown 编辑器）已显式处理并 preventDefault 时不再关闭弹层，
+        // 否则编辑器的 "Esc 释放 Tab" 会误触发弹窗的放弃确认。
+        if (e.defaultPrevented) return;
         onEscapeRef.current?.();
         return;
       }

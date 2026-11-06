@@ -54,6 +54,7 @@ export function ConfirmDialog({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
             transition={springModal}
+            onClick={handleClose}
             className="fixed inset-0 flex items-center justify-center z-[111] p-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))]"
           >
             <div
@@ -62,6 +63,7 @@ export function ConfirmDialog({
               aria-modal="true"
               aria-labelledby={titleId}
               aria-describedby={messageId}
+              onClick={(event) => event.stopPropagation()}
               className="relative w-full max-w-sm max-h-full overflow-y-auto bg-background rounded-2xl border border-border/50 shadow-xl p-6"
             >
               <div className="flex items-start gap-4">

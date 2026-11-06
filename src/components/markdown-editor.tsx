@@ -492,7 +492,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     <div className="border border-border/50 rounded-lg overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 bg-foreground/5 border-b border-border/50">
         <div
-          className="flex items-center gap-1"
+          className="flex flex-shrink-0 items-center gap-1"
           role="tablist"
           aria-label="编辑器视图切换"
           onKeyDown={(event) => {
@@ -511,7 +511,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             aria-selected={tab === "edit"}
             tabIndex={tab === "edit" ? 0 : -1}
             aria-controls={editPanelId}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors min-h-[36px] ${
               tab === "edit" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
           >
@@ -526,7 +526,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             aria-selected={tab === "preview"}
             tabIndex={tab === "preview" ? 0 : -1}
             aria-controls={previewPanelId}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors min-h-[36px] ${
               tab === "preview" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
           >

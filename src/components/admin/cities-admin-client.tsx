@@ -270,9 +270,10 @@ export function CitiesAdminClient() {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
                             transition={springModal}
+                            onClick={closeForm}
                             className="fixed inset-0 z-[101] flex items-center justify-center pt-[calc(1rem+env(safe-area-inset-top,0px))] pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))]"
                         >
-                            <div ref={formTrapRef} role="dialog" aria-modal="true" aria-labelledby={formTitleId} className="flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-border/50 bg-background shadow-xl">
+                            <div ref={formTrapRef} role="dialog" aria-modal="true" aria-labelledby={formTitleId} onClick={(event) => event.stopPropagation()} className="flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-border/50 bg-background shadow-xl">
                                 <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/50 p-4">
                                     <h2 id={formTitleId} className="text-base font-semibold">{editing ? "编辑城市" : "新增城市"}</h2>
                                     <IconButton label="关闭城市表单" onClick={closeForm}><X className="h-4 w-4" /></IconButton>

@@ -118,6 +118,8 @@ export function BackupClient() {
             } else {
                 const importResult = data as ImportResult;
                 setResult(importResult);
+                // 导入已写入数据，清掉过期的预检查结果；再次导入前必须重新预检查
+                setPreview(null);
                 setConfirmImport(false);
                 if (importResult.failed > 0) toast.error(`导入完成，但有 ${importResult.failed} 篇失败`);
                 else toast.success("备份导入完成");

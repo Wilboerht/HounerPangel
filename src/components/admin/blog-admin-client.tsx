@@ -283,13 +283,14 @@ export function BlogAdminClient() {
         return;
       }
       toast.success(`批量操作完成：成功 ${data.success}，失败 ${data.failed}`);
-      setPendingBulkAction(null);
       setBulkTag("");
       loadPosts();
     } catch {
       toast.error("网络错误，请检查连接后重试");
     } finally {
       setBulkWorking(false);
+      // 无论成功失败都关闭确认框，避免失败后弹窗卡住、用户无法重试
+      setPendingBulkAction(null);
     }
   };
 
@@ -508,7 +509,7 @@ export function BlogAdminClient() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <IconButton onClick={() => handleTogglePublish(post)} label={post.published ? "转为草稿" : "发布"} title={post.published ? "转为草稿" : "发布"} size="lg" disabled={togglingSlug === post.slug}>
+                    <IconButton onClick={() => handleTogglePublish(post)} label={post.published ? "转为草稿" : "发布"} title={post.published ? "转为草稿" : "发布"} size="lg" disabled={togglingSlug !== null}>
                       {post.published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </IconButton>
                     <IconButton href={`/admin/blog/history/${post.slug}`} label="历史版本" title="历史版本" size="lg"><History className="w-4 h-4" /></IconButton>
@@ -550,6 +551,7 @@ export function BlogAdminClient() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
               transition={springModal}
+              onClick={closeNewModal}
               className="fixed inset-0 flex items-center justify-center z-[101] p-6 max-sm:p-0"
             >
               <div
@@ -557,6 +559,7 @@ export function BlogAdminClient() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="new-post-title"
+                onClick={(event) => event.stopPropagation()}
                 className="relative w-full max-w-3xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-full flex flex-col max-sm:rounded-none max-sm:h-dvh"
               >
                 {/* 关闭按钮带底色：表单滚动时内容不会从图标底下穿过 */}

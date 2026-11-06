@@ -63,6 +63,7 @@ export function LoginForm() {
 
         <form
           onSubmit={handleLogin}
+          method="post"
           className="flex flex-col gap-4 rounded-2xl border border-border/50 p-6"
         >
           <div className="flex flex-col gap-2">

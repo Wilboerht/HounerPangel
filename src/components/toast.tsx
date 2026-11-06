@@ -98,14 +98,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 initial={safeAnimate(reduce, { opacity: 0, y: -12, scale: 0.95 })}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={safeAnimate(reduce, { opacity: 0, x: 40, scale: 0.95 })}
-                className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg ${colors[t.type]}`}
+                className={`pointer-events-none flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg ${colors[t.type]}`}
               >
                 <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${iconColors[t.type]}`} />
                 <p className="text-sm flex-1 leading-relaxed">{t.message}</p>
                 <button
                   onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
                   aria-label="关闭通知"
-                  className="flex-shrink-0 -m-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity"
+                  className="pointer-events-auto flex-shrink-0 -m-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity"
                 >
                   <X className="w-4 h-4" />
                 </button>
