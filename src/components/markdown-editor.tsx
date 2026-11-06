@@ -489,8 +489,9 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   ];
 
   return (
-    <div className="border border-border/50 rounded-lg overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 bg-foreground/5 border-b border-border/50">
+    <>
+      <div className="md-editor border border-border/50 rounded-lg overflow-hidden">
+      <div className="md-editor-header justify-between gap-2 px-3 py-2 bg-foreground/5 border-b border-border/50">
         <div
           className="flex flex-shrink-0 items-center gap-1"
           role="tablist"
@@ -535,7 +536,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           </button>
         </div>
         {tab === "edit" && (
-          <div className="no-scrollbar -mx-1 flex w-full min-w-0 items-center gap-0.5 overflow-x-auto px-1 sm:w-auto sm:flex-wrap sm:overflow-visible">
+          <div className="md-editor-toolbar no-scrollbar -mx-1 px-1">
             {uploading && (
               <span className="text-xs text-muted flex-shrink-0 mr-1 inline-flex items-center gap-1">
                 {uploadProgress || "上传中..."}
@@ -720,7 +721,10 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           <MarkdownPreview value={value} />
         </div>
       )}
+      </div>
+      {/* MediaPicker 放在 .md-editor 容器外：container-type 会产生 layout containment，
+          固定定位的弹窗若在内部会被当作相对编辑器定位。 */}
       {mediaOpen && <MediaPicker onSelect={selectMedia} onClose={() => setMediaOpen(false)} />}
-    </div>
+    </>
   );
 }
