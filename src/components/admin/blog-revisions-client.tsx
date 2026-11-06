@@ -11,6 +11,7 @@ import { EmptyState, ErrorState } from "@/components/admin/states";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
+import { diffLines } from "@/lib/text-diff";
 import type { BlogPost, BlogRevision, BlogRevisionAction, BlogRevisionSummary } from "@/lib/types/blog";
 
 const ACTION_LABELS: Record<BlogRevisionAction, string> = {
@@ -22,50 +23,6 @@ const ACTION_LABELS: Record<BlogRevisionAction, string> = {
     deleted: "删除前版本",
     restored: "恢复前版本",
 };
-
-interface DiffLine {
-    type: "same" | "added" | "removed";
-    text: string;
-}
-
-function diffLines(before: string, after: string): DiffLine[] {
-    const a = before.split("\n");
-    const b = after.split("\n");
-    if (a.length * b.length > 1_000_000) {
-        return [
-            { type: "removed", text: before },
-            { type: "added", text: after },
-        ];
-    }
-
-    const widths = b.length + 1;
-    const table = new Uint32Array((a.length + 1) * widths);
-    for (let i = a.length - 1; i >= 0; i--) {
-        for (let j = b.length - 1; j >= 0; j--) {
-            table[i * widths + j] = a[i] === b[j]
-                ? table[(i + 1) * widths + j + 1] + 1
-                : Math.max(table[(i + 1) * widths + j], table[i * widths + j + 1]);
-        }
-    }
-
-    const result: DiffLine[] = [];
-    let i = 0;
-    let j = 0;
-    while (i < a.length && j < b.length) {
-        if (a[i] === b[j]) {
-            result.push({ type: "same", text: a[i] });
-            i++;
-            j++;
-        } else if (table[(i + 1) * widths + j] >= table[i * widths + j + 1]) {
-            result.push({ type: "removed", text: a[i++] });
-        } else {
-            result.push({ type: "added", text: b[j++] });
-        }
-    }
-    while (i < a.length) result.push({ type: "removed", text: a[i++] });
-    while (j < b.length) result.push({ type: "added", text: b[j++] });
-    return result;
-}
 
 function formatTime(value: string) {
     return new Date(value).toLocaleString("zh-CN", { hour12: false });

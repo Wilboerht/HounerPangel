@@ -239,7 +239,41 @@ async function removeUnreferencedMedia(candidatePaths: string[], excludeSlug: st
                 .order("id", { ascending: true })
                 .range(from, to)),
         ]);
-        rows = [...posts, ...revisions];
+        let pages: { content: string }[] = [];
+        try {
+            pages = await fetchAllPages(async (from, to) => await supabase
+                .from("site_pages")
+                .select("content")
+                .order("slug", { ascending: true })
+                .range(from, to));
+        } catch (error) {
+            const code = typeof error === "object" && error !== null && "code" in error
+                ? (error as { code?: unknown }).code
+                : undefined;
+            // 迁移尚未执行时忽略 site_pages，不影响博客媒体的正常清理
+            // 42P01 / PGRST205 分别对应 Postgres 和 PostgREST 的“表不存在”
+            if (code !== "42P01" && code !== "PGRST205") throw error;
+        }
+
+        let pageRevisions: { content: string }[] = [];
+        try {
+            pageRevisions = await fetchAllPages(async (from, to) => await supabase
+                .from("site_page_revisions")
+                .select("content")
+                .order("id", { ascending: true })
+                .range(from, to));
+        } catch (error) {
+            const code = typeof error === "object" && error !== null && "code" in error
+                ? (error as { code?: unknown }).code
+                : undefined;
+            if (code !== "42P01" && code !== "PGRST205") throw error;
+        }
+        rows = [
+            ...posts,
+            ...revisions,
+            ...pages.map((page) => ({ content: page.content, cover_image: null })),
+            ...pageRevisions.map((page) => ({ content: page.content, cover_image: null })),
+        ];
     } catch (error) {
         console.error("Failed to check media references, skipping cleanup:", error);
         return;

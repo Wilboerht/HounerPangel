@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { env } from "./env";
 import { extractStoragePaths, getAllBlogPostsForBackup, importBlogPost, supabase } from "./supabase";
+import { getAllSitePages, importSitePage } from "./site-pages";
 import { blogPostSchema } from "./validation";
 
 const backupPostSchema = blogPostSchema.extend({
@@ -13,11 +14,21 @@ const backupPostSchema = blogPostSchema.extend({
     media: z.array(z.object({ path: z.string(), url: z.string() })),
 });
 
+const backupPageSchema = z.object({
+    slug: z.string().regex(/^[a-z0-9-]{1,64}$/),
+    title: z.string().min(1).max(200),
+    description: z.string().max(500).default(""),
+    content: z.string().max(100_000).default(""),
+    updatedAt: z.string().max(100),
+});
+
 export const blogBackupSchema = z.object({
     format: z.literal("hank-blog-backup"),
     version: z.literal(1),
     exportedAt: z.string(),
     posts: z.array(backupPostSchema).max(5000),
+    // 旧备份没有 pages 字段；新备份会额外包含可编辑的站点页面（当前为 /me）
+    pages: z.array(backupPageSchema).max(100).default([]),
 }).superRefine((backup, ctx) => {
     const seen = new Set<string>();
     backup.posts.forEach((post, index) => {
@@ -55,6 +66,14 @@ ${post.content}`;
 export async function createBlogBackup(slugs?: string[]): Promise<BlogBackup> {
     const selected = slugs ? new Set(slugs) : null;
     const posts = (await getAllBlogPostsForBackup()).filter((post) => !selected || selected.has(post.slug));
+    // “导出所选”只导出文章，不附带站点页面；完整导出才包含页面内容
+    const pages = selected ? [] : (await getAllSitePages()).map((page) => ({
+        slug: page.slug,
+        title: page.title,
+        description: page.description,
+        content: page.content,
+        updatedAt: page.updatedAt,
+    }));
     const storageBase = `${env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/images/`;
 
     const backupPosts = posts.map((post) => {
@@ -86,6 +105,7 @@ export async function createBlogBackup(slugs?: string[]): Promise<BlogBackup> {
         version: 1,
         exportedAt: new Date().toISOString(),
         posts: backupPosts,
+        pages,
     };
 }
 
@@ -147,4 +167,26 @@ export async function applyBlogImport(backup: BlogBackup, conflictMode: BackupCo
     }
 
     return results;
+}
+
+// 站点页面属于单例内容，恢复备份时直接覆盖；触发器和审计会保留可追溯信息。
+export async function applySitePageImport(pages: BlogBackup["pages"]): Promise<{
+    restored: number;
+    failed: { slug: string; error: string }[];
+}> {
+    let restored = 0;
+    const failed: { slug: string; error: string }[] = [];
+    for (const page of pages) {
+        try {
+            await importSitePage(page);
+            restored += 1;
+        } catch (error) {
+            console.error(`Failed to import site page ${page.slug}:`, error);
+            failed.push({
+                slug: page.slug,
+                error: error instanceof Error ? error.message : "数据库写入失败",
+            });
+        }
+    }
+    return { restored, failed };
 }

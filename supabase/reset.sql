@@ -35,6 +35,7 @@ $$;
 -- 3. Drop helper functions (we recreate them below)
 DROP FUNCTION IF EXISTS public.set_updated_at() CASCADE;
 DROP FUNCTION IF EXISTS public.capture_blog_post_revision() CASCADE;
+DROP FUNCTION IF EXISTS public.capture_site_page_revision() CASCADE;
 DROP FUNCTION IF EXISTS public.increment_rate_limit(text, integer) CASCADE;
 DROP FUNCTION IF EXISTS public.get_analytics_overview(timestamptz) CASCADE;
 
@@ -233,6 +234,8 @@ CREATE POLICY "Allow public read site pages" ON public.site_pages FOR SELECT USI
 CREATE TRIGGER set_site_pages_updated_at BEFORE UPDATE ON public.site_pages
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
+-- 注意：种子文案与 src/lib/site-pages.ts 的 DEFAULT_ABOUT_PAGE、
+-- supabase/migrations/20261106000000_site_pages.sql 保持一致；修改时请同步三处。
 INSERT INTO public.site_pages (slug, title, description, content) VALUES (
   'about',
   '关于我',
@@ -244,6 +247,34 @@ INSERT INTO public.site_pages (slug, title, description, content) VALUES (
 Genius programmer @ Vanto & @ Moidas.$about$
 )
 ON CONFLICT (slug) DO NOTHING;
+
+CREATE TABLE public.site_page_revisions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  page_slug text NOT NULL REFERENCES public.site_pages(slug) ON DELETE CASCADE,
+  title text NOT NULL,
+  description text NOT NULL DEFAULT '',
+  content text NOT NULL DEFAULT '',
+  source_updated_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX site_page_revisions_page_slug_created_at_idx
+  ON public.site_page_revisions (page_slug, created_at DESC);
+ALTER TABLE public.site_page_revisions ENABLE ROW LEVEL SECURITY;
+
+CREATE OR REPLACE FUNCTION public.capture_site_page_revision()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.site_page_revisions (
+    page_slug, title, description, content, source_updated_at
+  ) VALUES (
+    OLD.slug, OLD.title, OLD.description, OLD.content, OLD.updated_at
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SET search_path = '';
+
+CREATE TRIGGER capture_site_page_revision BEFORE UPDATE ON public.site_pages
+  FOR EACH ROW EXECUTE FUNCTION public.capture_site_page_revision();
 
 CREATE TABLE public.page_views (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

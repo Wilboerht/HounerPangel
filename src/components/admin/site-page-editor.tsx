@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ExternalLink, Save } from "lucide-react";
+import { ExternalLink, History, Save } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
 import { Badge } from "@/components/admin/badge";
 import { Button, buttonClassName } from "@/components/admin/button";
@@ -14,12 +14,19 @@ import { MarkdownEditor } from "@/components/markdown-editor";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
 import { useDirtyGuard } from "@/lib/use-dirty-guard";
+import { useLocalDraft } from "@/lib/use-local-draft";
+import { useDraftRestore } from "@/lib/use-draft-restore";
+import { SITE_PAGE_DRAFT_KEY } from "@/lib/site-page-draft";
 import type { SitePage } from "@/lib/types/site-page";
 
 const SLUG = "about";
 const PUBLIC_HREF = "/me";
 
 type FormState = Pick<SitePage, "title" | "description" | "content">;
+
+function sameForm(a: FormState, b: FormState) {
+    return a.title === b.title && a.description === b.description && a.content === b.content;
+}
 
 export function SitePageEditor() {
     const toast = useToast();
@@ -34,7 +41,18 @@ export function SitePageEditor() {
     const [saved, setSaved] = useState<SitePage | null>(null);
     const [form, setForm] = useState<FormState>({ title: "", description: "", content: "" });
     const [updatedAt, setUpdatedAt] = useState("");
-    const [pendingLeave, setPendingLeave] = useState(false);
+    const [pendingDestination, setPendingDestination] = useState<string | null>(null);
+    const draftCheckedRef = useRef(false);
+    const draftReadyRef = useRef(false);
+    const {
+        read: readDraft,
+        clear: clearDraft,
+        scheduleSave: scheduleDraftSave,
+    } = useLocalDraft<FormState>(SITE_PAGE_DRAFT_KEY);
+    const draftRestore = useDraftRestore<FormState>({
+        apply: (draft) => setForm(draft),
+        discard: clearDraft,
+    });
 
     const load = useCallback(() => {
         abortRef.current?.abort();
@@ -73,13 +91,55 @@ export function SitePageEditor() {
         return () => abortRef.current?.abort();
     }, [load]);
 
+    // 加载完成后检查本地草稿：与服务器内容一致则直接清理，不一致才询问恢复
+    useEffect(() => {
+        if (!saved || draftCheckedRef.current) return;
+        draftCheckedRef.current = true;
+        const stored = readDraft();
+        if (!stored) return;
+        if (
+            typeof stored.title !== "string" ||
+            typeof stored.description !== "string" ||
+            typeof stored.content !== "string"
+        ) {
+            clearDraft();
+            return;
+        }
+        if (sameForm(stored, saved)) {
+            clearDraft();
+            return;
+        }
+        draftRestore.setDraftPrompt(stored);
+    }, [clearDraft, draftRestore, readDraft, saved]);
+
+    // 表单变化后防抖写入本地草稿；与已保存内容一致时清除草稿
+    useEffect(() => {
+        if (!saved) return;
+        if (!draftReadyRef.current) {
+            draftReadyRef.current = true;
+            return;
+        }
+        if (sameForm(form, saved)) {
+            clearDraft();
+            return;
+        }
+        scheduleDraftSave(form);
+    }, [clearDraft, form, saved, scheduleDraftSave]);
+
     const dirty = saved !== null && (
         form.title !== saved.title ||
         form.description !== saved.description ||
         form.content !== saved.content
     );
 
-    useDirtyGuard(dirty, () => setPendingLeave(true));
+    useDirtyGuard(dirty, () => setPendingDestination("/admin"));
+
+    const handleHistoryClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (!dirty) return;
+        event.preventDefault();
+        setPendingDestination("/admin/about/history");
+    };
 
     const updateField = (patch: Partial<FormState>) => {
         setForm((current) => ({ ...current, ...patch }));
@@ -88,12 +148,21 @@ export function SitePageEditor() {
     const handleSave = async (event?: React.FormEvent) => {
         event?.preventDefault();
         if (saving || uploading || !saved || !dirty) return;
+        const payload = {
+            title: form.title.trim(),
+            description: form.description.trim(),
+            content: form.content,
+        };
+        if (!payload.title) {
+            toast.error("页面标题不能为空");
+            return;
+        }
         setSaving(true);
         try {
             const res = await fetch(`/api/admin/pages/${SLUG}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...form, expectedUpdatedAt: updatedAt }),
+                body: JSON.stringify({ ...payload, expectedUpdatedAt: updatedAt }),
             });
             if (res.status === 401) {
                 authExpired();
@@ -110,7 +179,9 @@ export function SitePageEditor() {
             }
             const nextUpdatedAt = typeof data.updatedAt === "string" ? data.updatedAt : updatedAt;
             setUpdatedAt(nextUpdatedAt);
-            setSaved({ slug: SLUG, ...form, updatedAt: nextUpdatedAt });
+            setForm(payload);
+            setSaved({ slug: SLUG, ...payload, updatedAt: nextUpdatedAt });
+            clearDraft();
             toast.success("关于我页面已保存");
         } catch (error) {
             toast.error(error instanceof TypeError ? "网络错误，请检查连接后重试" : "保存页面失败");
@@ -122,6 +193,7 @@ export function SitePageEditor() {
     const resetToSaved = () => {
         if (!saved) return;
         setForm({ title: saved.title, description: saved.description, content: saved.content });
+        clearDraft();
     };
 
     const description = updatedAt
@@ -135,14 +207,24 @@ export function SitePageEditor() {
                 description={description}
                 accessory={dirty ? <Badge variant="warning">未保存</Badge> : undefined}
                 actions={
-                    <Link
-                        href={PUBLIC_HREF}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={buttonClassName({ variant: "secondary", size: "lg" })}
-                    >
-                        <ExternalLink className="h-4 w-4" />查看页面
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Link
+                            href="/admin/about/history"
+                            onClick={handleHistoryClick}
+                            className={buttonClassName({ variant: "secondary", size: "lg" })}
+                        >
+                            <History className="h-4 w-4" />历史版本
+                        </Link>
+                        <Link
+                            href={PUBLIC_HREF}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="打开已保存的公开页面（新标签页）"
+                            className={buttonClassName({ variant: "secondary", size: "lg" })}
+                        >
+                            <ExternalLink className="h-4 w-4" />查看已保存页面
+                        </Link>
+                    </div>
                 }
             />
 
@@ -151,7 +233,7 @@ export function SitePageEditor() {
             ) : loadFailed ? (
                 <ErrorState
                     title="页面内容加载失败"
-                    description="请确认已应用最新的 site_pages 数据库迁移"
+                    description="请确认已应用 supabase/migrations 下的 site_pages 与 site_page_revisions 迁移"
                     onRetry={load}
                 />
             ) : (
@@ -239,15 +321,26 @@ export function SitePageEditor() {
             )}
 
             <ConfirmDialog
-                isOpen={pendingLeave}
-                onClose={() => setPendingLeave(false)}
+                isOpen={pendingDestination !== null}
+                onClose={() => setPendingDestination(null)}
                 onConfirm={() => {
-                    setPendingLeave(false);
-                    router.push("/admin");
+                    const href = pendingDestination ?? "/admin";
+                    setPendingDestination(null);
+                    router.push(href);
                 }}
                 title="离开编辑"
-                message="有未保存的页面内容，确定离开吗？未保存内容将丢失。"
+                message="有未保存的页面内容，确定离开吗？未保存内容会保留为本地草稿。"
                 confirmLabel="确定离开"
+                danger={false}
+            />
+
+            <ConfirmDialog
+                isOpen={draftRestore.draftPrompt !== null}
+                onClose={draftRestore.cancelRestore}
+                onConfirm={draftRestore.confirmRestore}
+                title="恢复草稿"
+                message="检测到未保存的本地草稿，是否恢复？"
+                confirmLabel="恢复"
                 danger={false}
             />
         </div>

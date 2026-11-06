@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { checkAuth } from "@/lib/auth";
-import { applyBlogImport, blogBackupSchema, createBlogBackup, previewBlogImport } from "@/lib/blog-backup";
+import { applyBlogImport, applySitePageImport, blogBackupSchema, createBlogBackup, previewBlogImport } from "@/lib/blog-backup";
 import { getRateLimitKey, rateLimit } from "@/lib/rate-limit";
 import { revalidateBlogPaths } from "@/lib/revalidate-blog";
 import { recordAudit } from "@/lib/audit";
@@ -59,21 +60,33 @@ export async function POST(request: NextRequest) {
                 create: plan.filter((item) => item.status === "create").length,
                 conflict: plan.filter((item) => item.status === "conflict").length,
                 deleted: plan.filter((item) => item.deleted).length,
+                pages: backup.pages.length,
                 plan,
             });
         }
 
         const results = await applyBlogImport(backup, conflictMode);
-        await recordAudit(request, "import", "blog_backup", undefined, { total: results.length, conflictMode, failed: results.filter((item) => item.status === "failed").length });
+        const pageImport = await applySitePageImport(backup.pages);
+        await recordAudit(request, "import", "blog_backup", undefined, {
+            total: results.length,
+            conflictMode,
+            failed: results.filter((item) => item.status === "failed").length,
+            pages: pageImport.restored,
+            pagesFailed: pageImport.failed.length,
+        });
         for (const result of results) {
             if (result.status === "created" || result.status === "updated") revalidateBlogPaths(result.slug);
         }
+        if (pageImport.restored > 0) revalidatePath("/me");
         return NextResponse.json({
             total: results.length,
             created: results.filter((item) => item.status === "created").length,
             updated: results.filter((item) => item.status === "updated").length,
             skipped: results.filter((item) => item.status === "skipped").length,
             failed: results.filter((item) => item.status === "failed").length,
+            pagesRestored: pageImport.restored,
+            pagesFailed: pageImport.failed.length,
+            pageErrors: pageImport.failed,
             results,
         });
     } catch (error) {

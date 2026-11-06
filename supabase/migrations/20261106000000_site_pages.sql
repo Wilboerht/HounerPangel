@@ -20,6 +20,8 @@ CREATE TRIGGER set_site_pages_updated_at
   BEFORE UPDATE ON public.site_pages
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
+-- 注意：种子文案与 src/lib/site-pages.ts 的 DEFAULT_ABOUT_PAGE、
+-- supabase/reset.sql 保持一致；修改时请同步三处。
 INSERT INTO public.site_pages (slug, title, description, content) VALUES (
   'about',
   '关于我',

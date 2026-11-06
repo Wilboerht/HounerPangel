@@ -13,7 +13,7 @@ Personal website of Hank Wong (wilboerht). A digital space for showcasing projec
 
 - Next.js (App Router) + React + TypeScript
 - Tailwind CSS v4
-- Supabase (Postgres + Storage) for the blog
+- Supabase (Postgres + Storage) for the blog and editable site pages
 - MapLibre GL + react-map-gl for the footprint map
 - Vercel Analytics
 

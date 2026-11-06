@@ -13,8 +13,9 @@ export const revalidate = 3600;
 const getAboutPage = cache(async (): Promise<SitePage> => {
     try {
         return (await getSitePage("about")) ?? DEFAULT_ABOUT_PAGE;
-    } catch {
+    } catch (error) {
         // 数据库迁移尚未执行或暂时不可用时保持旧内容上线
+        console.error("Failed to load /me page content, using fallback:", error);
         return DEFAULT_ABOUT_PAGE;
     }
 });
@@ -22,7 +23,8 @@ const getAboutPage = cache(async (): Promise<SitePage> => {
 export async function generateMetadata(): Promise<Metadata> {
     const page = await getAboutPage();
     const title = page.title || DEFAULT_ABOUT_PAGE.title;
-    const description = page.description || DEFAULT_ABOUT_PAGE.description;
+    // 空描述表示管理员主动清空，不再回填默认文案
+    const description = page.description || undefined;
     const ogTitle = `${title} - Hank Wong's Web`;
 
     return {
@@ -72,7 +74,7 @@ export default async function AboutMe() {
 
                 <section className="space-y-8">
                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                        {page.title}
+                        {page.title || DEFAULT_ABOUT_PAGE.title}
                     </h1>
                     <article className="article-body">
                         {renderMarkdown(page.content)}

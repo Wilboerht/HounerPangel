@@ -67,6 +67,7 @@ function pageTitle(pathname: string): string {
   if (pathname.startsWith("/admin/blog/history/")) return "版本历史";
   if (pathname.startsWith("/admin/blog/preview/")) return "预览文章";
   if (pathname === "/admin/blog/trash") return "回收站";
+  if (pathname === "/admin/about/history") return "版本历史";
   for (const section of NAV_SECTIONS) {
     const hit = section.items.find((item) => isActive(item, pathname));
     if (hit) return hit.label;

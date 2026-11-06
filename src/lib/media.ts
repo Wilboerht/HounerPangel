@@ -9,8 +9,43 @@ function publicMediaUrl(path: string) {
     return `${env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/images/${path.split("/").map(encodeURIComponent).join("/")}`;
 }
 
+function isMissingTable(error: unknown) {
+    if (typeof error !== "object" || error === null || !("code" in error)) return false;
+    const code = (error as { code?: unknown }).code;
+    // 42P01: Postgres 原生 missing relation；PGRST205: PostgREST schema cache 中找不到表
+    return code === "42P01" || code === "PGRST205";
+}
+
+async function sitePageContents() {
+    let pages: { content: string }[] = [];
+    try {
+        pages = await fetchAllPages(async (from, to) => await supabase
+            .from("site_pages")
+            .select("content")
+            .order("slug", { ascending: true })
+            .range(from, to));
+    } catch (error) {
+        // 迁移尚未执行时保持媒体库可用；其他错误继续抛出，避免把在用文件误判为零引用
+        if (!isMissingTable(error)) throw error;
+        return [];
+    }
+
+    let revisions: { content: string }[] = [];
+    try {
+        revisions = await fetchAllPages(async (from, to) => await supabase
+            .from("site_page_revisions")
+            .select("content")
+            .order("id", { ascending: true })
+            .range(from, to));
+    } catch (error) {
+        if (!isMissingTable(error)) throw error;
+    }
+
+    return [...pages, ...revisions];
+}
+
 async function referenceCounts() {
-    const [posts, revisions] = await Promise.all([
+    const [posts, revisions, pages] = await Promise.all([
         fetchAllPages(async (from, to) => await supabase
             .from("blog_posts")
             .select("content, cover_image")
@@ -21,10 +56,14 @@ async function referenceCounts() {
             .select("content, cover_image")
             .order("id", { ascending: true })
             .range(from, to)),
+        sitePageContents(),
     ]);
     const counts = new Map<string, number>();
     for (const row of [...posts, ...revisions]) {
         for (const path of extractStoragePaths(`${row.content}\n${row.cover_image ? `![](${row.cover_image})` : ""}`)) counts.set(path, (counts.get(path) ?? 0) + 1);
+    }
+    for (const page of pages) {
+        for (const path of extractStoragePaths(page.content)) counts.set(path, (counts.get(path) ?? 0) + 1);
     }
     return counts;
 }

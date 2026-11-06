@@ -1,8 +1,15 @@
 import "server-only";
 
 import { supabase } from "./supabase";
-import type { SitePage, SitePageContent } from "./types/site-page";
+import type {
+    SitePage,
+    SitePageContent,
+    SitePageRevision,
+    SitePageRevisionSummary,
+} from "./types/site-page";
 
+// 注意：这段兜底文案与 supabase/migrations/20261106000000_site_pages.sql、
+// supabase/reset.sql 中的 about 种子数据保持一致；修改时请同步三处。
 export const DEFAULT_ABOUT_PAGE: SitePage = {
     slug: "about",
     title: "关于我",
@@ -16,6 +23,14 @@ export const DEFAULT_ABOUT_PAGE: SitePage = {
 };
 
 const PAGE_COLUMNS = "slug, title, description, content, updated_at";
+const REVISION_SUMMARY_COLUMNS = "id, page_slug, title, source_updated_at, created_at";
+const REVISION_COLUMNS = "id, page_slug, title, description, content, source_updated_at, created_at";
+
+function isMissingTable(error: unknown) {
+    if (typeof error !== "object" || error === null || !("code" in error)) return false;
+    const code = (error as { code?: unknown }).code;
+    return code === "42P01" || code === "PGRST205";
+}
 
 function mapPage(row: Record<string, unknown>): SitePage {
     return {
@@ -24,6 +39,24 @@ function mapPage(row: Record<string, unknown>): SitePage {
         description: (row.description as string | null) ?? "",
         content: (row.content as string | null) ?? "",
         updatedAt: row.updated_at as string,
+    };
+}
+
+function mapRevisionSummary(row: Record<string, unknown>): SitePageRevisionSummary {
+    return {
+        id: row.id as string,
+        pageSlug: row.page_slug as string,
+        title: row.title as string,
+        updatedAt: row.source_updated_at as string,
+        createdAt: row.created_at as string,
+    };
+}
+
+function mapRevision(row: Record<string, unknown>): SitePageRevision {
+    return {
+        ...mapRevisionSummary(row),
+        description: (row.description as string | null) ?? "",
+        content: (row.content as string | null) ?? "",
     };
 }
 
@@ -78,4 +111,62 @@ export async function saveSitePage(
         .maybeSingle();
     if (error) throw error;
     return data?.updated_at ?? null;
+}
+
+export async function getSitePageRevisions(slug: string): Promise<SitePageRevisionSummary[]> {
+    const { data, error } = await supabase
+        .from("site_page_revisions")
+        .select(REVISION_SUMMARY_COLUMNS)
+        .eq("page_slug", slug)
+        .order("created_at", { ascending: false })
+        .limit(50);
+    if (error) throw error;
+    return (data ?? []).map(mapRevisionSummary);
+}
+
+export async function getSitePageRevision(
+    slug: string,
+    revisionId: string
+): Promise<SitePageRevision | null> {
+    const { data, error } = await supabase
+        .from("site_page_revisions")
+        .select(REVISION_COLUMNS)
+        .eq("page_slug", slug)
+        .eq("id", revisionId)
+        .maybeSingle();
+    if (error) throw error;
+    return data ? mapRevision(data) : null;
+}
+
+export async function restoreSitePageRevision(
+    slug: string,
+    revisionId: string,
+    expectedUpdatedAt: string
+): Promise<string | null> {
+    const revision = await getSitePageRevision(slug, revisionId);
+    if (!revision) return null;
+    return saveSitePage(slug, revision, expectedUpdatedAt);
+}
+
+// 备份导出用。迁移尚未执行时返回空列表，避免旧环境无法导出博客备份。
+export async function getAllSitePages(): Promise<SitePage[]> {
+    try {
+        const { data, error } = await supabase
+            .from("site_pages")
+            .select(PAGE_COLUMNS)
+            .order("slug", { ascending: true });
+        if (error) throw error;
+        return (data ?? []).map(mapPage);
+    } catch (error) {
+        if (isMissingTable(error)) return [];
+        throw error;
+    }
+}
+
+// 备份恢复用：显式覆盖现有页面（触发器会先保存当前内容的快照）。
+export async function importSitePage(page: SitePageContent & { slug: string }): Promise<void> {
+    const { error } = await supabase
+        .from("site_pages")
+        .upsert({ slug: page.slug, ...values(page) }, { onConflict: "slug" });
+    if (error) throw error;
 }

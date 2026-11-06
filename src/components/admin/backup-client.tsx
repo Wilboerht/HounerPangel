@@ -22,6 +22,7 @@ interface ImportPreview {
     create: number;
     conflict: number;
     deleted: number;
+    pages: number;
     plan: ImportPlanItem[];
 }
 
@@ -31,6 +32,9 @@ interface ImportResult {
     updated: number;
     skipped: number;
     failed: number;
+    pagesRestored: number;
+    pagesFailed: number;
+    pageErrors: { slug: string; error: string }[];
     results: { slug: string; status: string; error?: string }[];
 }
 
@@ -120,7 +124,7 @@ export function BackupClient() {
                 // 导入已写入数据，清掉过期的预检查结果；再次导入前必须重新预检查
                 setPreview(null);
                 setConfirmImport(false);
-                if (importResult.failed > 0) toast.error(`导入完成，但有 ${importResult.failed} 篇失败`);
+                if (importResult.failed > 0 || importResult.pagesFailed > 0) toast.error(`导入完成，但有 ${importResult.failed + importResult.pagesFailed} 项失败`);
                 else toast.success("备份导入完成");
             }
         } catch {
@@ -132,12 +136,12 @@ export function BackupClient() {
 
     return (
         <div className="flex flex-col gap-6">
-            <PageHeader title="备份与恢复" description="导出全部博客内容，或通过预检查安全导入备份" />
+            <PageHeader title="备份与恢复" description="导出博客与站点页面内容，或通过预检查安全导入备份" />
 
             <DashboardCard title="导出备份">
                 <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-col gap-1 text-sm text-muted">
-                        <p>包含已发布文章、草稿、回收站内容，以及每篇文章的 Markdown Front Matter 和媒体清单。</p>
+                        <p>包含已发布文章、草稿、回收站内容、站点页面（如「关于我」），以及每篇文章的 Markdown Front Matter 和媒体清单。</p>
                         <p className="text-xs">备份不包含媒体二进制文件；图片、视频和附件仍保存在 Supabase Storage。</p>
                     </div>
                     <Button variant="primary" size="lg" onClick={exportBackup} disabled={exporting} className="flex-shrink-0">
@@ -167,6 +171,9 @@ export function BackupClient() {
                             <div className="flex items-center gap-2 text-sm font-medium">
                                 <CheckCircle2 className="h-4 w-4 text-green-700" />预检查完成，尚未写入数据
                             </div>
+                            {preview.pages > 0 && (
+                                <p className="text-xs text-muted">包含 {preview.pages} 个站点页面，导入时会恢复并生成历史快照。</p>
+                            )}
                             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                                 {[
                                     ["文章总数", preview.total],
@@ -191,6 +198,7 @@ export function BackupClient() {
                                     <input type="radio" name="conflict-mode" checked={conflictMode === "overwrite"} onChange={() => setConflictMode("overwrite")} />
                                     用备份覆盖现有文章，覆盖前自动保存历史快照
                                 </label>
+                                <p className="text-xs text-muted">站点页面不受冲突模式影响，会直接恢复并保留恢复前快照。</p>
                             </div>
 
                             <div className="max-h-56 overflow-y-auto rounded-lg border border-border/50">
@@ -222,6 +230,11 @@ export function BackupClient() {
                         <div className="rounded-lg border border-border/50 p-4 text-sm">
                             <p className="font-medium">导入结果</p>
                             <p className="mt-2 text-muted">新增 {result.created} · 覆盖 {result.updated} · 跳过 {result.skipped} · 失败 {result.failed}</p>
+                            {result.pagesRestored > 0 && <p className="mt-1 text-muted">站点页面已恢复 {result.pagesRestored} 个</p>}
+                            {result.pagesFailed > 0 && <p className="mt-1 text-xs text-red-700">站点页面恢复失败 {result.pagesFailed} 个</p>}
+                            {result.pageErrors.map((item) => (
+                                <p key={item.slug} className="mt-1 text-xs text-red-700">{item.slug}：{item.error}</p>
+                            ))}
                             {result.results.filter((item) => item.status === "failed").map((item) => (
                                 <p key={item.slug} className="mt-1 text-xs text-red-700">{item.slug}：{item.error}</p>
                             ))}
@@ -236,8 +249,8 @@ export function BackupClient() {
                 onConfirm={() => requestImport(false)}
                 title="确认导入备份"
                 message={conflictMode === "overwrite"
-                    ? `将导入 ${preview?.total ?? 0} 篇文章，并覆盖 ${preview?.conflict ?? 0} 篇同 Slug 文章。现有内容会保留在历史版本中，确定继续吗？`
-                    : `将导入 ${preview?.create ?? 0} 篇新文章，并跳过 ${preview?.conflict ?? 0} 篇冲突文章，确定继续吗？`}
+                    ? `将导入 ${preview?.total ?? 0} 篇文章，并覆盖 ${preview?.conflict ?? 0} 篇同 Slug 文章。${preview?.pages ? `同时恢复 ${preview.pages} 个站点页面。` : ""}现有内容会保留在历史版本中，确定继续吗？`
+                    : `将导入 ${preview?.create ?? 0} 篇新文章，并跳过 ${preview?.conflict ?? 0} 篇冲突文章。${preview?.pages ? `同时恢复 ${preview.pages} 个站点页面。` : ""}确定继续吗？`}
                 confirmLabel="确认导入"
                 danger={conflictMode === "overwrite"}
             />
