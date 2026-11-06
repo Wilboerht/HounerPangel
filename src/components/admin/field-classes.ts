@@ -5,6 +5,6 @@ export const fieldBase =
 
 export const fieldClass = `${fieldBase} px-3 py-2`;
 
-export const fieldSearchClass = `${fieldBase} py-2 pl-10 pr-12`;
+export const fieldSearchClass = `${fieldBase} py-2 pl-10 pr-14`;
 
 export const fieldLabelClass = "text-sm font-medium text-foreground";

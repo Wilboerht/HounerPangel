@@ -7,7 +7,7 @@ Personal website of Hank Wong (wilboerht). A digital space for showcasing projec
 - **Blog** — Markdown posts with tags, archives, custom SEO/share metadata, RSS feed (`/rss.xml`), sitemap, and SEO metadata included
 - **Admin panel** (`/admin`) — revision history, restorable trash, server-side list filtering and bulk actions, JSON backup import/export, media library, live unsaved preview, link checks, editable site pages, lightweight page-view analytics, session management, and audit logs
 - **Footprint map** (`/map`) — fullscreen MapLibre GL map with CARTO Positron; cities are managed in the admin panel and stored in Supabase, with `src/data/cities.ts` as a build-time fallback
-- **About** (`/me`) — editable Markdown introduction managed from the admin panel
+- **About** (`/me`) — editable Markdown introduction with SEO/share settings and revision history, managed from the admin panel
 
 ## Tech Stack
 

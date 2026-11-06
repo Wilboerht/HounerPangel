@@ -22,10 +22,38 @@ import type { SitePage } from "@/lib/types/site-page";
 const SLUG = "about";
 const PUBLIC_HREF = "/me";
 
-type FormState = Pick<SitePage, "title" | "description" | "content">;
+type FormState = {
+    title: string;
+    description: string;
+    content: string;
+    seoTitle: string;
+    coverImage: string;
+};
+
+function pageToForm(page: SitePage): FormState {
+    return {
+        title: page.title,
+        description: page.description,
+        content: page.content,
+        seoTitle: page.seoTitle ?? "",
+        coverImage: page.coverImage ?? "",
+    };
+}
 
 function sameForm(a: FormState, b: FormState) {
-    return a.title === b.title && a.description === b.description && a.content === b.content;
+    return a.title === b.title &&
+        a.description === b.description &&
+        a.content === b.content &&
+        a.seoTitle === b.seoTitle &&
+        a.coverImage === b.coverImage;
+}
+
+function normalizeDraft(draft: FormState): FormState {
+    return {
+        ...draft,
+        seoTitle: typeof draft.seoTitle === "string" ? draft.seoTitle : "",
+        coverImage: typeof draft.coverImage === "string" ? draft.coverImage : "",
+    };
 }
 
 export function SitePageEditor() {
@@ -39,9 +67,10 @@ export function SitePageEditor() {
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [saved, setSaved] = useState<SitePage | null>(null);
-    const [form, setForm] = useState<FormState>({ title: "", description: "", content: "" });
+    const [form, setForm] = useState<FormState>({ title: "", description: "", content: "", seoTitle: "", coverImage: "" });
     const [updatedAt, setUpdatedAt] = useState("");
     const [pendingDestination, setPendingDestination] = useState<string | null>(null);
+    const [conflicted, setConflicted] = useState(false);
     const draftCheckedRef = useRef(false);
     const draftReadyRef = useRef(false);
     const {
@@ -74,8 +103,9 @@ export function SitePageEditor() {
             .then((page) => {
                 if (!page || controller.signal.aborted) return;
                 setSaved(page);
-                setForm({ title: page.title, description: page.description, content: page.content });
+                setForm(pageToForm(page));
                 setUpdatedAt(page.updatedAt);
+                setConflicted(false);
                 setLoading(false);
             })
             .catch(() => {
@@ -105,11 +135,12 @@ export function SitePageEditor() {
             clearDraft();
             return;
         }
-        if (sameForm(stored, saved)) {
+        const normalized = normalizeDraft(stored);
+        if (sameForm(normalized, pageToForm(saved))) {
             clearDraft();
             return;
         }
-        draftRestore.setDraftPrompt(stored);
+        draftRestore.setDraftPrompt(normalized);
     }, [clearDraft, draftRestore, readDraft, saved]);
 
     // 表单变化后防抖写入本地草稿；与已保存内容一致时清除草稿
@@ -119,18 +150,14 @@ export function SitePageEditor() {
             draftReadyRef.current = true;
             return;
         }
-        if (sameForm(form, saved)) {
+        if (sameForm(form, pageToForm(saved))) {
             clearDraft();
             return;
         }
         scheduleDraftSave(form);
     }, [clearDraft, form, saved, scheduleDraftSave]);
 
-    const dirty = saved !== null && (
-        form.title !== saved.title ||
-        form.description !== saved.description ||
-        form.content !== saved.content
-    );
+    const dirty = saved !== null && !sameForm(form, pageToForm(saved));
 
     useDirtyGuard(dirty, () => setPendingDestination("/admin"));
 
@@ -148,15 +175,22 @@ export function SitePageEditor() {
     const handleSave = async (event?: React.FormEvent) => {
         event?.preventDefault();
         if (saving || uploading || !saved || !dirty) return;
-        const payload = {
+        const nextForm = {
             title: form.title.trim(),
             description: form.description.trim(),
             content: form.content,
+            seoTitle: form.seoTitle.trim(),
+            coverImage: form.coverImage.trim(),
         };
-        if (!payload.title) {
+        if (!nextForm.title) {
             toast.error("页面标题不能为空");
             return;
         }
+        const payload = {
+            ...nextForm,
+            seoTitle: nextForm.seoTitle || null,
+            coverImage: nextForm.coverImage || null,
+        };
         setSaving(true);
         try {
             const res = await fetch(`/api/admin/pages/${SLUG}`, {
@@ -170,6 +204,7 @@ export function SitePageEditor() {
             }
             const data = await res.json().catch(() => ({}));
             if (res.status === 409) {
+                setConflicted(true);
                 toast.error(data.error || "页面已被其他会话修改，请刷新后重试");
                 return;
             }
@@ -179,8 +214,15 @@ export function SitePageEditor() {
             }
             const nextUpdatedAt = typeof data.updatedAt === "string" ? data.updatedAt : updatedAt;
             setUpdatedAt(nextUpdatedAt);
-            setForm(payload);
-            setSaved({ slug: SLUG, ...payload, updatedAt: nextUpdatedAt });
+            setForm(nextForm);
+            setSaved({
+                slug: SLUG,
+                ...nextForm,
+                seoTitle: payload.seoTitle,
+                coverImage: payload.coverImage,
+                updatedAt: nextUpdatedAt,
+            });
+            setConflicted(false);
             clearDraft();
             toast.success("关于我页面已保存");
         } catch (error) {
@@ -192,7 +234,7 @@ export function SitePageEditor() {
 
     const resetToSaved = () => {
         if (!saved) return;
-        setForm({ title: saved.title, description: saved.description, content: saved.content });
+        setForm(pageToForm(saved));
         clearDraft();
     };
 
@@ -228,12 +270,21 @@ export function SitePageEditor() {
                 }
             />
 
+            {conflicted && (
+                <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-600/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-800">
+                    <p>页面已被其他会话修改，当前编辑内容已保留为本地草稿。刷新后可以恢复草稿并重新保存。</p>
+                    <Button variant="secondary" onClick={() => window.location.reload()}>
+                        刷新页面
+                    </Button>
+                </div>
+            )}
+
             {loading ? (
                 <LoadingRows count={3} className="h-16" />
             ) : loadFailed ? (
                 <ErrorState
                     title="页面内容加载失败"
-                    description="请确认已应用 supabase/migrations 下的 site_pages 与 site_page_revisions 迁移"
+                    description="请确认已应用 supabase/migrations 下的 site_pages、site_page_revisions 与 site_page_seo 迁移"
                     onRetry={load}
                 />
             ) : (
@@ -278,7 +329,42 @@ export function SitePageEditor() {
                                 placeholder="用于搜索结果和分享卡片"
                                 className={fieldClass}
                             />
+                            <p className="text-xs text-muted">建议控制在 160 字以内，留空时不输出 meta description。</p>
                         </div>
+
+                        <details className="rounded-lg border border-border/50 p-4">
+                            <summary className="cursor-pointer text-sm font-medium text-foreground">SEO 与分享设置</summary>
+                            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="site-page-seo-title" className="text-sm font-medium text-foreground">
+                                        SEO 标题 <span className="text-xs text-muted">({form.seoTitle.length}/200)</span>
+                                    </label>
+                                    <input
+                                        id="site-page-seo-title"
+                                        type="text"
+                                        maxLength={200}
+                                        value={form.seoTitle}
+                                        onChange={(event) => updateField({ seoTitle: event.target.value })}
+                                        placeholder="留空时使用页面标题"
+                                        className={fieldClass}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="site-page-cover" className="text-sm font-medium text-foreground">
+                                        分享图 URL
+                                    </label>
+                                    <input
+                                        id="site-page-cover"
+                                        type="url"
+                                        maxLength={2000}
+                                        value={form.coverImage}
+                                        onChange={(event) => updateField({ coverImage: event.target.value })}
+                                        placeholder="留空时使用站点默认分享图"
+                                        className={fieldClass}
+                                    />
+                                </div>
+                            </div>
+                        </details>
 
                         <div className="flex flex-col gap-2">
                             <label htmlFor="site-page-content" className="text-sm font-medium text-foreground">

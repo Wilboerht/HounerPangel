@@ -1,7 +1,6 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
-
+import NextImage from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Copy, File, Film, Image as ImageIcon, Pencil, Search, Trash2, Upload } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
@@ -50,6 +49,8 @@ function formatSize(size: number) {
     return `${(size / 1024 / 1024).toFixed(1)} MB`;
 }
 
+type MediaSort = "newest" | "oldest" | "name" | "references" | "size";
+
 export function MediaAdminClient() {
     const toast = useToast();
     const authExpired = useAuthExpired();
@@ -60,6 +61,12 @@ export function MediaAdminClient() {
     const [search, setSearch] = useState("");
     const [kind, setKind] = useState("all");
     const [onlyOrphans, setOnlyOrphans] = useState(false);
+    const [sort, setSort] = useState<MediaSort>("newest");
+    const [page, setPage] = useState(1);
+    const pageSize = 20;
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [deletingMany, setDeletingMany] = useState(false);
+    const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [editing, setEditing] = useState<MediaAsset | null>(null);
     const [alt, setAlt] = useState("");
@@ -127,12 +134,21 @@ export function MediaAdminClient() {
             });
             if (!registerRes.ok) throw new Error("文件已上传，但媒体信息登记失败");
             toast.success("媒体已上传");
+            setPage(1);
             await load();
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "上传失败");
         } finally {
             setUploading(false);
             if (fileRef.current) fileRef.current.value = "";
+        }
+    };
+
+    const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        const files = Array.from(event.dataTransfer.files);
+        for (const file of files) {
+            await upload(file);
         }
     };
 
@@ -172,21 +188,72 @@ export function MediaAdminClient() {
             const data = await res.json();
             if (!res.ok) { toast.error(data.error || "删除失败"); return; }
             setAssets((items) => items.filter((item) => item.id !== deleting.id));
+            setSelectedIds((current) => {
+                const next = new Set(current);
+                next.delete(deleting.id);
+                return next;
+            });
             setDeleting(null);
             toast.success("零引用媒体已删除");
         } catch { toast.error("网络错误，请重试"); }
+    };
+
+    const removeSelected = async () => {
+        if (selectedIds.size === 0 || deletingMany) return;
+        const targets = assets.filter((asset) => selectedIds.has(asset.id));
+        const deletable = targets.filter((asset) => asset.references === 0);
+        let deleted = 0;
+        let failed = 0;
+        setDeletingMany(true);
+        try {
+            for (const asset of deletable) {
+                const res = await fetch(`/api/admin/media/${encodeURIComponent(asset.id)}`, { method: "DELETE" });
+                if (res.status === 401) { authExpired(); return; }
+                if (res.ok) deleted += 1;
+                else failed += 1;
+            }
+            await load();
+            setSelectedIds(new Set());
+            setConfirmBulkDelete(false);
+            const skipped = targets.length - deletable.length;
+            if (failed > 0) toast.error(`已删除 ${deleted} 个，失败 ${failed} 个，跳过 ${skipped} 个`);
+            else if (skipped > 0) toast.info(`已删除 ${deleted} 个，跳过 ${skipped} 个仍有引用的媒体`);
+            else toast.success(`已删除 ${deleted} 个媒体`);
+        } catch {
+            toast.error("网络错误，请重试");
+        } finally {
+            setDeletingMany(false);
+        }
     };
 
     const filtered = assets.filter((asset) =>
         (kind === "all" || asset.kind === kind) && (!onlyOrphans || asset.references === 0) &&
         (!search || `${asset.fileName} ${asset.alt} ${asset.path}`.toLowerCase().includes(search.toLowerCase()))
     );
+    const sorted = [...filtered].sort((a, b) => {
+        switch (sort) {
+            case "oldest": return a.createdAt.localeCompare(b.createdAt);
+            case "name": return (a.alt || a.fileName).localeCompare(b.alt || b.fileName, "zh-CN");
+            case "references": return b.references - a.references;
+            case "size": return b.size - a.size;
+            default: return b.createdAt.localeCompare(a.createdAt);
+        }
+    });
+    const maxPage = Math.max(1, Math.ceil(sorted.length / pageSize));
+    const currentPage = Math.min(page, maxPage);
+    const paged = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    const allPageSelected = paged.length > 0 && paged.every((asset) => selectedIds.has(asset.id));
+    const somePageSelected = paged.some((asset) => selectedIds.has(asset.id)) && !allPageSelected;
 
     const hasFilters = Boolean(search) || kind !== "all" || onlyOrphans;
 
     return (
-        <div className="flex flex-col gap-6">
-            <PageHeader title="媒体库" description="管理、复用媒体并清理零引用文件" actions={
+        <div
+            className="flex flex-col gap-6"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={handleDrop}
+        >
+            <PageHeader title="媒体库" description="管理、复用媒体并清理零引用文件，支持拖拽上传" actions={
                 <>
                     <input ref={fileRef} type="file" className="hidden" onChange={(event) => upload(event.target.files?.[0])} />
                     <Button variant="primary" size="lg" disabled={uploading} onClick={() => fileRef.current?.click()}>
@@ -198,13 +265,20 @@ export function MediaAdminClient() {
             <div className="flex flex-col gap-2 rounded-lg border border-border/50 p-3 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                    <input aria-label="搜索媒体" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜索文件名或替代文本" className={fieldSearchClass} />
+                    <input aria-label="搜索媒体" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="搜索文件名或替代文本" className={fieldSearchClass} />
                 </div>
-                <select aria-label="媒体类型" value={kind} onChange={(event) => setKind(event.target.value)} className={`${fieldClass} sm:max-w-36`}>
+                <select aria-label="媒体类型" value={kind} onChange={(event) => { setKind(event.target.value); setPage(1); }} className={`${fieldClass} sm:max-w-36`}>
                     <option value="all">全部类型</option><option value="image">图片</option><option value="video">视频</option><option value="attachment">附件</option>
                 </select>
+                <select aria-label="排序方式" value={sort} onChange={(event) => { setSort(event.target.value as MediaSort); setPage(1); }} className={`${fieldClass} sm:max-w-40`}>
+                    <option value="newest">最新上传</option>
+                    <option value="oldest">最早上传</option>
+                    <option value="name">按名称</option>
+                    <option value="references">按引用数</option>
+                    <option value="size">按文件大小</option>
+                </select>
                 <label className="flex min-h-[44px] items-center gap-2 px-2 text-sm">
-                    <input type="checkbox" checked={onlyOrphans} onChange={(event) => setOnlyOrphans(event.target.checked)} className="h-4 w-4" />
+                    <input type="checkbox" checked={onlyOrphans} onChange={(event) => { setOnlyOrphans(event.target.checked); setPage(1); }} className="h-4 w-4" />
                     仅看零引用
                 </label>
             </div>
@@ -219,7 +293,7 @@ export function MediaAdminClient() {
                     title={hasFilters ? "暂无匹配媒体" : "媒体库为空"}
                     description={hasFilters ? "试试调整搜索词或筛选条件" : "上传图片、视频或附件后会出现在这里"}
                     action={hasFilters ? (
-                        <Button onClick={() => { setSearch(""); setKind("all"); setOnlyOrphans(false); }}>清除筛选</Button>
+                        <Button onClick={() => { setSearch(""); setKind("all"); setOnlyOrphans(false); setSort("newest"); setPage(1); }}>清除筛选</Button>
                     ) : (
                         <Button variant="primary" onClick={() => fileRef.current?.click()}>
                             <Upload className="h-4 w-4" />上传媒体
@@ -228,10 +302,45 @@ export function MediaAdminClient() {
                 />
             ) : (
                 <div className="flex flex-col gap-2">
-                    {filtered.map((asset) => (
+                    <label className="flex min-h-[44px] items-center gap-2 px-2 text-sm text-muted sm:min-h-[36px]">
+                        <input
+                            type="checkbox"
+                            aria-label="选择当前页全部媒体"
+                            checked={allPageSelected}
+                            ref={(element) => {
+                                if (element) element.indeterminate = somePageSelected;
+                            }}
+                            onChange={(event) => setSelectedIds(event.target.checked ? new Set(paged.map((asset) => asset.id)) : new Set())}
+                            className="h-4 w-4"
+                        />
+                        选择本页
+                    </label>
+
+                    {selectedIds.size > 0 && (
+                        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 p-3 text-sm">
+                            <span className="mr-auto">已选 {selectedIds.size} 个 · 仅零引用媒体可删除</span>
+                            <Button variant="danger" disabled={deletingMany} onClick={() => setConfirmBulkDelete(true)}>删除所选</Button>
+                            <Button variant="ghost" onClick={() => setSelectedIds(new Set())}>清除选择</Button>
+                        </div>
+                    )}
+
+                    {paged.map((asset) => (
                         <div key={asset.id} className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-2 rounded-lg border border-border/50 p-3 transition-colors hover:bg-foreground/[0.03] sm:flex sm:items-center">
-                            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-foreground/5">
-                                {asset.kind === "image" ? <img src={asset.url} alt="" className="h-full w-full object-cover" /> : asset.kind === "video" ? <Film className="h-5 w-5 text-muted" /> : <File className="h-5 w-5 text-muted" />}
+                            <div className="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-foreground/5">
+                                {asset.kind === "image" ? <NextImage src={asset.url} alt="" fill sizes="56px" className="object-cover" /> : asset.kind === "video" ? <Film className="h-5 w-5 text-muted" /> : <File className="h-5 w-5 text-muted" />}
+                                <label className="absolute left-1 top-1 flex h-8 w-8 items-center justify-center rounded-md bg-background/90 shadow-sm backdrop-blur-sm">
+                                    <input
+                                        type="checkbox"
+                                        aria-label={`选择 ${asset.fileName}`}
+                                        checked={selectedIds.has(asset.id)}
+                                        onChange={() => setSelectedIds((current) => {
+                                            const next = new Set(current);
+                                            if (next.has(asset.id)) next.delete(asset.id); else next.add(asset.id);
+                                            return next;
+                                        })}
+                                        className="h-4 w-4"
+                                    />
+                                </label>
                             </div>
                             <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-medium">{asset.alt || asset.fileName}</p>
@@ -254,6 +363,13 @@ export function MediaAdminClient() {
                             </div>
                         </div>
                     ))}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-sm text-muted">
+                        <span>共 {sorted.length} 个媒体 · 第 {currentPage} / {maxPage} 页</span>
+                        <div className="flex gap-2">
+                            <Button disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>上一页</Button>
+                            <Button disabled={currentPage >= maxPage} onClick={() => setPage(currentPage + 1)}>下一页</Button>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -285,6 +401,14 @@ export function MediaAdminClient() {
             </Dialog>
 
             <ConfirmDialog isOpen={deleting !== null} onClose={() => setDeleting(null)} onConfirm={remove} title="删除零引用媒体" message={`确定删除「${deleting?.fileName ?? ""}」吗？该操作会移除 Storage 文件，且不可撤销。`} confirmLabel="彻底删除" />
+            <ConfirmDialog
+                isOpen={confirmBulkDelete}
+                onClose={() => setConfirmBulkDelete(false)}
+                onConfirm={removeSelected}
+                title="批量删除媒体"
+                message={`确定删除已选的 ${selectedIds.size} 个媒体吗？仅零引用文件会被删除，仍有引用的会自动跳过。`}
+                confirmLabel="删除所选"
+            />
             <ConfirmDialog
                 isOpen={pendingClose}
                 onClose={() => setPendingClose(false)}

@@ -19,7 +19,10 @@ const backupPageSchema = z.object({
     title: z.string().min(1).max(200),
     description: z.string().max(500).default(""),
     content: z.string().max(100_000).default(""),
+    seoTitle: z.string().max(200).nullable().default(null),
+    coverImage: z.string().max(2000).nullable().default(null),
     updatedAt: z.string().max(100),
+    media: z.array(z.object({ path: z.string(), url: z.string() })).default([]),
 });
 
 export const blogBackupSchema = z.object({
@@ -66,15 +69,21 @@ ${post.content}`;
 export async function createBlogBackup(slugs?: string[]): Promise<BlogBackup> {
     const selected = slugs ? new Set(slugs) : null;
     const posts = (await getAllBlogPostsForBackup()).filter((post) => !selected || selected.has(post.slug));
+    const storageBase = `${env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/images/`;
     // “导出所选”只导出文章，不附带站点页面；完整导出才包含页面内容
     const pages = selected ? [] : (await getAllSitePages()).map((page) => ({
         slug: page.slug,
         title: page.title,
         description: page.description,
         content: page.content,
+        seoTitle: page.seoTitle,
+        coverImage: page.coverImage,
         updatedAt: page.updatedAt,
+        media: extractStoragePaths(`${page.content}\n${page.coverImage ? `![](${page.coverImage})` : ""}`).map((path) => ({
+            path,
+            url: `${storageBase}${path.split("/").map(encodeURIComponent).join("/")}`,
+        })),
     }));
-    const storageBase = `${env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/images/`;
 
     const backupPosts = posts.map((post) => {
         const value = {

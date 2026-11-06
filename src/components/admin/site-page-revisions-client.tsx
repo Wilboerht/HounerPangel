@@ -12,6 +12,7 @@ import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
 import { diffLines } from "@/lib/text-diff";
 import { SITE_PAGE_DRAFT_KEY } from "@/lib/site-page-draft";
+import { SITE_PAGE_REVISION_LIMIT } from "@/lib/site-page-config";
 import type {
     SitePage,
     SitePageRevision,
@@ -144,7 +145,7 @@ export function SitePageRevisionsClient() {
         return (
             <ErrorState
                 title="版本历史加载失败"
-                description="请确认已应用 site_pages 与 site_page_revisions 迁移"
+                description="请确认已应用 site_pages、site_page_revisions 与 site_page_seo 迁移"
                 onRetry={() => { setLoading(true); load(); }}
             />
         );
@@ -155,12 +156,14 @@ export function SitePageRevisionsClient() {
     const metadataDiffs = selected ? [
         { label: "标题", before: selected.title, after: current.title },
         { label: "页面描述", before: selected.description, after: current.description },
+        { label: "SEO 标题", before: selected.seoTitle ?? "", after: current.seoTitle ?? "" },
+        { label: "分享图", before: selected.coverImage ?? "", after: current.coverImage ?? "" },
     ].filter((item) => item.before !== item.after) : [];
 
     return (
         <div className="flex flex-col gap-6">
             <BackLink href="/admin/about" label="返回编辑" />
-            <PageHeader title="版本历史" description={`${current.title} · 选择历史版本与当前内容对比`} />
+            <PageHeader title="版本历史" description={`${current.title} · 选择历史版本与当前内容对比（最多保留最近 ${SITE_PAGE_REVISION_LIMIT} 个版本）`} />
 
             {revisions.length === 0 ? (
                 <EmptyState

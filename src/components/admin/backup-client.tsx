@@ -142,6 +142,7 @@ export function BackupClient() {
                 <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-col gap-1 text-sm text-muted">
                         <p>包含已发布文章、草稿、回收站内容、站点页面（如「关于我」），以及每篇文章的 Markdown Front Matter 和媒体清单。</p>
+                        <p className="text-xs">站点页面备份当前版本，历史快照按保留策略不包含在 JSON 备份中。</p>
                         <p className="text-xs">备份不包含媒体二进制文件；图片、视频和附件仍保存在 Supabase Storage。</p>
                     </div>
                     <Button variant="primary" size="lg" onClick={exportBackup} disabled={exporting} className="flex-shrink-0">

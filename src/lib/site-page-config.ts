@@ -1,0 +1,1 @@
+export const SITE_PAGE_REVISION_LIMIT = 100;

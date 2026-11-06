@@ -27,10 +27,13 @@ export default async function AdminDashboardPage() {
     } catch {}
 
     const publishedCount = posts.filter((p) => p.published && !p.archivedAt).length;
+    const draftCount = posts.filter((p) => !p.published && !p.archivedAt).length;
+    const archivedCount = posts.filter((p) => p.archivedAt).length;
     const stats = [
         { label: "文章总数", value: posts.length },
         { label: "已发布", value: publishedCount },
-        { label: "草稿", value: posts.filter((p) => !p.published && !p.archivedAt).length },
+        { label: "草稿", value: draftCount },
+        { label: "已归档", value: archivedCount },
     ];
     const recent = posts.slice(0, 5);
 
@@ -47,12 +50,9 @@ export default async function AdminDashboardPage() {
                 </p>
             )}
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                {stats.map((s, index) => (
-                    <DashboardCard
-                        key={s.label}
-                        className={index === stats.length - 1 ? "col-span-2 sm:col-span-1" : ""}
-                    >
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {stats.map((s) => (
+                    <DashboardCard key={s.label}>
                         <p className="text-xs text-muted sm:text-sm">{s.label}</p>
                         <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
                             {s.value}

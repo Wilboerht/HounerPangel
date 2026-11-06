@@ -239,11 +239,11 @@ async function removeUnreferencedMedia(candidatePaths: string[], excludeSlug: st
                 .order("id", { ascending: true })
                 .range(from, to)),
         ]);
-        let pages: { content: string }[] = [];
+        let pages: { content: string; cover_image: string | null }[] = [];
         try {
             pages = await fetchAllPages(async (from, to) => await supabase
                 .from("site_pages")
-                .select("content")
+                .select("content, cover_image")
                 .order("slug", { ascending: true })
                 .range(from, to));
         } catch (error) {
@@ -255,11 +255,11 @@ async function removeUnreferencedMedia(candidatePaths: string[], excludeSlug: st
             if (code !== "42P01" && code !== "PGRST205") throw error;
         }
 
-        let pageRevisions: { content: string }[] = [];
+        let pageRevisions: { content: string; cover_image: string | null }[] = [];
         try {
             pageRevisions = await fetchAllPages(async (from, to) => await supabase
                 .from("site_page_revisions")
-                .select("content")
+                .select("content, cover_image")
                 .order("id", { ascending: true })
                 .range(from, to));
         } catch (error) {
@@ -271,8 +271,8 @@ async function removeUnreferencedMedia(candidatePaths: string[], excludeSlug: st
         rows = [
             ...posts,
             ...revisions,
-            ...pages.map((page) => ({ content: page.content, cover_image: null })),
-            ...pageRevisions.map((page) => ({ content: page.content, cover_image: null })),
+            ...pages,
+            ...pageRevisions,
         ];
     } catch (error) {
         console.error("Failed to check media references, skipping cleanup:", error);

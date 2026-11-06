@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { checkAuth } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
+import { getRateLimitKey, rateLimit } from "@/lib/rate-limit";
 import {
     getSitePageRevision,
     getSitePageRevisions,
@@ -47,6 +48,9 @@ export async function GET(request: NextRequest, { params }: Params) {
 export async function POST(request: NextRequest, { params }: Params) {
     const authError = await checkAuth(request);
     if (authError) return authError;
+
+    const limit = await rateLimit(getRateLimitKey(request) + ":site-page:restore");
+    if (!limit.success) return NextResponse.json({ error: "请求过于频繁，请稍后再试" }, { status: 429 });
 
     const parsedSlug = slugSchema.safeParse((await params).slug);
     if (!parsedSlug.success) return NextResponse.json({ error: "页面不存在" }, { status: 404 });

@@ -11,6 +11,7 @@
   --muted-foreground: #737373;
   --card: #ffffff;
   --card-foreground: #171717;
+  --admin-sidebar-width: 15rem;
 }
 
 @theme inline {
@@ -438,6 +439,21 @@ textarea:-webkit-autofill:focus {
   margin-right: calc(10px + env(safe-area-inset-right, 0px));
 }
 
+/* 移动端批量操作栏横向滚动时显示细滚动条，提示还有更多操作 */
+.bulk-actions-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.bulk-actions-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.bulk-actions-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--border);
+}
+
 /* Markdown 编辑器按容器宽度而非视口宽度决定工具栏布局：
    模态框等窄容器保持单行横向滚动，宽内容区才换行，避免工具栏折成多行撑高头部。
    注意：container-type 会产生 layout containment，MediaPicker 必须渲染在 .md-editor 外部。 */
@@ -474,7 +490,7 @@ textarea:-webkit-autofill:focus {
   background: var(--border);
 }
 
-@container (min-width: 900px) {
+@container (min-width: 950px) {
   .md-editor-header {
     flex-direction: row;
     align-items: center;

@@ -226,6 +226,8 @@ CREATE TABLE public.site_pages (
   title text NOT NULL,
   description text NOT NULL DEFAULT '',
   content text NOT NULL DEFAULT '',
+  seo_title text,
+  cover_image text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -254,6 +256,8 @@ CREATE TABLE public.site_page_revisions (
   title text NOT NULL,
   description text NOT NULL DEFAULT '',
   content text NOT NULL DEFAULT '',
+  seo_title text,
+  cover_image text,
   source_updated_at timestamptz NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
@@ -265,9 +269,9 @@ CREATE OR REPLACE FUNCTION public.capture_site_page_revision()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.site_page_revisions (
-    page_slug, title, description, content, source_updated_at
+    page_slug, title, description, content, seo_title, cover_image, source_updated_at
   ) VALUES (
-    OLD.slug, OLD.title, OLD.description, OLD.content, OLD.updated_at
+    OLD.slug, OLD.title, OLD.description, OLD.content, OLD.seo_title, OLD.cover_image, OLD.updated_at
   );
   RETURN NEW;
 END;

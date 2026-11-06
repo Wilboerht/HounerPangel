@@ -244,6 +244,28 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     restoreEditor(ta, snapshot, blockStart, blockStart + updated.length);
   };
 
+  // 标题下拉：替换选中行已有的 # 前缀；level=0 表示恢复正文
+  const applyHeading = (level: number) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const snapshot = snapshotEditor(ta);
+    const { start, end } = snapshot;
+    const current = ta.value;
+    const blockStart = current.lastIndexOf("\n", start - 1) + 1;
+    const nextBreak = current.indexOf("\n", end);
+    const blockEnd = nextBreak === -1 ? current.length : nextBreak;
+    const block = current.slice(blockStart, blockEnd);
+    const updated = block
+      .split("\n")
+      .map((line) => {
+        const body = line.replace(/^ {0,3}#{1,6}\s+/, "");
+        return level > 0 ? `${"#".repeat(level)} ${body}` : body;
+      })
+      .join("\n");
+    if (!updateValue(current.slice(0, blockStart) + updated + current.slice(blockEnd))) return;
+    restoreEditor(ta, snapshot, blockStart, blockStart + updated.length);
+  };
+
   // 会话过期哨兵：onAuthExpired 已统一提示并刷新出登录表单，上层 catch 遇到它不再重复 toast
   const AUTH_EXPIRED = "__auth_expired__";
 
@@ -379,6 +401,8 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   // 图片、视频、附件共用一个上传入口，按文件类型决定插入的 Markdown 语法
   const handleUploadInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    // 立即清空选择，保证同一文件在上传失败/格式不支持后还能重新选择
+    event.target.value = "";
     if (!file) return;
     const kind = detectFileKind(file);
     if (!kind) {
@@ -389,7 +413,6 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       ? (url: string) => `[${sanitizeLinkText(file.name)}](${url})`
       : (url: string) => `![](${url})`;
     handleFileUpload(file, getMarkdown, kind);
-    if (uploadInputRef.current) uploadInputRef.current.value = "";
   };
 
   const handleDroppedFiles = async (files: FileList | File[]) => {
@@ -460,8 +483,6 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   };
 
   const insertTable = () => insertBlock("| 列 1 | 列 2 | 列 3 |\n| --- | --- | --- |\n| 内容 | 内容 | 内容 |");
-
-  const insertHeading = (level: number) => insertBlock(`${"#".repeat(level)} `, "标题");
 
   const tools = [
     { icon: Bold, label: "加粗 (Ctrl+B)", action: () => insertText("**", "**", "粗体") },
@@ -537,13 +558,14 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
                 aria-label="插入标题"
                 title="插入标题"
                 onChange={(event) => {
-                  const level = Number(event.target.value);
-                  if (level) insertHeading(level);
+                  const value = event.target.value;
+                  if (value !== "") applyHeading(Number(value));
                   event.target.value = "";
                 }}
                 className="min-h-[36px] shrink-0 rounded-md border border-border/50 bg-background px-2 text-xs text-muted max-sm:min-h-[44px]"
               >
                 <option value="">标题级别</option>
+                <option value="0">正文</option>
                 <option value="1">一级标题 H1</option>
                 <option value="2">二级标题 H2</option>
                 <option value="3">三级标题 H3</option>

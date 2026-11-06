@@ -16,31 +16,44 @@ function isMissingTable(error: unknown) {
     return code === "42P01" || code === "PGRST205";
 }
 
+function isMissingColumn(error: unknown) {
+    return typeof error === "object" && error !== null && "code" in error &&
+        (error as { code?: unknown }).code === "42703";
+}
+
+async function sitePageRows(
+    table: "site_pages" | "site_page_revisions",
+    orderColumn: "slug" | "id"
+): Promise<{ content: string; cover_image: string | null }[]> {
+    try {
+        return await fetchAllPages(async (from, to) => await supabase
+            .from(table)
+            .select("content, cover_image")
+            .order(orderColumn, { ascending: true })
+            .range(from, to));
+    } catch (error) {
+        if (isMissingTable(error)) return [];
+        if (!isMissingColumn(error)) throw error;
+        // SEO 迁移尚未执行：先按正文统计引用，媒体库继续可用
+        try {
+            const rows = await fetchAllPages(async (from, to) => await supabase
+                .from(table)
+                .select("content")
+                .order(orderColumn, { ascending: true })
+                .range(from, to));
+            return rows.map((row) => ({ content: row.content, cover_image: null }));
+        } catch (fallbackError) {
+            if (isMissingTable(fallbackError)) return [];
+            throw fallbackError;
+        }
+    }
+}
+
 async function sitePageContents() {
-    let pages: { content: string }[] = [];
-    try {
-        pages = await fetchAllPages(async (from, to) => await supabase
-            .from("site_pages")
-            .select("content")
-            .order("slug", { ascending: true })
-            .range(from, to));
-    } catch (error) {
-        // 迁移尚未执行时保持媒体库可用；其他错误继续抛出，避免把在用文件误判为零引用
-        if (!isMissingTable(error)) throw error;
-        return [];
-    }
-
-    let revisions: { content: string }[] = [];
-    try {
-        revisions = await fetchAllPages(async (from, to) => await supabase
-            .from("site_page_revisions")
-            .select("content")
-            .order("id", { ascending: true })
-            .range(from, to));
-    } catch (error) {
-        if (!isMissingTable(error)) throw error;
-    }
-
+    const [pages, revisions] = await Promise.all([
+        sitePageRows("site_pages", "slug"),
+        sitePageRows("site_page_revisions", "id"),
+    ]);
     return [...pages, ...revisions];
 }
 
@@ -59,11 +72,8 @@ async function referenceCounts() {
         sitePageContents(),
     ]);
     const counts = new Map<string, number>();
-    for (const row of [...posts, ...revisions]) {
+    for (const row of [...posts, ...revisions, ...pages]) {
         for (const path of extractStoragePaths(`${row.content}\n${row.cover_image ? `![](${row.cover_image})` : ""}`)) counts.set(path, (counts.get(path) ?? 0) + 1);
-    }
-    for (const page of pages) {
-        for (const path of extractStoragePaths(page.content)) counts.set(path, (counts.get(path) ?? 0) + 1);
     }
     return counts;
 }

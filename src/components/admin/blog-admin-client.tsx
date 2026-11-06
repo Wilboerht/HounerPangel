@@ -56,24 +56,46 @@ export function BlogAdminClient() {
   const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [status, setStatus] = useState("all");
-  const [tag, setTag] = useState("");
-  const [sort, setSort] = useState("date");
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState(() => searchParams.get("q") ?? "");
+  const [debouncedSearch, setDebouncedSearch] = useState(() => searchParams.get("q") ?? "");
+  const [status, setStatus] = useState(() => {
+    const value = searchParams.get("status");
+    return value && ["all", "published", "draft", "archived"].includes(value) ? value : "all";
+  });
+  const [tag, setTag] = useState(() => searchParams.get("tag") ?? "");
+  const [sort, setSort] = useState(() => searchParams.get("sort") === "updated" ? "updated" : "date");
+  const [page, setPage] = useState(() => {
+    const value = Number(searchParams.get("page"));
+    return Number.isInteger(value) && value > 0 ? value : 1;
+  });
   const [total, setTotal] = useState(0);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
   const [bulkWorking, setBulkWorking] = useState(false);
   const [bulkTag, setBulkTag] = useState("");
   const [pendingBulkAction, setPendingBulkAction] = useState<"archive" | "delete" | null>(null);
+  const [bulkBarHeight, setBulkBarHeight] = useState(0);
+  const bulkBarRef = useRef<HTMLDivElement>(null);
   const pageSize = 20;
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 200);
     return () => clearTimeout(timer);
   }, [search]);
+
+  // 悬浮批量栏高度随操作项换行而变，动态写入列表底部留白，避免遮住最后一行
+  useEffect(() => {
+    const element = bulkBarRef.current;
+    if (!element) {
+      setBulkBarHeight(0);
+      return;
+    }
+    const update = () => setBulkBarHeight(element.getBoundingClientRect().height);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [selectedSlugs.size]);
 
   const [showNewModal, setShowNewModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<BlogPostSummary | null>(null);
@@ -366,10 +388,37 @@ export function BlogAdminClient() {
       autoOpenHandledRef.current = true;
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 一次性响应 URL 参数：openNewModal 同时读写 localStorage 草稿和打开弹窗，属于对外部输入的副作用处理，不能移到渲染期
       openNewModal();
-      router.replace("/admin/blog");
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("new");
+      const query = params.toString();
+      router.replace(query ? `/admin/blog?${query}` : "/admin/blog");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, router]);
+
+  // 筛选状态写入 URL，刷新/分享后能恢复；滚动位置保持不变
+  useEffect(() => {
+    if (searchParams.get("new") === "1") return;
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("q", debouncedSearch);
+    if (status !== "all") params.set("status", status);
+    if (tag) params.set("tag", tag);
+    if (sort !== "date") params.set("sort", sort);
+    if (page > 1) params.set("page", String(page));
+    const query = params.toString();
+    const next = query ? `/admin/blog?${query}` : "/admin/blog";
+    const current = `${window.location.pathname}${window.location.search}`;
+    if (next !== current) window.history.replaceState(null, "", next);
+  }, [debouncedSearch, page, searchParams, sort, status, tag]);
+
+  const clearFilters = () => {
+    setSearch("");
+    setDebouncedSearch("");
+    setStatus("all");
+    setTag("");
+    setSort("date");
+    setPage(1);
+  };
 
   const allOnPageSelected =
     posts.length > 0 && posts.every((post) => selectedSlugs.has(post.slug));
@@ -406,7 +455,10 @@ export function BlogAdminClient() {
           onRetry={retryLoad}
         />
       ) : (
-        <div className={`flex flex-col gap-4 ${selectedSlugs.size > 0 ? "pb-48 md:pb-28" : ""}`}>
+        <div
+          className="flex flex-col gap-4"
+          style={selectedSlugs.size > 0 ? { paddingBottom: bulkBarHeight + 24 } : undefined}
+        >
           <div className="flex flex-col gap-2 rounded-lg border border-border/50 p-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
@@ -439,11 +491,16 @@ export function BlogAdminClient() {
                 <option value="date">按文章日期</option><option value="updated">按最近修改</option>
               </select>
             </div>
+            {hasFilters && (
+              <div className="flex justify-end">
+                <Button variant="ghost" onClick={clearFilters}>清除筛选</Button>
+              </div>
+            )}
           </div>
 
           {posts.length > 0 ? (
             <div className="flex flex-col gap-2">
-              <label className="flex min-h-[44px] items-center gap-2 px-2 text-sm text-muted">
+              <label className="flex min-h-[44px] items-center gap-2 px-2 text-sm text-muted sm:min-h-[36px]">
                 <input
                   type="checkbox"
                   aria-label="选择当前页全部文章"
@@ -557,8 +614,8 @@ export function BlogAdminClient() {
       </Dialog>
 
       {!loading && !loadFailed && selectedSlugs.size > 0 && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-30 flex justify-center px-4 print:hidden lg:pl-[calc(15rem+2rem)] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))]">
-          <div className="pointer-events-auto w-full max-w-4xl rounded-xl border border-accent/30 bg-background/95 p-3 shadow-2xl backdrop-blur-sm">
+        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-30 flex justify-center px-4 print:hidden lg:pl-[calc(var(--admin-sidebar-width)+2rem)] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))]">
+          <div ref={bulkBarRef} role="region" aria-label="批量操作" className="pointer-events-auto w-full max-w-4xl rounded-xl border border-accent/30 bg-background/95 p-3 shadow-2xl backdrop-blur-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               <div className="flex items-center gap-2">
                 <span aria-live="polite" className="mr-auto text-sm font-medium text-foreground">
@@ -569,7 +626,7 @@ export function BlogAdminClient() {
                 </IconButton>
               </div>
 
-              <div className="no-scrollbar flex items-center gap-2 overflow-x-auto pb-1 sm:ml-auto sm:flex-wrap sm:overflow-visible">
+              <div className="bulk-actions-scroll flex items-center gap-2 overflow-x-auto pb-1 sm:ml-auto sm:flex-wrap sm:overflow-visible">
                 <Button disabled={bulkWorking} onClick={() => executeBulk("publish")}>发布</Button>
                 <Button disabled={bulkWorking} onClick={() => executeBulk("unpublish")}>下线</Button>
                 <Button disabled={bulkWorking} onClick={() => setPendingBulkAction("archive")}>归档</Button>

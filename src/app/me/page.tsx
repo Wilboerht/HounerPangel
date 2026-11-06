@@ -23,12 +23,14 @@ const getAboutPage = cache(async (): Promise<SitePage> => {
 export async function generateMetadata(): Promise<Metadata> {
     const page = await getAboutPage();
     const title = page.title || DEFAULT_ABOUT_PAGE.title;
+    const metaTitle = page.seoTitle || title;
     // 空描述表示管理员主动清空，不再回填默认文案
     const description = page.description || undefined;
-    const ogTitle = `${title} - Hank Wong's Web`;
+    const ogTitle = `${metaTitle} - Hank Wong's Web`;
+    const images = page.coverImage ? [page.coverImage] : [DEFAULT_OG_IMAGE];
 
     return {
-        title,
+        title: metaTitle,
         description,
         alternates: {
             canonical: `${SITE_URL}/me`,
@@ -43,14 +45,14 @@ export async function generateMetadata(): Promise<Metadata> {
             type: "website",
             siteName: "Hank Wong",
             locale: "zh_CN",
-            images: [DEFAULT_OG_IMAGE],
+            images,
         },
         twitter: {
             card: "summary_large_image",
             title: ogTitle,
             description,
             creator: "@wilboerht",
-            images: [DEFAULT_OG_IMAGE.url],
+            images: page.coverImage ? [page.coverImage] : [DEFAULT_OG_IMAGE.url],
         },
     };
 }

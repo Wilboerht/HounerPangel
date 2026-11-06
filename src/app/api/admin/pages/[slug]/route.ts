@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { checkAuth } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
+import { getRateLimitKey, rateLimit } from "@/lib/rate-limit";
 import { getDefaultSitePage, getSitePage, saveSitePage } from "@/lib/site-pages";
 
 interface Params {
@@ -15,6 +16,8 @@ const sitePageSchema = z.object({
     title: z.string().trim().min(1, "标题不能为空").max(200, "标题过长"),
     description: z.string().trim().max(500, "描述过长").default(""),
     content: z.string().max(100_000, "正文过长").default(""),
+    seoTitle: z.string().trim().max(200, "SEO 标题过长").nullable().default(null),
+    coverImage: z.string().trim().max(2000, "分享图地址过长").nullable().default(null),
     expectedUpdatedAt: z.string().max(100).default(""),
 });
 
@@ -42,6 +45,9 @@ export async function GET(request: NextRequest, { params }: Params) {
 export async function PUT(request: NextRequest, { params }: Params) {
     const authError = await checkAuth(request);
     if (authError) return authError;
+
+    const limit = await rateLimit(getRateLimitKey(request) + ":site-page:save");
+    if (!limit.success) return NextResponse.json({ error: "请求过于频繁，请稍后再试" }, { status: 429 });
 
     const parsedSlug = slugSchema.safeParse((await params).slug);
     if (!parsedSlug.success) return NextResponse.json({ error: "页面不存在" }, { status: 404 });

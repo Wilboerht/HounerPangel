@@ -274,7 +274,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-dvh lg:pl-60 print:pl-0">
+    <div className="min-h-dvh lg:pl-[var(--admin-sidebar-width)] print:pl-0">
       <a
         href="#admin-main"
         className="fixed left-[calc(1rem+env(safe-area-inset-left,0px))] top-[calc(1rem+env(safe-area-inset-top,0px))] z-[200] -translate-y-[calc(100%+1rem)] rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-lg transition-transform focus:translate-y-0 print:hidden"
@@ -283,7 +283,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </a>
 
       {/* 桌面端侧边栏 */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-40 w-60 flex-col border-r border-border/50 bg-background print:hidden">
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-40 w-[var(--admin-sidebar-width)] flex-col border-r border-border/50 bg-background print:hidden">
         <SidebarContent
           pathname={pathname}
           onNavigateLink={handleNavClick}
@@ -316,7 +316,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               animate={{ x: 0 }}
               exit={safeAnimate(reduce, { x: "-100%" })}
               transition={springModal}
-              className="fixed inset-y-0 left-0 z-[95] w-[calc(15rem+env(safe-area-inset-left,0px))] pl-[env(safe-area-inset-left,0px)] border-r border-border/50 bg-background lg:hidden"
+              className="fixed inset-y-0 left-0 z-[95] w-[calc(var(--admin-sidebar-width)+env(safe-area-inset-left,0px))] pl-[env(safe-area-inset-left,0px)] border-r border-border/50 bg-background lg:hidden"
             >
               <div ref={drawerTrapRef} role="dialog" aria-modal="true" aria-label="导航菜单" className="h-full">
                 <SidebarContent

@@ -2,6 +2,8 @@ export interface SitePageContent {
     title: string;
     description: string;
     content: string;
+    seoTitle: string | null;
+    coverImage: string | null;
 }
 
 export interface SitePage extends SitePageContent {
