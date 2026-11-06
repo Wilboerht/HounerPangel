@@ -27,6 +27,7 @@ const TARGET_LABELS: Record<string, string> = {
     media: "媒体",
     city: "城市",
     blog_backup: "博客备份",
+    site_page: "站点页面",
 };
 
 function time(value: string) { return new Date(value).toLocaleString("zh-CN", { hour12: false }); }

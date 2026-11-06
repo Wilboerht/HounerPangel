@@ -1,36 +1,61 @@
+import { cache } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
+import { renderMarkdown } from "@/lib/markdown";
+import { DEFAULT_ABOUT_PAGE, getSitePage } from "@/lib/site-pages";
+import type { SitePage } from "@/lib/types/site-page";
 
-export const metadata: Metadata = {
-    title: "关于我",
-    description: "了解 Hank Wong (wilboerht) —— 开发者、旅行爱好者及超级个体。",
-    alternates: {
-        canonical: `${SITE_URL}/me`,
-        types: {
-            "application/rss+xml": "/rss.xml",
+export const revalidate = 3600;
+
+// metadata 和页面正文共用同一次请求内的读取结果
+const getAboutPage = cache(async (): Promise<SitePage> => {
+    try {
+        return (await getSitePage("about")) ?? DEFAULT_ABOUT_PAGE;
+    } catch {
+        // 数据库迁移尚未执行或暂时不可用时保持旧内容上线
+        return DEFAULT_ABOUT_PAGE;
+    }
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+    const page = await getAboutPage();
+    const title = page.title || DEFAULT_ABOUT_PAGE.title;
+    const description = page.description || DEFAULT_ABOUT_PAGE.description;
+    const ogTitle = `${title} - Hank Wong's Web`;
+
+    return {
+        title,
+        description,
+        alternates: {
+            canonical: `${SITE_URL}/me`,
+            types: {
+                "application/rss+xml": "/rss.xml",
+            },
         },
-    },
-    openGraph: {
-        title: "关于我 - Hank Wong's Web",
-        description: "了解 Hank Wong (wilboerht) —— 开发者、旅行爱好者及超级个体。",
-        url: `${SITE_URL}/me`,
-        type: "website",
-        siteName: "Hank Wong",
-        locale: "zh_CN",
-        images: [DEFAULT_OG_IMAGE],
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "关于我 - Hank Wong's Web",
-        description: "了解 Hank Wong (wilboerht) —— 开发者、旅行爱好者及超级个体。",
-        creator: "@wilboerht",
-        images: [DEFAULT_OG_IMAGE.url],
-    },
-};
+        openGraph: {
+            title: ogTitle,
+            description,
+            url: `${SITE_URL}/me`,
+            type: "website",
+            siteName: "Hank Wong",
+            locale: "zh_CN",
+            images: [DEFAULT_OG_IMAGE],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: ogTitle,
+            description,
+            creator: "@wilboerht",
+            images: [DEFAULT_OG_IMAGE.url],
+        },
+    };
+}
 
-export default function AboutMe() {
+export default async function AboutMe() {
+    const page = await getAboutPage();
+
     return (
         <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
             <div className="max-w-2xl w-full flex-1 flex flex-col gap-10">
@@ -45,26 +70,15 @@ export default function AboutMe() {
                     </Link>
                 </nav>
 
-                {/* Content */}
-                <section className="space-y-10">
-                    <div className="space-y-8">
-                        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                            关于我
-                        </h1>
-                        <p className="text-muted leading-[1.8]">
-                            嗨，欢迎访达我的主页，很高兴能在互联网的茫茫大海里与你相遇。
-                        </p>
-                        <p className="text-muted leading-[1.8]">
-                            我喜欢科技、旅行、美食和户外运动，也是 city walk 轻度爱好者。已经走遍了 20 余个城市，并用相机记录下了许多美好的瞬间，你可以查看我的社交平台账号，希望能与你分享这些美好。
-                        </p>
-                        <p className="text-muted leading-[1.8]">
-                            Genius programmer @ Vanto & @ Moidas.
-                        </p>
-                        </div>
-
+                <section className="space-y-8">
+                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                        {page.title}
+                    </h1>
+                    <article className="article-body">
+                        {renderMarkdown(page.content)}
+                    </article>
                 </section>
 
-                {/* Footer */}
                 <footer className="mt-auto text-sm text-muted">
                     <p>&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
