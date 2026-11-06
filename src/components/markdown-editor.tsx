@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import {
-  Eye, Edit3, Bold, Italic, Heading1, Heading2, Heading3,
+  Eye, Edit3, Bold, Italic,
   Link, Code, Code2, List, ListOrdered, ListChecks, Quote, Table, Minus, Strikethrough,
   Upload, X, Library, Workflow,
 } from "lucide-react";
@@ -211,7 +211,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     if (selected) {
       if (syntax === "1. ") {
         text = selected.split("\n").map((line, index) => `${index + 1}. ${line}`).join("\n");
-      } else if (["# ", "## ", "### ", "- ", "- [ ] ", "> "].includes(syntax)) {
+      } else if (["# ", "## ", "### ", "#### ", "##### ", "###### ", "- ", "- [ ] ", "> "].includes(syntax)) {
         text = selected.split("\n").map((line) => syntax + line).join("\n");
       } else if (syntax.startsWith("> [!")) {
         text = syntax + selected.replace(/\n/g, "\n> ");
@@ -461,13 +461,12 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
 
   const insertTable = () => insertBlock("| 列 1 | 列 2 | 列 3 |\n| --- | --- | --- |\n| 内容 | 内容 | 内容 |");
 
+  const insertHeading = (level: number) => insertBlock(`${"#".repeat(level)} `, "标题");
+
   const tools = [
     { icon: Bold, label: "加粗 (Ctrl+B)", action: () => insertText("**", "**", "粗体") },
     { icon: Italic, label: "斜体 (Ctrl+I)", action: () => insertText("*", "*", "斜体") },
     { icon: Strikethrough, label: "删除线", action: () => insertText("~~", "~~", "删除线") },
-    { icon: Heading1, label: "一级标题", action: () => insertBlock("# ", "标题") },
-    { icon: Heading2, label: "二级标题", action: () => insertBlock("## ", "标题") },
-    { icon: Heading3, label: "三级标题", action: () => insertBlock("### ", "标题") },
     { icon: Link, label: "链接 (Ctrl+K)", action: insertLink },
     { icon: Code, label: "行内代码 (Ctrl+E)", action: () => insertText("`", "`", "code") },
     { icon: Code2, label: "代码块", action: () => insertCodeBlock() },
@@ -533,6 +532,25 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         {tab === "edit" && (
           <div className="md-editor-toolbar -mx-1 px-1">
             <div className="flex flex-shrink-0 items-center gap-0.5">
+              <select
+                value=""
+                aria-label="插入标题"
+                title="插入标题"
+                onChange={(event) => {
+                  const level = Number(event.target.value);
+                  if (level) insertHeading(level);
+                  event.target.value = "";
+                }}
+                className="min-h-[36px] shrink-0 rounded-md border border-border/50 bg-background px-2 text-xs text-muted max-sm:min-h-[44px]"
+              >
+                <option value="">标题级别</option>
+                <option value="1">一级标题 H1</option>
+                <option value="2">二级标题 H2</option>
+                <option value="3">三级标题 H3</option>
+                <option value="4">四级标题 H4</option>
+                <option value="5">五级标题 H5</option>
+                <option value="6">六级标题 H6</option>
+              </select>
               {/* eslint-disable-next-line react-hooks/refs -- tool.action 闭包只在 onClick 中执行，内部读取 textareaRef 是合法的；规则对经由普通数组传入 JSX 的回调存在误报 */}
               {tools.map((tool) => (
                 <button

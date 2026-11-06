@@ -204,7 +204,7 @@ export function MediaAdminClient() {
                     <option value="all">全部类型</option><option value="image">图片</option><option value="video">视频</option><option value="attachment">附件</option>
                 </select>
                 <label className="flex min-h-[44px] items-center gap-2 px-2 text-sm">
-                    <input type="checkbox" checked={onlyOrphans} onChange={(event) => setOnlyOrphans(event.target.checked)} className="h-5 w-5" />
+                    <input type="checkbox" checked={onlyOrphans} onChange={(event) => setOnlyOrphans(event.target.checked)} className="h-4 w-4" />
                     仅看零引用
                 </label>
             </div>

@@ -468,7 +468,7 @@ export function BlogAdminClient() {
                     if (element) element.indeterminate = someOnPageSelected;
                   }}
                   onChange={(e) => setSelectedSlugs(e.target.checked ? new Set(posts.map((post) => post.slug)) : new Set())}
-                  className="h-5 w-5"
+                  className="h-4 w-4"
                 />选择本页
               </label>
               {posts.map((post) => (
@@ -486,7 +486,7 @@ export function BlogAdminClient() {
                         if (next.has(post.slug)) next.delete(post.slug); else next.add(post.slug);
                         return next;
                       })}
-                      className="h-5 w-5"
+                      className="h-4 w-4"
                     />
                   </label>
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
