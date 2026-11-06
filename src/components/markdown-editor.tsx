@@ -83,6 +83,7 @@ const ALLOWED_ATTACHMENT_EXTENSIONS = new Set(["pdf", "txt", "md", "csv", "zip",
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024;
+const MAX_CONTENT_LENGTH = 100_000;
 
 type UploadKind = "image" | "video" | "attachment";
 
@@ -145,15 +146,18 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const videoInputRef = useRef<HTMLInputElement>(null);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
+  const uploadCancelGenerationRef = useRef(0);
   const tabReleaseRef = useRef(false);
   const toast = useToast();
 
   // tab/面板 id 基于传入的 id 派生，保证 aria-controls 指向真实存在的元素
   const editorId = id || "md-editor-panel";
+  const editPanelId = `${editorId}-edit-panel`;
   const previewPanelId = `${editorId}-preview`;
 
   // 卸载时中止进行中的上传，避免回调对卸载组件写状态
   useEffect(() => () => {
+    uploadCancelGenerationRef.current += 1;
     uploadAbortRef.current?.abort();
   }, []);
 
@@ -166,11 +170,21 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     }
   }, [value]);
 
-  const updateValue = (newValue: string) => {
+  const updateValue = (newValue: string): boolean => {
     const ta = textareaRef.current;
-    if (!ta) return;
-    ta.value = newValue;
+    if (!ta) return false;
+    if (newValue.length > MAX_CONTENT_LENGTH) {
+      toast.error(`正文最多 ${MAX_CONTENT_LENGTH.toLocaleString("zh-CN")} 个字符`);
+      return false;
+    }
+    const current = ta.value;
+    ta.focus({ preventScroll: true });
+    ta.setSelectionRange(0, current.length);
+    if (!document.execCommand("insertText", false, newValue)) {
+      ta.value = newValue;
+    }
     onChange(newValue);
+    return true;
   };
 
   const insertText = (before: string, after: string = "", placeholder: string = "") => {
@@ -182,13 +196,13 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const selected = current.slice(start, end);
     const text = selected || placeholder;
     const newValue = current.slice(0, start) + before + text + after + current.slice(end);
-    updateValue(newValue);
+    if (!updateValue(newValue)) return;
     restoreEditor(ta, snapshot, start + before.length, start + before.length + text.length);
   };
 
-  const insertBlock = (syntax: string, placeholder: string = "") => {
+  const insertBlock = (syntax: string, placeholder: string = ""): boolean => {
     const ta = textareaRef.current;
-    if (!ta) return;
+    if (!ta) return false;
     const snapshot = snapshotEditor(ta);
     const { start, end } = snapshot;
     const current = ta.value;
@@ -211,9 +225,10 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     }
     const suffix = "\n";
     const newValue = before + prefix + text + suffix + current.slice(end);
-    updateValue(newValue);
+    if (!updateValue(newValue)) return false;
     const pos = selected ? start + prefix.length : start + prefix.length + syntax.length;
     restoreEditor(ta, snapshot, pos, selected ? pos + text.length : pos + placeholder.length);
+    return true;
   };
 
   const indentSelection = (outdent: boolean) => {
@@ -227,7 +242,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const blockEnd = nextBreak === -1 ? current.length : nextBreak;
     const block = current.slice(blockStart, blockEnd);
     const updated = outdent ? block.replace(/^ {1,2}/gm, "") : block.replace(/^/gm, "  ");
-    updateValue(current.slice(0, blockStart) + updated + current.slice(blockEnd));
+    if (!updateValue(current.slice(0, blockStart) + updated + current.slice(blockEnd))) return;
     restoreEditor(ta, snapshot, blockStart, blockStart + updated.length);
   };
 
@@ -313,6 +328,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
       // 上传途中被取消或组件已卸载，不再登记或插入内容
       if (controller.signal.aborted) return;
       const dims = kind === "image" ? await getImageDimensions(file) : null;
+      if (controller.signal.aborted) return;
       try {
         const registerRes = await fetch("/api/admin/media", {
           method: "POST",
@@ -329,15 +345,15 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           signal: controller.signal,
         });
         if (registerRes.status === 401) onAuthExpired?.();
-        else if (!registerRes.ok) toast.info("文件已上传，但媒体信息登记失败，可在媒体库中补充");
+        else if (!registerRes.ok) toast.info("文件已上传，但媒体信息登记失败");
       } catch {
         if (!controller.signal.aborted) toast.info("文件已上传，但媒体信息登记失败");
       }
+      if (controller.signal.aborted) return;
       const url = dims ? `${uploaded.url} =${dims.width}x${dims.height}` : uploaded.url;
       const markdown = getMarkdown(url);
       // 用 insertBlock 保证媒体/附件语法独占一行，否则前台解析器不会把它渲染成对应卡片
-      insertBlock(markdown);
-      toast.success(`${KIND_LABEL[kind]}已插入`);
+      if (insertBlock(markdown)) toast.success(`${KIND_LABEL[kind]}已插入`);
     } catch (err) {
       // 用户取消或组件卸载触发的 abort 不报错；会话过期已由 onAuthExpired 统一提示
       if (controller.signal.aborted) return;
@@ -391,8 +407,10 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     }
     const list = Array.from(files);
     if (list.length === 0) return;
+    const cancelGeneration = uploadCancelGenerationRef.current;
     let hasMedia = false;
     for (const file of list) {
+      if (cancelGeneration !== uploadCancelGenerationRef.current) break;
       const kind = detectFileKind(file);
       if (!kind) continue;
       hasMedia = true;
@@ -416,7 +434,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const selected = current.slice(start, end);
     const text = selected || "链接文字";
     const newValue = current.slice(0, start) + `[${text}](url)` + current.slice(end);
-    updateValue(newValue);
+    if (!updateValue(newValue)) return;
     const urlStart = start + text.length + 3;
     restoreEditor(ta, snapshot, urlStart, urlStart + 3);
   };
@@ -431,10 +449,12 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const selected = current.slice(start, end) || placeholder;
     const before = current.slice(0, start);
     const prefix = before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : before.length === 0 ? "" : "\n\n";
-    const text = `\`\`\`${language}\n${selected}\n\`\`\`\n`;
+    const longestRun = selected.match(/`+/g)?.reduce((length, run) => Math.max(length, run.length), 0) ?? 0;
+    const fence = "`".repeat(Math.max(3, longestRun + 1));
+    const text = `${fence}${language}\n${selected}\n${fence}\n`;
     const newValue = before + prefix + text + current.slice(end);
-    updateValue(newValue);
-    const pos = start + prefix.length + 4 + language.length;
+    if (!updateValue(newValue)) return;
+    const pos = start + prefix.length + fence.length + 1 + language.length;
     restoreEditor(ta, snapshot, pos, pos + selected.length);
   };
 
@@ -490,7 +510,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             role="tab"
             aria-selected={tab === "edit"}
             tabIndex={tab === "edit" ? 0 : -1}
-            aria-controls={editorId}
+            aria-controls={editPanelId}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
               tab === "edit" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
@@ -521,7 +541,10 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
                 {uploadProgress || "上传中..."}
                 <button
                   type="button"
-                  onClick={() => uploadAbortRef.current?.abort()}
+                  onClick={() => {
+                    uploadCancelGenerationRef.current += 1;
+                    uploadAbortRef.current?.abort();
+                  }}
                   aria-label="取消上传"
                   className="p-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
                 >
@@ -626,70 +649,70 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
         )}
       </div>
       {/* textarea 常驻挂载：切预览不丢光标/撤销历史，上传完成时插入目标也不会被卸载 */}
-      <textarea
-        ref={textareaRef}
-        id={editorId}
-        role="tabpanel"
-        aria-labelledby={`${editorId}-tab-edit`}
-        required={required}
-        rows={rows}
-        maxLength={100000}
-        defaultValue={value}
-        onInput={(e) => onChange(e.currentTarget.value)}
-        onPaste={(e) => {
-          // 剪贴板里有文件（截图等）时上传并插入，否则走默认文本粘贴
-          if (e.clipboardData.files.length > 0) {
-            e.preventDefault();
-            handleDroppedFiles(e.clipboardData.files);
-          }
-        }}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          if (e.dataTransfer.files.length > 0) {
-            e.preventDefault();
-            handleDroppedFiles(e.dataTransfer.files);
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") {
-            tabReleaseRef.current = true;
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-          }
-          if (e.key === "Tab" && tabReleaseRef.current) {
-            tabReleaseRef.current = false;
-            return;
-          }
-          if (e.key !== "Tab") tabReleaseRef.current = false;
-          if (e.key === "Tab" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-            e.preventDefault();
-            indentSelection(e.shiftKey);
-            return;
-          }
-          if (!(e.ctrlKey || e.metaKey)) return;
-          const key = e.key.toLowerCase();
-          if (key === "b") {
-            e.preventDefault();
-            insertText("**", "**", "粗体");
-          } else if (key === "i") {
-            e.preventDefault();
-            insertText("*", "*", "斜体");
-          } else if (key === "k") {
-            e.preventDefault();
-            insertLink();
-          } else if (key === "e") {
-            e.preventDefault();
-            insertText("`", "`", "code");
-          } else if (key === "x" && e.shiftKey) {
-            e.preventDefault();
-            insertText("~~", "~~", "删除线");
-          }
-        }}
-        aria-describedby={`${editorId}-keyboard-hint`}
-        placeholder="写点什么..."
-        className={`md-editor-textarea w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px] ${tab === "edit" ? "" : "hidden"}`}
-      />
+      <div id={editPanelId} role="tabpanel" aria-labelledby={`${editorId}-tab-edit`} className={tab === "edit" ? "" : "hidden"}>
+        <textarea
+          ref={textareaRef}
+          id={editorId}
+          required={required}
+          rows={rows}
+          maxLength={MAX_CONTENT_LENGTH}
+          defaultValue={value}
+          onInput={(e) => onChange(e.currentTarget.value)}
+          onPaste={(e) => {
+            // 剪贴板里有文件（截图等）时上传并插入，否则走默认文本粘贴
+            if (e.clipboardData.files.length > 0) {
+              e.preventDefault();
+              handleDroppedFiles(e.clipboardData.files);
+            }
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            if (e.dataTransfer.files.length > 0) {
+              e.preventDefault();
+              handleDroppedFiles(e.dataTransfer.files);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              tabReleaseRef.current = true;
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+            if (e.key === "Tab" && tabReleaseRef.current) {
+              tabReleaseRef.current = false;
+              return;
+            }
+            if (e.key !== "Tab") tabReleaseRef.current = false;
+            if (e.key === "Tab" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+              e.preventDefault();
+              indentSelection(e.shiftKey);
+              return;
+            }
+            if (!(e.ctrlKey || e.metaKey)) return;
+            const key = e.key.toLowerCase();
+            if (key === "b") {
+              e.preventDefault();
+              insertText("**", "**", "粗体");
+            } else if (key === "i") {
+              e.preventDefault();
+              insertText("*", "*", "斜体");
+            } else if (key === "k") {
+              e.preventDefault();
+              insertLink();
+            } else if (key === "e") {
+              e.preventDefault();
+              insertText("`", "`", "code");
+            } else if (key === "x" && e.shiftKey) {
+              e.preventDefault();
+              insertText("~~", "~~", "删除线");
+            }
+          }}
+          aria-describedby={`${editorId}-keyboard-hint`}
+          placeholder="写点什么..."
+          className="md-editor-textarea w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px]"
+        />
+      </div>
       {tab === "edit" && <p id={`${editorId}-keyboard-hint`} className="border-t border-border/50 px-3 py-2 text-xs text-muted">Tab 缩进，Shift+Tab 反缩进，Escape 后按 Tab 可移出编辑器</p>}
       {tab === "preview" && (
         <div id={previewPanelId} role="tabpanel" aria-labelledby={`${editorId}-tab-preview`} className="px-4 py-3 bg-foreground/[0.02] min-h-[300px] text-sm leading-relaxed">
