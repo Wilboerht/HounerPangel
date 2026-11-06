@@ -104,6 +104,37 @@ function sanitizeLinkText(name: string): string {
   return name.replace(/[[\]()]/g, "").trim() || "附件";
 }
 
+interface EditorSnapshot {
+  start: number;
+  end: number;
+  scrollTop: number;
+  scrollLeft: number;
+  pageX: number;
+  pageY: number;
+}
+
+function snapshotEditor(ta: HTMLTextAreaElement): EditorSnapshot {
+  return {
+    start: ta.selectionStart,
+    end: ta.selectionEnd,
+    scrollTop: ta.scrollTop,
+    scrollLeft: ta.scrollLeft,
+    pageX: window.scrollX,
+    pageY: window.scrollY,
+  };
+}
+
+function restoreEditor(ta: HTMLTextAreaElement, snapshot: EditorSnapshot, start: number, end: number) {
+  requestAnimationFrame(() => {
+    if (!ta.isConnected) return;
+    ta.focus({ preventScroll: true });
+    ta.setSelectionRange(start, end);
+    ta.scrollTop = snapshot.scrollTop;
+    ta.scrollLeft = snapshot.scrollLeft;
+    window.scrollTo({ left: snapshot.pageX, top: snapshot.pageY, behavior: "instant" });
+  });
+}
+
 export function MarkdownEditor({ value, onChange, rows = 12, required = false, id, onAuthExpired, onUploadingChange }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [uploading, setUploading] = useState(false);
@@ -145,28 +176,21 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const insertText = (before: string, after: string = "", placeholder: string = "") => {
     const ta = textareaRef.current;
     if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
+    const snapshot = snapshotEditor(ta);
+    const { start, end } = snapshot;
     const current = ta.value;
     const selected = current.slice(start, end);
     const text = selected || placeholder;
     const newValue = current.slice(0, start) + before + text + after + current.slice(end);
     updateValue(newValue);
-    requestAnimationFrame(() => {
-      ta.focus();
-      if (selected) {
-        ta.setSelectionRange(start + before.length, start + before.length + selected.length);
-      } else {
-        ta.setSelectionRange(start + before.length, start + before.length + text.length);
-      }
-    });
+    restoreEditor(ta, snapshot, start + before.length, start + before.length + text.length);
   };
 
   const insertBlock = (syntax: string, placeholder: string = "") => {
     const ta = textareaRef.current;
     if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
+    const snapshot = snapshotEditor(ta);
+    const { start, end } = snapshot;
     const current = ta.value;
     const selected = current.slice(start, end);
     const before = current.slice(0, start);
@@ -188,18 +212,15 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const suffix = "\n";
     const newValue = before + prefix + text + suffix + current.slice(end);
     updateValue(newValue);
-    requestAnimationFrame(() => {
-      ta.focus();
-      const pos = selected ? start + prefix.length : start + prefix.length + syntax.length;
-      ta.setSelectionRange(pos, selected ? pos + text.length : pos + placeholder.length);
-    });
+    const pos = selected ? start + prefix.length : start + prefix.length + syntax.length;
+    restoreEditor(ta, snapshot, pos, selected ? pos + text.length : pos + placeholder.length);
   };
 
   const indentSelection = (outdent: boolean) => {
     const ta = textareaRef.current;
     if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
+    const snapshot = snapshotEditor(ta);
+    const { start, end } = snapshot;
     const current = ta.value;
     const blockStart = current.lastIndexOf("\n", start - 1) + 1;
     const nextBreak = current.indexOf("\n", end);
@@ -207,10 +228,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const block = current.slice(blockStart, blockEnd);
     const updated = outdent ? block.replace(/^ {1,2}/gm, "") : block.replace(/^/gm, "  ");
     updateValue(current.slice(0, blockStart) + updated + current.slice(blockEnd));
-    requestAnimationFrame(() => {
-      ta.focus();
-      ta.setSelectionRange(blockStart, blockStart + updated.length);
-    });
+    restoreEditor(ta, snapshot, blockStart, blockStart + updated.length);
   };
 
   // 会话过期哨兵：onAuthExpired 已统一提示并刷新出登录表单，上层 catch 遇到它不再重复 toast
@@ -392,25 +410,22 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const insertLink = () => {
     const ta = textareaRef.current;
     if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
+    const snapshot = snapshotEditor(ta);
+    const { start, end } = snapshot;
     const current = ta.value;
     const selected = current.slice(start, end);
     const text = selected || "链接文字";
     const newValue = current.slice(0, start) + `[${text}](url)` + current.slice(end);
     updateValue(newValue);
-    requestAnimationFrame(() => {
-      ta.focus();
-      const urlStart = start + text.length + 3;
-      ta.setSelectionRange(urlStart, urlStart + 3);
-    });
+    const urlStart = start + text.length + 3;
+    restoreEditor(ta, snapshot, urlStart, urlStart + 3);
   };
 
   const insertCodeBlock = (language = "") => {
     const ta = textareaRef.current;
     if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
+    const snapshot = snapshotEditor(ta);
+    const { start, end } = snapshot;
     const current = ta.value;
     const placeholder = language === "mermaid" ? "flowchart TD\n    A[开始] --> B[结束]" : "code";
     const selected = current.slice(start, end) || placeholder;
@@ -419,11 +434,8 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     const text = `\`\`\`${language}\n${selected}\n\`\`\`\n`;
     const newValue = before + prefix + text + current.slice(end);
     updateValue(newValue);
-    requestAnimationFrame(() => {
-      ta.focus();
-      const pos = start + prefix.length + 4 + language.length;
-      ta.setSelectionRange(pos, pos + selected.length);
-    });
+    const pos = start + prefix.length + 4 + language.length;
+    restoreEditor(ta, snapshot, pos, pos + selected.length);
   };
 
   const selectMedia = (asset: MediaAsset) => {
@@ -522,6 +534,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
               <button
                 key={tool.label}
                 type="button"
+                onMouseDown={(event) => event.preventDefault()}
                 onClick={tool.action}
                 title={tool.label}
                 aria-label={tool.label}
