@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, ExternalLink, Eye } from "lucide-react";
+import { buttonClassName } from "@/components/admin/button";
 
 interface PreviewMenuProps {
   savedHref: string;
@@ -10,7 +11,7 @@ interface PreviewMenuProps {
 }
 
 const itemCls =
-  "flex w-full items-start gap-2.5 rounded-md px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-foreground/5 focus:bg-foreground/5 focus:outline-none";
+  "flex w-full items-start gap-2.5 rounded-md px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-foreground/5 focus:bg-foreground/5";
 
 export function PreviewMenu({ savedHref, disabled = false, onPreviewChanges }: PreviewMenuProps) {
   const [open, setOpen] = useState(false);
@@ -76,7 +77,10 @@ export function PreviewMenu({ savedHref, disabled = false, onPreviewChanges }: P
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-2 rounded-lg border border-border/50 px-3 py-1.5 text-sm text-muted transition-colors hover:bg-foreground/5 hover:text-foreground disabled:opacity-50"
+        className={buttonClassName({
+          size: "md",
+          className: "max-sm:min-h-[44px]",
+        })}
       >
         <Eye className="h-4 w-4" />
         预览
@@ -90,7 +94,7 @@ export function PreviewMenu({ savedHref, disabled = false, onPreviewChanges }: P
           role="menu"
           aria-label="预览选项"
           onKeyDown={handleMenuKeyDown}
-          className="absolute right-0 top-full z-20 mt-1 w-60 rounded-lg border border-border/50 bg-background p-1 shadow-lg"
+          className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-[105] rounded-xl border border-border/50 bg-background p-1 shadow-lg print:hidden sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-1 sm:w-60"
         >
           <button type="button" role="menuitem" onClick={selectChanges} className={itemCls}>
             <Eye className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted" />

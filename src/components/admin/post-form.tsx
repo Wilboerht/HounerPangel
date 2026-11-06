@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Save, X } from "lucide-react";
 import { MarkdownEditor } from "@/components/markdown-editor";
+import { Button } from "@/components/admin/button";
+import { fieldBase, fieldClass } from "@/components/admin/field-classes";
 import { useTagManager, type TagRejectReason } from "@/lib/use-tag-manager";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
@@ -225,7 +227,7 @@ export function PostForm({
           value={form.title}
           onChange={(e) => handleTitleChange(e.target.value)}
           placeholder="文章标题"
-          className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+          className={fieldClass}
         />
       </div>
 
@@ -235,7 +237,7 @@ export function PostForm({
             <>
               Slug（URL 标识）
               {form.slug && (
-                <span className={slugValid ? "text-green-500 ml-1" : "text-red-500 ml-1"}>
+                <span className={slugValid ? "ml-1 text-green-700" : "ml-1 text-red-700"}>
                   {slugValid ? "✓" : "只能包含小写字母、数字和连字符"}
                 </span>
               )}
@@ -257,14 +259,12 @@ export function PostForm({
               pattern="^[a-z0-9\-]+$"
               aria-invalid={!!slugError || (!!form.slug && !slugValid)}
               aria-describedby={slugError ? `${idPrefix}-slug-error` : undefined}
-              className={`px-4 py-2 rounded-lg bg-foreground/5 border font-mono text-sm text-foreground placeholder:text-muted/50 focus:outline-none transition-colors ${
-                slugError || (form.slug && !slugValid)
-                  ? "border-red-300 focus:border-red-400"
-                  : "border-border/50 focus:border-accent/50"
+              className={`${fieldClass} font-mono ${
+                slugError || (form.slug && !slugValid) ? "border-red-400" : ""
               }`}
             />
             {slugError && (
-              <p id={`${idPrefix}-slug-error`} className="text-xs text-red-500">{slugError}</p>
+              <p id={`${idPrefix}-slug-error`} className="text-xs text-red-700">{slugError}</p>
             )}
           </>
         ) : (
@@ -273,7 +273,7 @@ export function PostForm({
             type="text"
             disabled
             value={form.slug}
-            className="px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 font-mono text-sm text-muted cursor-not-allowed"
+            className={`${fieldBase} cursor-not-allowed px-3 py-2 font-mono opacity-60`}
           />
         )}
       </div>
@@ -287,7 +287,7 @@ export function PostForm({
             required
             value={form.date}
             onChange={(e) => updateField({ date: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground tabular-nums focus:outline-none focus:border-accent/50 transition-colors"
+            className={`${fieldClass} tabular-nums`}
           />
         </div>
 
@@ -302,7 +302,7 @@ export function PostForm({
               else if (status === "archived") updateField({ published: false, archivedAt: new Date().toISOString() });
               else updateField({ published: false, archivedAt: null });
             }}
-            className="w-full rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm text-foreground focus:outline-none focus:border-accent/50"
+            className={fieldClass}
           >
             <option value="draft">草稿</option>
             <option value="published">已发布</option>
@@ -326,7 +326,7 @@ export function PostForm({
                 type="button"
                 onClick={() => { tagManager.removeTag(tag); onDirty(); }}
                 aria-label={`移除标签 ${tag}`}
-                className="hover:text-red-500 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
+                className="flex min-h-[32px] min-w-[32px] items-center justify-center transition-colors hover:text-red-600"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -342,16 +342,16 @@ export function PostForm({
             onChange={(e) => { tagManager.setInput(e.target.value); onDirty(); }}
             onKeyDown={(e) => { const wasAdded = tagManager.handleInputKeyDown(e); if (wasAdded) onDirty(); }}
             placeholder="输入标签后按回车添加"
-            className="flex-1 px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+            className={`${fieldClass} flex-1`}
           />
-          <button
+          <Button
             type="button"
-            onClick={() => { if (tagManager.addTag(tagManager.input)) onDirty(); }}
             disabled={!tagManager.input.trim()}
-            className="px-4 py-2 rounded-lg bg-foreground/5 text-muted hover:text-foreground disabled:opacity-30 transition-colors text-sm"
+            onClick={() => { if (tagManager.addTag(tagManager.input)) onDirty(); }}
+            className="shrink-0"
           >
             添加
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -360,21 +360,21 @@ export function PostForm({
         <div className="mt-4 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label htmlFor={`${idPrefix}-excerpt`} className="text-sm font-medium">文章摘要</label>
-            <textarea id={`${idPrefix}-excerpt`} rows={3} maxLength={2000} value={form.excerpt ?? ""} onChange={(e) => updateField({ excerpt: e.target.value || null })} placeholder="留空时从正文自动提取" className="rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm" />
+            <textarea id={`${idPrefix}-excerpt`} rows={3} maxLength={2000} value={form.excerpt ?? ""} onChange={(e) => updateField({ excerpt: e.target.value || null })} placeholder="留空时从正文自动提取" className={fieldClass} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">
               <label htmlFor={`${idPrefix}-seo-title`} className="text-sm font-medium">SEO 标题</label>
-              <input id={`${idPrefix}-seo-title`} maxLength={500} value={form.seoTitle ?? ""} onChange={(e) => updateField({ seoTitle: e.target.value || null })} placeholder="留空时使用文章标题" className="rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm" />
+              <input id={`${idPrefix}-seo-title`} maxLength={500} value={form.seoTitle ?? ""} onChange={(e) => updateField({ seoTitle: e.target.value || null })} placeholder="留空时使用文章标题" className={fieldClass} />
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor={`${idPrefix}-cover`} className="text-sm font-medium">封面 / 分享图 URL</label>
-              <input id={`${idPrefix}-cover`} type="url" maxLength={2000} value={form.coverImage ?? ""} onChange={(e) => updateField({ coverImage: e.target.value || null })} placeholder="留空时使用正文第一张图片" className="rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm" />
+              <input id={`${idPrefix}-cover`} type="url" maxLength={2000} value={form.coverImage ?? ""} onChange={(e) => updateField({ coverImage: e.target.value || null })} placeholder="留空时使用正文第一张图片" className={fieldClass} />
             </div>
           </div>
           <div className="flex flex-col gap-2">
             <label htmlFor={`${idPrefix}-seo-description`} className="text-sm font-medium">SEO / 分享描述</label>
-            <textarea id={`${idPrefix}-seo-description`} rows={2} maxLength={1000} value={form.seoDescription ?? ""} onChange={(e) => updateField({ seoDescription: e.target.value || null })} placeholder="留空时使用文章摘要" className="rounded-lg border border-border/50 bg-foreground/5 px-4 py-2 text-sm" />
+            <textarea id={`${idPrefix}-seo-description`} rows={2} maxLength={1000} value={form.seoDescription ?? ""} onChange={(e) => updateField({ seoDescription: e.target.value || null })} placeholder="留空时使用文章摘要" className={fieldClass} />
           </div>
           <div className="rounded-lg border border-border/50 p-3">
             <p className="text-xs text-muted">分享卡片预览</p>
@@ -404,23 +404,21 @@ export function PostForm({
           弹窗里通过 footerClassName 出血撑满弹窗边缘并贴齐下缘，避免"上下悬空一条带子"的观感 */}
       <div className={`sticky bottom-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-background border-t border-border/50 flex items-center justify-end gap-2 ${footerClassName ?? ""}`}>
         {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 min-h-[44px] rounded-lg text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-          >
+          <Button type="button" variant="ghost" size="lg" onClick={onCancel}>
             取消
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="lg"
           disabled={saving || uploading || (slugEditable && !!form.slug && !slugValid)}
           title="保存 (Ctrl+S)"
-          className="inline-flex items-center gap-2 px-6 py-2 min-h-[44px] rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors"
+          className="px-6"
         >
           <Save className="w-4 h-4" />
           {saving ? "保存中..." : uploading ? "上传中..." : "保存"}
-        </button>
+        </Button>
       </div>
       </fieldset>
     </form>

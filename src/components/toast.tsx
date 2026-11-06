@@ -85,8 +85,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div
         aria-live="polite"
-        className="fixed top-4 left-[calc(1rem+env(safe-area-inset-left,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] z-[200] flex flex-col gap-2 pointer-events-none sm:left-auto sm:w-full sm:max-w-sm"
-        style={{ top: `calc(1rem + env(safe-area-inset-top, 0px))` }}
+        className="pointer-events-none fixed left-[calc(1rem+env(safe-area-inset-left,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] top-[calc(4.5rem+env(safe-area-inset-top,0px))] z-[200] flex flex-col gap-2 sm:left-auto sm:top-[calc(1rem+env(safe-area-inset-top,0px))] sm:w-full sm:max-w-sm print:hidden"
       >
         <LazyMotion features={domAnimation} strict>
         <AnimatePresence>
@@ -105,7 +104,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <button
                   onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
                   aria-label="关闭通知"
-                  className="pointer-events-auto flex-shrink-0 -m-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity"
+                  className="pointer-events-auto -m-1.5 flex min-h-[36px] min-w-[36px] flex-shrink-0 items-center justify-center opacity-50 transition-opacity hover:opacity-100"
                 >
                   <X className="w-4 h-4" />
                 </button>

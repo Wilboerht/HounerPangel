@@ -77,7 +77,7 @@ export function MermaidDiagram({ chart }: { chart: string }) {
           onClick={openPreview}
           aria-label="放大 Mermaid 图表"
           title="点击放大图表"
-          className="group relative block w-full cursor-zoom-in rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="group relative block w-full cursor-zoom-in rounded-lg"
         >
           <div
             aria-hidden="true"

@@ -63,6 +63,7 @@ function isActive(item: NavItem, pathname: string): boolean {
 function pageTitle(pathname: string): string {
   if (pathname.startsWith("/admin/blog/edit/")) return "编辑文章";
   if (pathname.startsWith("/admin/blog/history/")) return "版本历史";
+  if (pathname.startsWith("/admin/blog/preview/")) return "预览文章";
   if (pathname === "/admin/blog/trash") return "回收站";
   for (const section of NAV_SECTIONS) {
     const hit = section.items.find((item) => isActive(item, pathname));
@@ -120,8 +121,8 @@ function toggleSectionCollapsed(label: string) {
 
 function SidebarContent({ pathname, onNavigateLink, onLogout, logoutLoading, onClose }: SidebarContentProps) {
   const itemCls =
-    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors";
-  const activeCls = `${itemCls} bg-foreground/5 text-foreground font-medium`;
+    "relative flex min-h-[44px] items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors lg:min-h-[36px]";
+  const activeCls = `${itemCls} bg-foreground/5 text-foreground font-medium before:absolute before:left-1 before:top-1/2 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-accent`;
   const inactiveCls = `${itemCls} text-muted hover:text-foreground hover:bg-foreground/[0.03]`;
 
   const collapsed = useSyncExternalStore(
@@ -147,7 +148,10 @@ function SidebarContent({ pathname, onNavigateLink, onLogout, logoutLoading, onC
         )}
       </div>
 
-      <nav className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 px-3 py-2">
+      <nav
+        aria-label="管理导航"
+        className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 px-3 py-2"
+      >
         {NAV_SECTIONS.map((section, i) => {
           const isCollapsed = section.label ? !!collapsed[section.label] : false;
           return (
@@ -157,7 +161,7 @@ function SidebarContent({ pathname, onNavigateLink, onLogout, logoutLoading, onC
                   type="button"
                   onClick={() => toggleSectionCollapsed(section.label!)}
                   aria-expanded={!isCollapsed}
-                  className="flex w-full items-center justify-between rounded-lg px-3 pb-1 pt-1 text-xs font-medium text-muted hover:text-foreground transition-colors"
+                  className="flex min-h-[36px] w-full items-center justify-between rounded-lg px-3 py-1 text-xs font-medium text-muted hover:text-foreground transition-colors"
                 >
                   {section.label}
                   <ChevronDown
@@ -188,7 +192,13 @@ function SidebarContent({ pathname, onNavigateLink, onLogout, logoutLoading, onC
       </nav>
 
       <div className="flex flex-shrink-0 flex-col gap-0.5 border-t border-border/50 px-3 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
-        <Link href="/" onClick={(e) => onNavigateLink(e, "/")} className={inactiveCls}>
+        <Link
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => onClose?.()}
+          className={inactiveCls}
+        >
           <Globe className="w-4 h-4 flex-shrink-0" />
           查看站点
         </Link>
@@ -261,7 +271,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-dvh lg:pl-60">
+    <div className="min-h-dvh lg:pl-60 print:pl-0">
+      <a
+        href="#admin-main"
+        className="fixed left-[calc(1rem+env(safe-area-inset-left,0px))] top-[calc(1rem+env(safe-area-inset-top,0px))] z-[200] -translate-y-[calc(100%+1rem)] rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-lg transition-transform focus:translate-y-0 print:hidden"
+      >
+        跳到主内容
+      </a>
+
       {/* 桌面端侧边栏 */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 z-40 w-60 flex-col border-r border-border/50 bg-background print:hidden">
         <SidebarContent
@@ -296,7 +313,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               animate={{ x: 0 }}
               exit={safeAnimate(reduce, { x: "-100%" })}
               transition={springModal}
-              className="fixed inset-y-0 left-0 z-[95] w-[calc(16rem+env(safe-area-inset-left,0px))] pl-[env(safe-area-inset-left,0px)] border-r border-border/50 bg-background lg:hidden"
+              className="fixed inset-y-0 left-0 z-[95] w-[calc(15rem+env(safe-area-inset-left,0px))] pl-[env(safe-area-inset-left,0px)] border-r border-border/50 bg-background lg:hidden"
             >
               <div ref={drawerTrapRef} role="dialog" aria-modal="true" aria-label="导航菜单" className="h-full">
                 <SidebarContent
@@ -312,7 +329,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
         )}
       </AnimatePresence>
 
-      <main className="pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] lg:pb-8 lg:pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] sm:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] sm:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] print:p-0!">
+      <main
+        id="admin-main"
+        tabIndex={-1}
+        style={{ outline: "none" }}
+        className="pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] lg:pb-8 lg:pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] sm:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] sm:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] print:px-8! print:py-0!"
+      >
         <div className="mx-auto max-w-5xl print:mx-0 print:max-w-none">{children}</div>
       </main>
 

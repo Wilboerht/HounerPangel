@@ -6,12 +6,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Copy, File, Film, Image as ImageIcon, Pencil, Search, Trash2, Upload } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
 import { IconButton } from "@/components/admin/icon-button";
+import { Button } from "@/components/admin/button";
+import { Dialog } from "@/components/admin/dialog";
+import { EmptyState, ErrorState, LoadingRows } from "@/components/admin/states";
+import { fieldClass, fieldSearchClass } from "@/components/admin/field-classes";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
 import { useDirtyGuard } from "@/lib/use-dirty-guard";
-import { useFocusTrap } from "@/lib/focus-trap";
-import { useScrollLock } from "@/lib/use-scroll-lock";
 import type { MediaAsset, MediaKind } from "@/lib/types/media";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -87,22 +89,20 @@ export function MediaAdminClient() {
         return () => controller.abort();
     }, [load]);
 
-    const editingDirty = editing !== null && (alt !== editing.alt || caption !== editing.caption);
+    const metadataDirty = editing !== null && (alt !== editing.alt || caption !== editing.caption);
     const dismissMetadata = () => {
         setPendingClose(false);
         setEditing(null);
     };
     const closeMetadata = () => {
         if (saving) return;
-        if (editingDirty) {
+        if (metadataDirty) {
             setPendingClose(true);
             return;
         }
         dismissMetadata();
     };
-    const metadataTrapRef = useFocusTrap(editing !== null, closeMetadata);
-    useScrollLock(editing !== null);
-    useDirtyGuard(editingDirty, () => setPendingClose(true));
+    useDirtyGuard(metadataDirty, () => setPendingClose(true));
 
     const upload = async (file: File | undefined) => {
         if (!file || uploading) return;
@@ -182,25 +182,54 @@ export function MediaAdminClient() {
         (!search || `${asset.fileName} ${asset.alt} ${asset.path}`.toLowerCase().includes(search.toLowerCase()))
     );
 
+    const hasFilters = Boolean(search) || kind !== "all" || onlyOrphans;
+
     return (
         <div className="flex flex-col gap-6">
             <PageHeader title="媒体库" description="管理、复用媒体并清理零引用文件" actions={
                 <>
                     <input ref={fileRef} type="file" className="hidden" onChange={(event) => upload(event.target.files?.[0])} />
-                    <button disabled={uploading} onClick={() => fileRef.current?.click()} className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm text-background disabled:opacity-50"><Upload className="h-4 w-4" />{uploading ? "上传中..." : "上传媒体"}</button>
+                    <Button variant="primary" size="lg" disabled={uploading} onClick={() => fileRef.current?.click()}>
+                        <Upload className="h-4 w-4" />{uploading ? "上传中..." : "上传媒体"}
+                    </Button>
                 </>
             } />
 
-            <div className="flex flex-col gap-2 rounded-lg border border-border/50 p-3 sm:flex-row">
-                <div className="relative flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" /><input aria-label="搜索媒体" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜索文件名或替代文本" className="w-full rounded-lg bg-foreground/5 py-2 pl-9 pr-3 text-sm" /></div>
-                <select aria-label="媒体类型" value={kind} onChange={(event) => setKind(event.target.value)} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm"><option value="all">全部类型</option><option value="image">图片</option><option value="video">视频</option><option value="attachment">附件</option></select>
-                <label className="flex min-h-[44px] items-center gap-2 px-2 text-sm"><input type="checkbox" checked={onlyOrphans} onChange={(event) => setOnlyOrphans(event.target.checked)} />仅看零引用</label>
+            <div className="flex flex-col gap-2 rounded-lg border border-border/50 p-3 sm:flex-row sm:items-center">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                    <input aria-label="搜索媒体" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜索文件名或替代文本" className={fieldSearchClass} />
+                </div>
+                <select aria-label="媒体类型" value={kind} onChange={(event) => setKind(event.target.value)} className={`${fieldClass} sm:max-w-36`}>
+                    <option value="all">全部类型</option><option value="image">图片</option><option value="video">视频</option><option value="attachment">附件</option>
+                </select>
+                <label className="flex min-h-[44px] items-center gap-2 px-2 text-sm">
+                    <input type="checkbox" checked={onlyOrphans} onChange={(event) => setOnlyOrphans(event.target.checked)} className="h-5 w-5" />
+                    仅看零引用
+                </label>
             </div>
 
-            {loading ? <p className="py-16 text-center text-sm text-muted">加载中...</p> : failed ? <div className="py-16 text-center"><p className="text-sm text-muted">媒体库加载失败</p><button onClick={() => { setLoading(true); load(); }} className="mt-3 rounded-lg border border-border/50 px-4 py-2 text-sm">重试</button></div> : filtered.length === 0 ? <p className="py-16 text-center text-sm text-muted">暂无匹配媒体</p> : (
+            {loading ? (
+                <LoadingRows count={4} />
+            ) : failed ? (
+                <ErrorState title="媒体库加载失败" onRetry={() => { setLoading(true); load(); }} />
+            ) : filtered.length === 0 ? (
+                <EmptyState
+                    icon={ImageIcon}
+                    title={hasFilters ? "暂无匹配媒体" : "媒体库为空"}
+                    description={hasFilters ? "试试调整搜索词或筛选条件" : "上传图片、视频或附件后会出现在这里"}
+                    action={hasFilters ? (
+                        <Button onClick={() => { setSearch(""); setKind("all"); setOnlyOrphans(false); }}>清除筛选</Button>
+                    ) : (
+                        <Button variant="primary" onClick={() => fileRef.current?.click()}>
+                            <Upload className="h-4 w-4" />上传媒体
+                        </Button>
+                    )}
+                />
+            ) : (
                 <div className="flex flex-col gap-2">
                     {filtered.map((asset) => (
-                        <div key={asset.id} className="flex items-center gap-3 rounded-lg border border-border/50 p-3">
+                        <div key={asset.id} className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-2 rounded-lg border border-border/50 p-3 transition-colors hover:bg-foreground/[0.03] sm:flex sm:items-center">
                             <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-foreground/5">
                                 {asset.kind === "image" ? <img src={asset.url} alt="" className="h-full w-full object-cover" /> : asset.kind === "video" ? <Film className="h-5 w-5 text-muted" /> : <File className="h-5 w-5 text-muted" />}
                             </div>
@@ -209,26 +238,51 @@ export function MediaAdminClient() {
                                 <p className="mt-1 truncate text-xs text-muted">{formatSize(asset.size)} · 引用 {asset.references}{asset.width && asset.height ? ` · ${asset.width}×${asset.height}` : ""}</p>
                                 {asset.caption && <p className="mt-1 truncate text-xs text-muted">{asset.caption}</p>}
                             </div>
-                            <div className="flex flex-shrink-0 items-center gap-1">
-                                <IconButton label="复制媒体地址" onClick={async () => { try { await navigator.clipboard.writeText(asset.url); toast.success("地址已复制"); } catch { toast.error("复制失败，请检查浏览器剪贴板权限"); } }}><Copy className="h-4 w-4" /></IconButton>
-                                <IconButton label="编辑媒体信息" onClick={() => { setEditing(asset); setAlt(asset.alt); setCaption(asset.caption); }}><Pencil className="h-4 w-4" /></IconButton>
-                                <IconButton label="删除零引用媒体" variant="danger" disabled={asset.references > 0} onClick={() => setDeleting(asset)}><Trash2 className="h-4 w-4" /></IconButton>
+                            <div className="col-span-2 flex items-center justify-end gap-1 sm:col-auto">
+                                <IconButton size="adaptive" label="复制媒体地址" onClick={async () => { try { await navigator.clipboard.writeText(asset.url); toast.success("地址已复制"); } catch { toast.error("复制失败，请检查浏览器剪贴板权限"); } }}><Copy className="h-4 w-4" /></IconButton>
+                                <IconButton size="adaptive" label="编辑媒体信息" onClick={() => { setEditing(asset); setAlt(asset.alt); setCaption(asset.caption); }}><Pencil className="h-4 w-4" /></IconButton>
+                                <IconButton
+                                    size="adaptive"
+                                    label="删除零引用媒体"
+                                    title={asset.references > 0 ? "仍有引用，无法删除" : "删除零引用媒体"}
+                                    variant="danger"
+                                    disabled={asset.references > 0}
+                                    onClick={() => setDeleting(asset)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </IconButton>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {editing && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={closeMetadata}>
-                    <div ref={metadataTrapRef} role="dialog" aria-modal="true" aria-label="编辑媒体信息" className="flex w-full max-w-md flex-col gap-4 rounded-xl bg-background p-5" onClick={(event) => event.stopPropagation()}>
-                        <h2 className="flex items-center gap-2 text-base font-semibold"><ImageIcon className="h-4 w-4" />编辑媒体信息</h2>
-                        <label className="flex flex-col gap-2 text-sm">图片替代文本<input value={alt} maxLength={500} onChange={(event) => setAlt(event.target.value)} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2" /></label>
-                        <label className="flex flex-col gap-2 text-sm">说明文字<textarea value={caption} maxLength={1000} onChange={(event) => setCaption(event.target.value)} rows={3} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2" /></label>
-                        <div className="flex justify-end gap-2"><button onClick={closeMetadata} className="rounded-lg px-4 py-2 text-sm text-muted">取消</button><button disabled={saving} onClick={saveMetadata} className="rounded-lg bg-foreground px-4 py-2 text-sm text-background">{saving ? "保存中..." : "保存"}</button></div>
-                    </div>
+            <Dialog
+                open={editing !== null}
+                onClose={closeMetadata}
+                title={<span className="flex items-center gap-2"><ImageIcon className="h-4 w-4" />编辑媒体信息</span>}
+                size="md"
+                closeDisabled={saving}
+                footer={
+                    <>
+                        <Button onClick={closeMetadata}>取消</Button>
+                        <Button variant="primary" onClick={saveMetadata} disabled={saving}>
+                            {saving ? "保存中..." : "保存"}
+                        </Button>
+                    </>
+                }
+            >
+                <div className="flex flex-col gap-4">
+                    <label className="flex flex-col gap-2 text-sm">
+                        图片替代文本
+                        <input value={alt} maxLength={500} onChange={(event) => setAlt(event.target.value)} className={fieldClass} />
+                    </label>
+                    <label className="flex flex-col gap-2 text-sm">
+                        说明文字
+                        <textarea value={caption} maxLength={1000} onChange={(event) => setCaption(event.target.value)} rows={3} className={fieldClass} />
+                    </label>
                 </div>
-            )}
+            </Dialog>
 
             <ConfirmDialog isOpen={deleting !== null} onClose={() => setDeleting(null)} onConfirm={remove} title="删除零引用媒体" message={`确定删除「${deleting?.fileName ?? ""}」吗？该操作会移除 Storage 文件，且不可撤销。`} confirmLabel="彻底删除" />
             <ConfirmDialog

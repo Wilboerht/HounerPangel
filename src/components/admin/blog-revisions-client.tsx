@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, History, RotateCcw } from "lucide-react";
+import { History, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/admin/badge";
 import { PageHeader } from "@/components/admin/page-header";
+import { BackLink } from "@/components/admin/back-link";
+import { Button } from "@/components/admin/button";
+import { EmptyState, ErrorState } from "@/components/admin/states";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
@@ -177,10 +179,10 @@ export function BlogRevisionsClient({ slug }: { slug: string }) {
 
     if (loadFailed || !current) {
         return (
-            <div className="flex flex-col items-center gap-3 py-32">
-                <p className="text-sm text-muted">版本历史加载失败</p>
-                <button onClick={() => { setLoading(true); load(); }} className="px-4 py-2 rounded-lg bg-foreground text-background text-sm">重试</button>
-            </div>
+            <ErrorState
+                title="版本历史加载失败"
+                onRetry={() => { setLoading(true); load(); }}
+            />
         );
     }
 
@@ -199,16 +201,18 @@ export function BlogRevisionsClient({ slug }: { slug: string }) {
 
     return (
         <div className="flex flex-col gap-6">
-            <Link href={`/admin/blog/edit/${slug}`} className="inline-flex min-h-[44px] w-fit items-center gap-2 text-sm text-muted hover:text-foreground">
-                <ArrowLeft className="h-4 w-4" />返回编辑
-            </Link>
+            <BackLink href={`/admin/blog/edit/${slug}`} label="返回编辑" />
             <PageHeader title="版本历史" description={`${current.title} · 选择历史版本与当前内容对比`} />
 
             {revisions.length === 0 ? (
-                <p className="py-16 text-center text-sm text-muted">暂无历史版本</p>
+                <EmptyState
+                    icon={History}
+                    title="暂无历史版本"
+                    description="保存文章后会在这里生成版本快照"
+                />
             ) : (
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <section className="flex flex-col gap-2 rounded-xl border border-border/50 p-3 lg:max-h-[70dvh] lg:overflow-y-auto">
+                    <section className="flex max-h-56 flex-col gap-2 overflow-y-auto rounded-xl border border-border/50 p-3 lg:max-h-[70dvh]">
                         <h2 className="flex items-center gap-2 px-1 pb-2 text-sm font-medium"><History className="h-4 w-4" />历史快照</h2>
                         {revisions.map((revision) => (
                             <button
@@ -236,9 +240,9 @@ export function BlogRevisionsClient({ slug }: { slug: string }) {
                                         <h2 className="break-words text-base font-semibold">{selected.title}</h2>
                                         <p className="text-xs text-muted">快照记录于 {formatTime(selected.createdAt)} · 文章日期 {selected.date}</p>
                                     </div>
-                                    <button onClick={() => setRestoreTarget(selected)} className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm text-background">
+                                    <Button variant="primary" size="lg" onClick={() => setRestoreTarget(selected)}>
                                         <RotateCcw className="h-4 w-4" />恢复此版本
-                                    </button>
+                                    </Button>
                                 </div>
                                 <div className="rounded-lg border border-border/50 bg-foreground/[0.02] px-3 py-2 text-xs text-muted">
                                     下方对比中，红色为历史版本内容，绿色为当前版本内容。恢复会生成新的历史快照，不会删除其他版本。

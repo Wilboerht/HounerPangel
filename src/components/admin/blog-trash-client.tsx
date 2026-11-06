@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, RotateCcw, Trash2 } from "lucide-react";
+import { Inbox, RotateCcw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/admin/badge";
 import { IconButton } from "@/components/admin/icon-button";
 import { PageHeader } from "@/components/admin/page-header";
+import { BackLink } from "@/components/admin/back-link";
+import { EmptyState, ErrorState, LoadingRows } from "@/components/admin/states";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
@@ -76,26 +77,23 @@ export function BlogTrashClient() {
 
     return (
         <div className="flex flex-col gap-6">
-            <Link href="/admin/blog" className="inline-flex min-h-[44px] w-fit items-center gap-2 text-sm text-muted hover:text-foreground">
-                <ArrowLeft className="h-4 w-4" />返回博客
-            </Link>
+            <BackLink href="/admin/blog" label="返回博客" />
             <PageHeader title="回收站" description="恢复误删文章，或彻底删除不再需要的内容" />
 
             {loading ? (
-                <div className="flex flex-col gap-2" aria-busy="true" aria-label="加载回收站">
-                    {[0, 1, 2].map((item) => <div key={item} className="h-[72px] rounded-lg bg-foreground/[0.03] motion-safe:animate-pulse" />)}
-                </div>
+                <LoadingRows count={3} className="h-[72px]" />
             ) : loadFailed ? (
-                <div className="flex flex-col items-center gap-3 py-16">
-                    <p className="text-sm text-muted">回收站加载失败</p>
-                    <button onClick={() => { setLoading(true); load(); }} className="rounded-lg bg-foreground px-4 py-2 text-sm text-background">重试</button>
-                </div>
+                <ErrorState title="回收站加载失败" onRetry={() => { setLoading(true); load(); }} />
             ) : posts.length === 0 ? (
-                <p className="py-16 text-center text-sm text-muted">回收站为空</p>
+                <EmptyState
+                    icon={Inbox}
+                    title="回收站为空"
+                    description="删除的文章会先移到这里，可以随时恢复"
+                />
             ) : (
                 <div className="flex flex-col gap-2">
                     {posts.map((post) => (
-                        <div key={post.slug} className="flex items-center justify-between gap-3 rounded-lg border border-border/50 px-4 py-3">
+                        <div key={post.slug} className="flex items-center justify-between gap-3 rounded-lg border border-border/50 px-4 py-3 transition-colors hover:bg-foreground/[0.03]">
                             <div className="flex min-w-0 flex-1 flex-col gap-1">
                                 <div className="flex min-w-0 items-center gap-2">
                                     <h2 className="truncate text-sm font-medium">{post.title}</h2>
@@ -106,10 +104,10 @@ export function BlogTrashClient() {
                                 </p>
                             </div>
                             <div className="flex flex-shrink-0 items-center gap-1">
-                                <IconButton label={`恢复 ${post.title}`} title="恢复文章" size="lg" onClick={() => setPendingAction({ type: "restore", post })}>
+                                <IconButton label={`恢复 ${post.title}`} title="恢复文章" size="adaptive" onClick={() => setPendingAction({ type: "restore", post })}>
                                     <RotateCcw className="h-4 w-4" />
                                 </IconButton>
-                                <IconButton label={`彻底删除 ${post.title}`} title="彻底删除" size="lg" variant="danger" onClick={() => setPendingAction({ type: "purge", post })}>
+                                <IconButton label={`彻底删除 ${post.title}`} title="彻底删除" size="adaptive" variant="danger" onClick={() => setPendingAction({ type: "purge", post })}>
                                     <Trash2 className="h-4 w-4" />
                                 </IconButton>
                             </div>

@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, History } from "lucide-react";
+import { History } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PostForm, type PostFormValues, type PostFormDraft } from "@/components/admin/post-form";
 import { Badge } from "@/components/admin/badge";
 import { PageHeader } from "@/components/admin/page-header";
 import { PreviewMenu } from "@/components/admin/preview-menu";
+import { BackLink } from "@/components/admin/back-link";
+import { buttonClassName } from "@/components/admin/button";
+import { ErrorState, LoadingRows } from "@/components/admin/states";
 import { useDirtyGuard } from "@/lib/use-dirty-guard";
 import { useLocalDraft } from "@/lib/use-local-draft";
 import { useAuthExpired } from "@/lib/use-auth-expired";
@@ -206,47 +209,36 @@ export function BlogEditClient({ slug }: { slug: string }) {
 
   if (loading) {
     // 与列表页一致的骨架屏，避免纯文字"加载中"的体验落差
-    return (
-      <div className="flex flex-col gap-6" aria-busy="true" aria-label="加载中">
-        <div className="h-9 w-24 rounded-lg bg-foreground/[0.05] motion-safe:animate-pulse" />
-        <div className="h-10 rounded-lg bg-foreground/[0.05] motion-safe:animate-pulse" />
-        <div className="h-10 rounded-lg bg-foreground/[0.05] motion-safe:animate-pulse" />
-        <div className="h-72 rounded-lg bg-foreground/[0.05] motion-safe:animate-pulse" />
-      </div>
-    );
+    return <LoadingRows count={4} className="h-12" />;
   }
 
   if (loadFailed) {
     return (
-      <div className="flex flex-col items-center gap-3 py-32">
-        <p className="text-sm text-muted">加载失败，可能是网络问题</p>
-        <button
-          onClick={retryLoad}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
-        >
-          重试
-        </button>
-      </div>
+      <ErrorState
+        title="加载失败"
+        description="可能是网络问题，请稍后重试"
+        onRetry={retryLoad}
+      />
     );
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <nav>
-        <button
-          onClick={goBack}
-          className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200 group min-h-[44px]"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-          <span>返回列表</span>
-        </button>
-      </nav>
+      <BackLink
+        href="/admin/blog"
+        label="返回列表"
+        onNavigate={(event) => {
+          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          requestNavigation("/admin/blog");
+        }}
+      />
 
       <PageHeader
         title="编辑文章"
         accessory={liveValues?.archivedAt ? <Badge variant="outline">已归档</Badge> : !currentPublished && <Badge variant="warning">草稿</Badge>}
         actions={
-          <div className="ml-auto flex items-center gap-2 flex-wrap">
+          <div className="ml-auto flex flex-wrap items-center gap-2">
             {/* 当前更改预览用弹窗（含未保存内容）；已保存版本走管理端专属路由，草稿也能看 */}
             <PreviewMenu
               savedHref={`/admin/blog/preview/${slug}`}
@@ -260,7 +252,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
                 event.preventDefault();
                 requestNavigation(`/admin/blog/history/${slug}`);
               }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+              className={buttonClassName({ size: "md" })}
             >
               <History className="w-4 h-4" />
               历史版本

@@ -5,6 +5,7 @@ import { CheckCircle2, Download, FileJson, Upload } from "lucide-react";
 import { DashboardCard } from "@/components/admin/dashboard-card";
 import { PageHeader } from "@/components/admin/page-header";
 import { Badge } from "@/components/admin/badge";
+import { Button } from "@/components/admin/button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
@@ -32,8 +33,6 @@ interface ImportResult {
     failed: number;
     results: { slug: string; status: string; error?: string }[];
 }
-
-const actionClass = "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50";
 
 export function BackupClient() {
     const toast = useToast();
@@ -141,9 +140,9 @@ export function BackupClient() {
                         <p>包含已发布文章、草稿、回收站内容，以及每篇文章的 Markdown Front Matter 和媒体清单。</p>
                         <p className="text-xs">备份不包含媒体二进制文件；图片、视频和附件仍保存在 Supabase Storage。</p>
                     </div>
-                    <button onClick={exportBackup} disabled={exporting} className={`${actionClass} flex-shrink-0`}>
+                    <Button variant="primary" size="lg" onClick={exportBackup} disabled={exporting} className="flex-shrink-0">
                         <Download className="h-4 w-4" />{exporting ? "导出中..." : "导出全部内容"}
-                    </button>
+                    </Button>
                 </div>
             </DashboardCard>
 
@@ -151,22 +150,22 @@ export function BackupClient() {
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <input ref={fileRef} type="file" accept=".json,application/json" onChange={(event) => selectFile(event.target.files?.[0])} className="hidden" />
-                        <button onClick={() => fileRef.current?.click()} disabled={working} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-border/50 px-4 py-2 text-sm hover:bg-foreground/5">
+                        <Button variant="secondary" size="lg" onClick={() => fileRef.current?.click()} disabled={working}>
                             <FileJson className="h-4 w-4" />选择 JSON 备份
-                        </button>
+                        </Button>
                         {fileName && <span className="truncate text-sm text-muted">{fileName}</span>}
                     </div>
 
                     {backup !== null && !preview && (
-                        <button onClick={() => requestImport(true)} disabled={working} className={`${actionClass} self-start`}>
+                        <Button variant="primary" size="lg" onClick={() => requestImport(true)} disabled={working} className="self-start">
                             <Upload className="h-4 w-4" />{working ? "检查中..." : "预检查备份"}
-                        </button>
+                        </Button>
                     )}
 
                     {preview && (
                         <div className="flex flex-col gap-4 rounded-lg border border-border/50 p-4">
                             <div className="flex items-center gap-2 text-sm font-medium">
-                                <CheckCircle2 className="h-4 w-4 text-green-600" />预检查完成，尚未写入数据
+                                <CheckCircle2 className="h-4 w-4 text-green-700" />预检查完成，尚未写入数据
                             </div>
                             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                                 {[
@@ -211,10 +210,10 @@ export function BackupClient() {
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                                <button onClick={() => requestImport(true)} disabled={working} className="min-h-[44px] rounded-lg border border-border/50 px-4 py-2 text-sm">重新检查</button>
-                                <button onClick={() => setConfirmImport(true)} disabled={working} className={actionClass}>
+                                <Button variant="secondary" size="lg" onClick={() => requestImport(true)} disabled={working}>重新检查</Button>
+                                <Button variant="primary" size="lg" onClick={() => setConfirmImport(true)} disabled={working}>
                                     <Upload className="h-4 w-4" />开始导入
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -224,7 +223,7 @@ export function BackupClient() {
                             <p className="font-medium">导入结果</p>
                             <p className="mt-2 text-muted">新增 {result.created} · 覆盖 {result.updated} · 跳过 {result.skipped} · 失败 {result.failed}</p>
                             {result.results.filter((item) => item.status === "failed").map((item) => (
-                                <p key={item.slug} className="mt-1 text-xs text-red-600">{item.slug}：{item.error}</p>
+                                <p key={item.slug} className="mt-1 text-xs text-red-700">{item.slug}：{item.error}</p>
                             ))}
                         </div>
                     )}

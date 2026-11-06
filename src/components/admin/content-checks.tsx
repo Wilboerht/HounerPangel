@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle2, Link2 } from "lucide-react";
 import type { PostFormValues } from "./post-form";
 import { useToast } from "@/components/toast";
 import { useAuthExpired } from "@/lib/use-auth-expired";
+import { Button } from "@/components/admin/button";
 
 interface LinkResult { url: string; ok: boolean; status: number }
 
@@ -41,7 +42,7 @@ export function ContentChecks({ values }: { values: PostFormValues }) {
         missingAlt > 0 ? `${missingAlt} 张图片缺少替代文本` : null,
         !values.excerpt ? "未填写文章摘要，将自动从正文提取" : null,
         (values.seoDescription?.length ?? 0) > 160 ? "SEO 描述超过 160 字，搜索结果中可能被截断" : null,
-        values.content.trim().length < 100 ? "正文少于 100 字，请确认内容是否完整" : null,
+        values.content.trim().length > 0 && values.content.trim().length < 100 ? "正文少于 100 字，请确认内容是否完整" : null,
     ].filter(Boolean) as string[];
     const resultsCurrent = checkedContent === values.content;
 
@@ -67,14 +68,18 @@ export function ContentChecks({ values }: { values: PostFormValues }) {
         <section className="flex flex-col gap-3 rounded-lg border border-border/50 p-4">
             <div className="flex items-center justify-between gap-3">
                 <h2 className="text-sm font-medium">发布前检查</h2>
-                <button type="button" disabled={checking} onClick={checkLinks} className="inline-flex min-h-[36px] items-center gap-2 rounded-lg border border-border/50 px-3 py-1.5 text-xs disabled:opacity-50"><Link2 className="h-3.5 w-3.5" />{checking ? "检查中..." : "检查外部链接"}</button>
+                <Button size="md" disabled={checking} onClick={checkLinks}>
+                    <Link2 className="h-3.5 w-3.5" />{checking ? "检查中..." : "检查外部链接"}
+                </Button>
             </div>
-            {warnings.length === 0 ? <p className="flex items-center gap-2 text-xs text-green-600"><CheckCircle2 className="h-4 w-4" />基础内容检查未发现问题</p> : warnings.map((warning) => <p key={warning} className="flex items-center gap-2 text-xs text-amber-600"><AlertCircle className="h-4 w-4 flex-shrink-0" />{warning}</p>)}
-            {links && !resultsCurrent && <p className="border-t border-border/50 pt-3 text-xs text-amber-600">正文已修改，之前的链接检查结果已失效，请重新检查。</p>}
+            <div aria-live="polite" className="flex flex-col gap-2">
+                {warnings.length === 0 ? <p className="flex items-center gap-2 text-xs text-green-800"><CheckCircle2 className="h-4 w-4" />基础内容检查未发现问题</p> : warnings.map((warning) => <p key={warning} className="flex items-center gap-2 text-xs text-amber-800"><AlertCircle className="h-4 w-4 flex-shrink-0" />{warning}</p>)}
+            </div>
+            {links && !resultsCurrent && <p className="border-t border-border/50 pt-3 text-xs text-amber-800">正文已修改，之前的链接检查结果已失效，请重新检查。</p>}
             {links && resultsCurrent && (
                 <div className="flex flex-col gap-1 border-t border-border/50 pt-3">
-                    {totalLinks > links.length && <p className="text-xs text-amber-600">共发现 {totalLinks} 个链接，仅显示前 {links.length} 个检查结果。</p>}
-                    {links.length === 0 ? <p className="text-xs text-muted">正文中没有外部链接</p> : links.map((link) => <p key={link.url} className={`break-all text-xs ${link.ok ? "text-green-600" : "text-red-600"}`}>{link.ok ? "正常" : `异常${link.status ? ` (${link.status})` : ""}`} · {link.url}</p>)}
+                    {totalLinks > links.length && <p className="text-xs text-amber-800">共发现 {totalLinks} 个链接，仅显示前 {links.length} 个检查结果。</p>}
+                    {links.length === 0 ? <p className="text-xs text-muted">正文中没有外部链接</p> : links.map((link) => <p key={link.url} className={`break-all text-xs ${link.ok ? "text-green-800" : "text-red-700"}`}>{link.ok ? "正常" : `异常${link.status ? ` (${link.status})` : ""}`} · {link.url}</p>)}
                 </div>
             )}
         </section>

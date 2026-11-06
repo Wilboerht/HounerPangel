@@ -4,16 +4,16 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Pencil, Trash2, X, Search, Eye, EyeOff, History } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
-import { useFocusTrap } from "@/lib/focus-trap";
-import { useScrollLock } from "@/lib/use-scroll-lock";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PostForm, type PostFormValues, type PostFormDraft } from "@/components/admin/post-form";
 import { Badge } from "@/components/admin/badge";
 import { PageHeader } from "@/components/admin/page-header";
 import { IconButton } from "@/components/admin/icon-button";
+import { Button, buttonClassName } from "@/components/admin/button";
+import { Dialog } from "@/components/admin/dialog";
+import { EmptyState, ErrorState, LoadingRows } from "@/components/admin/states";
+import { fieldClass, fieldSearchClass } from "@/components/admin/field-classes";
 import { useDirtyGuard } from "@/lib/use-dirty-guard";
 import { useLocalDraft } from "@/lib/use-local-draft";
 import { useAuthExpired } from "@/lib/use-auth-expired";
@@ -113,15 +113,6 @@ export function BlogAdminClient() {
     discard: draft.clear,
   });
   const authExpired = useAuthExpired();
-
-  const reduce = useSafeMotion();
-  const closeModalRef = useRef<(() => void) | null>(null);
-  // 确认对话框打开时，Escape 交给对话框处理，避免两个监听器互相冲突导致弹窗关不掉
-  const newPostTrapRef = useFocusTrap(showNewModal, () => {
-    if (pendingClose || draftRestore.draftPrompt) return;
-    closeModalRef.current?.();
-  });
-  useScrollLock(showNewModal);
 
   const loadPosts = useCallback((signal?: AbortSignal) => {
     const params = new URLSearchParams({
@@ -352,10 +343,6 @@ export function BlogAdminClient() {
     resetAndCloseModal();
   };
 
-  useEffect(() => {
-    closeModalRef.current = closeNewModal;
-  });
-
   const openNewModal = () => {
     // 日期在打开弹窗时才填入，避免 SSR/客户端水合不一致
     setModalInitial((prev) =>
@@ -384,6 +371,11 @@ export function BlogAdminClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, router]);
 
+  const allOnPageSelected =
+    posts.length > 0 && posts.every((post) => selectedSlugs.has(post.slug));
+  const someOnPageSelected = selectedSlugs.size > 0 && !allOnPageSelected;
+  const hasFilters = Boolean(search || tag || status !== "all");
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -393,40 +385,26 @@ export function BlogAdminClient() {
           <div className="flex items-center gap-2">
             <Link
               href="/admin/blog/trash"
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border/50 px-3 py-2 text-sm text-muted hover:text-foreground hover:bg-foreground/5"
+              className={buttonClassName({ variant: "secondary", size: "lg" })}
             >
               <Trash2 className="h-4 w-4" />回收站
             </Link>
-            <button
-              onClick={openNewModal}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
-            >
+            <Button variant="primary" size="lg" onClick={openNewModal}>
               <Plus className="w-4 h-4" />
               新建文章
-            </button>
+            </Button>
           </div>
         }
       />
 
       {loading ? (
-        <div className="flex flex-col gap-2" aria-busy="true" aria-label="加载中">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-[62px] rounded-lg border border-border/50 bg-foreground/[0.03] motion-safe:animate-pulse"
-            />
-          ))}
-        </div>
+        <LoadingRows count={4} className="h-[62px]" />
       ) : loadFailed ? (
-        <div className="flex flex-col items-center gap-3 py-16">
-          <p className="text-sm text-muted">加载文章列表失败，请检查网络后重试</p>
-          <button
-            onClick={retryLoad}
-            className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
-          >
-            重试
-          </button>
-        </div>
+        <ErrorState
+          title="加载文章列表失败"
+          description="请检查网络后重试"
+          onRetry={retryLoad}
+        />
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2 rounded-lg border border-border/50 p-3">
@@ -438,22 +416,26 @@ export function BlogAdminClient() {
                 placeholder="搜索文章标题或 slug..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full pl-10 pr-10 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+                className={fieldSearchClass}
               />
               {search && (
-                <button onClick={() => { setSearch(""); setPage(1); }} aria-label="清除搜索" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 min-w-[32px] min-h-[32px] rounded-md text-muted hover:text-foreground">
+                <button
+                  onClick={() => { setSearch(""); setPage(1); }}
+                  aria-label="清除搜索"
+                  className="absolute right-2 top-1/2 flex min-h-[36px] min-w-[36px] -translate-y-1/2 items-center justify-center rounded-md text-muted hover:text-foreground max-sm:min-h-[44px] max-sm:min-w-[44px]"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <select aria-label="按状态筛选" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <select aria-label="按状态筛选" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={fieldClass}>
                 <option value="all">全部状态</option><option value="published">已发布</option><option value="draft">草稿</option><option value="archived">已归档</option>
               </select>
-              <select aria-label="按标签筛选" value={tag} onChange={(e) => { setTag(e.target.value); setPage(1); }} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm">
+              <select aria-label="按标签筛选" value={tag} onChange={(e) => { setTag(e.target.value); setPage(1); }} className={fieldClass}>
                 <option value="">全部标签</option>{availableTags.map((item) => <option key={item} value={item}>{item}</option>)}
               </select>
-              <select aria-label="排序方式" value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className="rounded-lg border border-border/50 bg-foreground/5 px-3 py-2 text-sm">
+              <select aria-label="排序方式" value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className={`${fieldClass} col-span-2 sm:col-span-1`}>
                 <option value="date">按文章日期</option><option value="updated">按最近修改</option>
               </select>
             </div>
@@ -462,143 +444,133 @@ export function BlogAdminClient() {
           {selectedSlugs.size > 0 && (
             <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 p-3 text-sm">
               <span className="mr-auto">已选 {selectedSlugs.size} 篇</span>
-              <button disabled={bulkWorking} onClick={() => executeBulk("publish")} className="rounded-md border border-border/50 px-3 py-1.5">发布</button>
-              <button disabled={bulkWorking} onClick={() => executeBulk("unpublish")} className="rounded-md border border-border/50 px-3 py-1.5">下线</button>
-              <button disabled={bulkWorking} onClick={() => setPendingBulkAction("archive")} className="rounded-md border border-border/50 px-3 py-1.5">归档</button>
-              <button disabled={bulkWorking} onClick={() => executeBulk("unarchive")} className="rounded-md border border-border/50 px-3 py-1.5">取消归档</button>
+              <Button disabled={bulkWorking} onClick={() => executeBulk("publish")}>发布</Button>
+              <Button disabled={bulkWorking} onClick={() => executeBulk("unpublish")}>下线</Button>
+              <Button disabled={bulkWorking} onClick={() => setPendingBulkAction("archive")}>归档</Button>
+              <Button disabled={bulkWorking} onClick={() => executeBulk("unarchive")}>取消归档</Button>
               <div className="flex items-center gap-1">
-                <input aria-label="批量添加标签" value={bulkTag} onChange={(e) => setBulkTag(e.target.value)} placeholder="标签，逗号分隔" className="w-32 rounded-md border border-border/50 bg-background px-2 py-1.5 text-xs" />
-                <button disabled={bulkWorking || !bulkTag.trim()} onClick={() => executeBulk("addTags")} className="rounded-md border border-border/50 px-3 py-1.5">加标签</button>
+                <input aria-label="批量添加标签" value={bulkTag} onChange={(e) => setBulkTag(e.target.value)} placeholder="标签，逗号分隔" className={`${fieldClass} max-w-36`} />
+                <Button disabled={bulkWorking || !bulkTag.trim()} onClick={() => executeBulk("addTags")}>加标签</Button>
               </div>
-              <button disabled={bulkWorking} onClick={exportSelected} className="rounded-md border border-border/50 px-3 py-1.5">导出所选</button>
-              <button disabled={bulkWorking} onClick={() => setPendingBulkAction("delete")} className="rounded-md border border-red-500/30 px-3 py-1.5 text-red-600">删除</button>
+              <Button disabled={bulkWorking} onClick={exportSelected}>导出所选</Button>
+              <Button variant="danger" disabled={bulkWorking} onClick={() => setPendingBulkAction("delete")}>删除</Button>
             </div>
           )}
 
           {posts.length > 0 ? (
             <div className="flex flex-col gap-2">
-              <label className="flex min-h-[36px] items-center gap-2 px-2 text-xs text-muted">
+              <label className="flex min-h-[44px] items-center gap-2 px-2 text-sm text-muted">
                 <input
                   type="checkbox"
                   aria-label="选择当前页全部文章"
-                  checked={posts.every((post) => selectedSlugs.has(post.slug))}
+                  checked={allOnPageSelected}
+                  ref={(element) => {
+                    if (element) element.indeterminate = someOnPageSelected;
+                  }}
                   onChange={(e) => setSelectedSlugs(e.target.checked ? new Set(posts.map((post) => post.slug)) : new Set())}
+                  className="h-5 w-5"
                 />选择本页
               </label>
               {posts.map((post) => (
-                <div key={post.slug} className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-border/50 hover:bg-foreground/[0.02] transition-colors">
-                  <input
-                    type="checkbox"
-                    aria-label={`选择 ${post.title}`}
-                    checked={selectedSlugs.has(post.slug)}
-                    onChange={() => setSelectedSlugs((current) => {
-                      const next = new Set(current);
-                      if (next.has(post.slug)) next.delete(post.slug); else next.add(post.slug);
-                      return next;
-                    })}
-                    className="h-4 w-4 flex-shrink-0"
-                  />
-                  <div className="flex flex-col gap-1 min-w-0 flex-1">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <h3 className="text-sm font-medium text-foreground truncate">{post.title}</h3>
+                <div
+                  key={post.slug}
+                  className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 rounded-lg border border-border/50 px-3 py-3 transition-colors hover:bg-foreground/[0.03] sm:flex sm:items-center sm:px-4"
+                >
+                  <label className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center sm:min-h-[36px] sm:min-w-[36px]">
+                    <input
+                      type="checkbox"
+                      aria-label={`选择 ${post.title}`}
+                      checked={selectedSlugs.has(post.slug)}
+                      onChange={() => setSelectedSlugs((current) => {
+                        const next = new Set(current);
+                        if (next.has(post.slug)) next.delete(post.slug); else next.add(post.slug);
+                        return next;
+                      })}
+                      className="h-5 w-5"
+                    />
+                  </label>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Link
+                        href={`/admin/blog/edit/${post.slug}`}
+                        className="min-w-0 truncate text-sm font-medium text-foreground hover:underline"
+                      >
+                        {post.title}
+                      </Link>
                       {post.archivedAt ? <Badge variant="outline">已归档</Badge> : !post.published && <Badge variant="warning">草稿</Badge>}
                     </div>
-                    <p className="text-xs text-muted flex flex-wrap items-center gap-x-2">
+                    <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
                       <span>{post.date}</span>
                       {post.tags.length > 0 && <span className="truncate">{post.tags.join(" · ")}</span>}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <IconButton onClick={() => handleTogglePublish(post)} label={post.published ? "转为草稿" : "发布"} title={post.published ? "转为草稿" : "发布"} size="lg" disabled={togglingSlug !== null}>
+                  <div className="col-span-2 flex items-center justify-end gap-1 sm:col-auto sm:ml-0">
+                    <IconButton onClick={() => handleTogglePublish(post)} label={post.published ? "转为草稿" : "发布"} title={post.published ? "转为草稿" : "发布"} size="adaptive" disabled={togglingSlug !== null}>
                       {post.published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </IconButton>
-                    <IconButton href={`/admin/blog/history/${post.slug}`} label="历史版本" title="历史版本" size="lg"><History className="w-4 h-4" /></IconButton>
-                    <IconButton href={`/admin/blog/edit/${post.slug}`} label="编辑" title="编辑" size="lg"><Pencil className="w-4 h-4" /></IconButton>
-                    <IconButton onClick={() => setDeleteTarget(post)} label="删除" title="删除" variant="danger" size="lg"><Trash2 className="w-4 h-4" /></IconButton>
+                    <IconButton href={`/admin/blog/history/${post.slug}`} label="历史版本" title="历史版本" size="adaptive"><History className="w-4 h-4" /></IconButton>
+                    <IconButton href={`/admin/blog/edit/${post.slug}`} label="编辑" title="编辑" size="adaptive"><Pencil className="w-4 h-4" /></IconButton>
+                    <IconButton onClick={() => setDeleteTarget(post)} label="删除" title="删除" variant="danger" size="adaptive"><Trash2 className="w-4 h-4" /></IconButton>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="py-16 text-center">
-              <p className="text-sm text-muted mb-3">{search || tag || status !== "all" ? "无匹配结果" : "暂无文章"}</p>
-              {(search || tag || status !== "all") && <button onClick={() => { setSearch(""); setTag(""); setStatus("all"); setPage(1); }} className="text-sm text-accent hover:underline">清除筛选</button>}
-            </div>
+            <EmptyState
+              title={hasFilters ? "没有匹配的文章" : "还没有文章"}
+              description={hasFilters ? "试试调整搜索词或筛选条件" : "创建第一篇文章，开始记录你的想法"}
+              action={
+                hasFilters ? (
+                  <Button onClick={() => { setSearch(""); setTag(""); setStatus("all"); setPage(1); }}>
+                    清除筛选
+                  </Button>
+                ) : (
+                  <Button variant="primary" onClick={openNewModal}>
+                    <Plus className="h-4 w-4" />新建文章
+                  </Button>
+                )
+              }
+            />
           )}
 
-          <div className="flex items-center justify-between gap-3 text-sm text-muted">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
             <span>共 {total} 篇 · 第 {page} / {Math.max(1, Math.ceil(total / pageSize))} 页</span>
             <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage((value) => value - 1)} className="rounded-lg border border-border/50 px-3 py-1.5 disabled:opacity-30">上一页</button>
-              <button disabled={page >= Math.ceil(total / pageSize)} onClick={() => setPage((value) => value + 1)} className="rounded-lg border border-border/50 px-3 py-1.5 disabled:opacity-30">下一页</button>
+              <Button disabled={page <= 1} onClick={() => setPage((value) => value - 1)}>上一页</Button>
+              <Button disabled={page >= Math.ceil(total / pageSize)} onClick={() => setPage((value) => value + 1)}>下一页</Button>
             </div>
           </div>
         </div>
       )}
 
-      <AnimatePresence>
-        {showNewModal && (
-          <>
-            <motion.div
-              initial={safeAnimate(reduce, { opacity: 0 })}
-              animate={{ opacity: 1 }}
-              exit={safeAnimate(reduce, { opacity: 0 })}
-              onClick={closeNewModal}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
-            />
-            <motion.div
-              initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
-              transition={springModal}
-              onClick={closeNewModal}
-              className="fixed inset-0 flex items-center justify-center z-[101] p-6 max-sm:p-0"
-            >
-              <div
-                ref={newPostTrapRef}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="new-post-title"
-                onClick={(event) => event.stopPropagation()}
-                className="relative w-full max-w-3xl bg-background rounded-2xl border border-border/50 shadow-xl overflow-hidden max-h-full flex flex-col max-sm:rounded-none max-sm:h-dvh"
-              >
-                {/* 关闭按钮带底色：表单滚动时内容不会从图标底下穿过 */}
-                <div className="absolute z-10 top-[calc(0.75rem+env(safe-area-inset-top,0px))] right-[calc(0.75rem+env(safe-area-inset-right,0px))] bg-background/80 backdrop-blur-sm rounded-lg">
-                  <IconButton label="关闭新建窗口" onClick={closeNewModal} size="lg" disabled={creating}>
-                    <X className="w-4 h-4" />
-                  </IconButton>
-                </div>
-
-                <div className="pb-4 flex-shrink-0 border-b border-border/50 pt-[calc(2rem+env(safe-area-inset-top,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(4rem+env(safe-area-inset-right,0px))]">
-                  <h2 id="new-post-title" className="text-xl font-semibold tracking-tight text-foreground">
-                    新建文章
-                  </h2>
-                </div>
-
-                <div className="pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] pt-4 overflow-y-auto [overscroll-behavior:contain]">
-                  <PostForm
-                    key={formKey}
-                    idPrefix="new"
-                    initialValues={modalInitial}
-                    initialTagInput={modalTagInput}
-                    slugEditable
-                    autoFocusTitle
-                    contentRows={12}
-                    onSubmit={handleCreate}
-                    onDirty={() => setFormDirty(true)}
-                    onValuesChange={draft.scheduleSave}
-                    onCancel={closeNewModal}
-                    onSavingChange={setCreating}
-                    slugError={slugError}
-                    onSlugChange={() => setSlugError(null)}
-                    footerClassName="-ml-[calc(1.5rem+env(safe-area-inset-left,0px))] -mr-[calc(1.5rem+env(safe-area-inset-right,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))]"
-                  />
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <Dialog
+        open={showNewModal}
+        onClose={closeNewModal}
+        title="新建文章"
+        size="xl"
+        fullscreenOnMobile
+        closeDisabled={creating}
+        closeLabel="关闭新建窗口"
+        bodyClassName="pt-4 pb-0"
+      >
+        <PostForm
+          key={formKey}
+          idPrefix="new"
+          initialValues={modalInitial}
+          initialTagInput={modalTagInput}
+          slugEditable
+          autoFocusTitle
+          contentRows={12}
+          onSubmit={handleCreate}
+          onDirty={() => setFormDirty(true)}
+          onValuesChange={draft.scheduleSave}
+          onCancel={closeNewModal}
+          onSavingChange={setCreating}
+          slugError={slugError}
+          onSlugChange={() => setSlugError(null)}
+          footerClassName="-mx-4 sm:-mx-5 px-4 sm:px-5"
+        />
+      </Dialog>
 
       <ConfirmDialog
         isOpen={pendingClose}

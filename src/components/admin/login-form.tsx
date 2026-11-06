@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Lock } from "lucide-react";
 import { useToast } from "@/components/toast";
+import { Button } from "@/components/admin/button";
+import { fieldClass } from "@/components/admin/field-classes";
 
 // admin 页面在服务端校验会话，未登录时原地渲染此表单（不做 redirect，避免循环）
 export function LoginForm() {
@@ -77,16 +79,18 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="请输入密码"
-              className="w-full px-4 py-2 rounded-lg bg-foreground/5 border border-border/50 text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+              className={fieldClass}
             />
           </div>
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="lg"
             disabled={loginLoading}
-            className="w-full px-4 py-2 min-h-[44px] rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="w-full"
           >
             {loginLoading ? "登录中..." : "登录"}
-          </button>
+          </Button>
         </form>
 
         <div className="flex justify-center">

@@ -6,6 +6,7 @@ import { useId, useState } from "react";
 import { useSafeMotion, safeAnimate, springModal } from "@/lib/animation";
 import { useFocusTrap } from "@/lib/focus-trap";
 import { useScrollLock } from "@/lib/use-scroll-lock";
+import { Button } from "@/components/admin/button";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -47,7 +48,7 @@ export function ConfirmDialog({
             animate={{ opacity: 1 }}
             exit={safeAnimate(reduce, { opacity: 0 })}
             onClick={handleClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[110]"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[140] print:hidden"
           />
           <motion.div
             initial={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
@@ -55,7 +56,7 @@ export function ConfirmDialog({
             exit={safeAnimate(reduce, { opacity: 0, scale: 0.96, y: 10 })}
             transition={springModal}
             onClick={handleClose}
-            className="fixed inset-0 flex items-center justify-center z-[111] p-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))]"
+            className="fixed inset-0 flex items-center justify-center z-[141] p-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pl-[calc(1.5rem+env(safe-area-inset-left,0px))] pr-[calc(1.5rem+env(safe-area-inset-right,0px))] print:hidden"
           >
             <div
               ref={trapRef}
@@ -68,7 +69,7 @@ export function ConfirmDialog({
             >
               <div className="flex items-start gap-4">
                 <div className={`p-2 rounded-full flex-shrink-0 ${danger ? "bg-red-500/10" : "bg-foreground/5"}`}>
-                  <AlertTriangle className={`w-5 h-5 ${danger ? "text-red-500" : "text-foreground"}`} />
+                  <AlertTriangle className={`w-5 h-5 ${danger ? "text-red-600" : "text-foreground"}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 id={titleId} className="text-base font-semibold text-foreground mb-1">
@@ -80,16 +81,19 @@ export function ConfirmDialog({
                 </div>
               </div>
               <div className="flex items-center justify-end gap-3 mt-6">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="lg"
                   disabled={pending}
                   onClick={handleClose}
-                  className="px-4 py-2 min-h-[44px] rounded-lg text-sm text-muted hover:text-foreground hover:bg-foreground/5 transition-colors disabled:opacity-60"
                 >
                   取消
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant={danger ? "danger" : "primary"}
+                  size="lg"
                   disabled={pending}
                   onClick={async () => {
                     if (pending) return;
@@ -102,14 +106,9 @@ export function ConfirmDialog({
                       setPending(false);
                     }
                   }}
-                  className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-colors disabled:opacity-60 ${
-                    danger
-                      ? "bg-red-500 text-white hover:bg-red-600"
-                      : "bg-foreground text-background hover:bg-foreground/90"
-                  }`}
                 >
                   {pending ? "处理中..." : confirmLabel}
-                </button>
+                </Button>
               </div>
             </div>
           </motion.div>

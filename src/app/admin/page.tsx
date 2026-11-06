@@ -35,21 +35,24 @@ export default async function AdminDashboardPage() {
     const recent = posts.slice(0, 5);
 
     const quickActionCls =
-        "flex items-center gap-2 rounded-lg border border-border/50 px-3 py-2 text-sm text-foreground transition-colors hover:bg-foreground/[0.03]";
+        "flex min-h-[44px] items-center gap-2 rounded-lg border border-border/50 px-3 py-2 text-sm text-foreground transition-colors hover:bg-foreground/[0.03]";
 
     return (
         <div className="flex flex-col gap-6">
             <PageHeader title="仪表盘" description="站点数据概览与快捷入口" />
 
             {loadFailed && (
-                <p className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-600">
+                <p role="alert" className="rounded-lg border border-amber-600/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-800">
                     数据加载失败，以下显示为默认值，请稍后刷新重试
                 </p>
             )}
 
-            <div className="grid grid-cols-3 gap-4">
-                {stats.map((s) => (
-                    <DashboardCard key={s.label}>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {stats.map((s, index) => (
+                    <DashboardCard
+                        key={s.label}
+                        className={index === stats.length - 1 ? "col-span-2 sm:col-span-1" : ""}
+                    >
                         <p className="text-xs text-muted sm:text-sm">{s.label}</p>
                         <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
                             {s.value}
@@ -77,7 +80,7 @@ export default async function AdminDashboardPage() {
                                 <li key={post.slug}>
                                     <Link
                                         href={`/admin/blog/edit/${post.slug}`}
-                                        className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-foreground/[0.03]"
+                                        className="-mx-2 flex min-h-[44px] items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-foreground/[0.03]"
                                     >
                                         <span className="flex min-w-0 items-center gap-2">
                                             <span className="truncate text-sm text-foreground">

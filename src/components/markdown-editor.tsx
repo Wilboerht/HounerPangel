@@ -511,7 +511,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             aria-selected={tab === "edit"}
             tabIndex={tab === "edit" ? 0 : -1}
             aria-controls={editPanelId}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors min-h-[36px] ${
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium whitespace-nowrap transition-colors min-h-[44px] ${
               tab === "edit" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
           >
@@ -526,7 +526,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             aria-selected={tab === "preview"}
             tabIndex={tab === "preview" ? 0 : -1}
             aria-controls={previewPanelId}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors min-h-[36px] ${
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium whitespace-nowrap transition-colors min-h-[44px] ${
               tab === "preview" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
             }`}
           >
@@ -535,7 +535,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           </button>
         </div>
         {tab === "edit" && (
-          <div className="flex items-center gap-0.5 flex-wrap -mx-1 px-1">
+          <div className="no-scrollbar -mx-1 flex w-full min-w-0 items-center gap-0.5 overflow-x-auto px-1 sm:w-auto sm:flex-wrap sm:overflow-visible">
             {uploading && (
               <span className="text-xs text-muted flex-shrink-0 mr-1 inline-flex items-center gap-1">
                 {uploadProgress || "上传中..."}
@@ -546,7 +546,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
                     uploadAbortRef.current?.abort();
                   }}
                   aria-label="取消上传"
-                  className="p-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-md text-muted hover:text-foreground hover:bg-foreground/10 transition-colors"
+                  className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-md text-muted transition-colors hover:bg-foreground/10 hover:text-foreground"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -575,7 +575,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
                 if (type) insertBlock(`> [!${type}]\n> `, "提示内容");
                 event.target.value = "";
               }}
-              className="min-h-[36px] rounded-md border border-border/50 bg-background px-2 text-xs text-muted"
+              className="min-h-[44px] shrink-0 rounded-md border border-border/50 bg-background px-2 text-xs text-muted"
             >
               <option value="">提示块</option>
               <option value="NOTE">Note 注意</option>
@@ -711,7 +711,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
           }}
           aria-describedby={`${editorId}-keyboard-hint`}
           placeholder="写点什么..."
-          className="md-editor-textarea w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/50 focus:outline-none resize-y font-mono text-base leading-relaxed min-h-[300px]"
+          className="md-editor-textarea w-full px-4 py-3 bg-foreground/5 text-foreground placeholder:text-muted/80 resize-y font-mono text-base leading-relaxed min-h-[300px]"
         />
       </div>
       {tab === "edit" && <p id={`${editorId}-keyboard-hint`} className="border-t border-border/50 px-3 py-2 text-xs text-muted">Tab 缩进，Shift+Tab 反缩进，Escape 后按 Tab 可移出编辑器</p>}
