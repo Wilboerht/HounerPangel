@@ -246,7 +246,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
         title="编辑文章"
         accessory={liveValues?.archivedAt ? <Badge variant="outline">已归档</Badge> : !currentPublished && <Badge variant="warning">草稿</Badge>}
         actions={
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="ml-auto flex items-center gap-2 flex-wrap">
             {/* 当前更改预览用弹窗（含未保存内容）；已保存版本走管理端专属路由，草稿也能看 */}
             <PreviewMenu
               savedHref={`/admin/blog/preview/${slug}`}
