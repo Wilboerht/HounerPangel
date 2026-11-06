@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import {
   Eye, Edit3, Bold, Italic, Heading1, Heading2, Heading3,
   Link, Code, Code2, List, ListOrdered, ListChecks, Quote, Table, Minus, Strikethrough,
-  Image as ImageIcon, Video, Paperclip, X, Library, Workflow,
+  Upload, X, Library, Workflow,
 } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { MediaPicker } from "@/components/admin/media-picker";
@@ -142,9 +142,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
   const [uploadProgress, setUploadProgress] = useState<string>("");
   const [mediaOpen, setMediaOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
-  const attachmentInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
   const uploadCancelGenerationRef = useRef(0);
   const tabReleaseRef = useRef(false);
@@ -369,28 +367,6 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    handleFileUpload(file, (url) => `![](${url})`, "image");
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    handleFileUpload(file, (url) => `![](${url})`, "video");
-    if (videoInputRef.current) videoInputRef.current.value = "";
-  };
-
-  const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // 附件用链接语法插入，前台渲染成下载卡片
-    handleFileUpload(file, (url) => `[${sanitizeLinkText(file.name)}](${url})`, "attachment");
-    if (attachmentInputRef.current) attachmentInputRef.current.value = "";
-  };
-
   // 粘贴/拖拽进来的文件按 MIME 或扩展名自动判断走图片/视频/附件分支
   const detectFileKind = (file: File): UploadKind | null => {
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
@@ -398,6 +374,22 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     if (ALLOWED_VIDEO_EXTENSIONS.has(ext) || file.type.startsWith("video/")) return "video";
     if (ALLOWED_ATTACHMENT_EXTENSIONS.has(ext)) return "attachment";
     return null;
+  };
+
+  // 图片、视频、附件共用一个上传入口，按文件类型决定插入的 Markdown 语法
+  const handleUploadInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const kind = detectFileKind(file);
+    if (!kind) {
+      toast.error("不支持的文件类型");
+      return;
+    }
+    const getMarkdown = kind === "attachment"
+      ? (url: string) => `[${sanitizeLinkText(file.name)}](${url})`
+      : (url: string) => `![](${url})`;
+    handleFileUpload(file, getMarkdown, kind);
+    if (uploadInputRef.current) uploadInputRef.current.value = "";
   };
 
   const handleDroppedFiles = async (files: FileList | File[]) => {
@@ -604,55 +596,21 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
               </button>
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => uploadInputRef.current?.click()}
                 disabled={uploading}
-                title="上传图片"
-                aria-label="上传图片"
+                title="上传图片、视频或附件"
+                aria-label="上传图片、视频或附件"
                 className={toolButtonCls}
               >
-                <ImageIcon className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => videoInputRef.current?.click()}
-                disabled={uploading}
-                title="上传视频"
-                aria-label="上传视频"
-                className={toolButtonCls}
-              >
-                <Video className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => attachmentInputRef.current?.click()}
-                disabled={uploading}
-                title="上传附件（PDF、文档、压缩包等）"
-                aria-label="上传附件"
-                className={toolButtonCls}
-              >
-                <Paperclip className="w-4 h-4" />
+                <Upload className="w-4 h-4" />
               </button>
             </div>
 
             <input
-              ref={fileInputRef}
+              ref={uploadInputRef}
               type="file"
-              accept=".png,.jpg,.jpeg,.gif,.webp"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-            <input
-              ref={videoInputRef}
-              type="file"
-              accept=".mp4,.webm,.mov,.avi,.mkv"
-              onChange={handleVideoUpload}
-              className="hidden"
-            />
-            <input
-              ref={attachmentInputRef}
-              type="file"
-              accept=".pdf,.txt,.md,.csv,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
-              onChange={handleAttachmentUpload}
+              accept=".png,.jpg,.jpeg,.gif,.webp,.mp4,.webm,.mov,.avi,.mkv,.pdf,.txt,.md,.csv,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+              onChange={handleUploadInput}
               className="hidden"
             />
           </div>
