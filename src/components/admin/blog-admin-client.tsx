@@ -406,7 +406,7 @@ export function BlogAdminClient() {
           onRetry={retryLoad}
         />
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className={`flex flex-col gap-4 ${selectedSlugs.size > 0 ? "pb-48 md:pb-28" : ""}`}>
           <div className="flex flex-col gap-2 rounded-lg border border-border/50 p-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
@@ -440,22 +440,6 @@ export function BlogAdminClient() {
               </select>
             </div>
           </div>
-
-          {selectedSlugs.size > 0 && (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 p-3 text-sm">
-              <span className="mr-auto">已选 {selectedSlugs.size} 篇</span>
-              <Button disabled={bulkWorking} onClick={() => executeBulk("publish")}>发布</Button>
-              <Button disabled={bulkWorking} onClick={() => executeBulk("unpublish")}>下线</Button>
-              <Button disabled={bulkWorking} onClick={() => setPendingBulkAction("archive")}>归档</Button>
-              <Button disabled={bulkWorking} onClick={() => executeBulk("unarchive")}>取消归档</Button>
-              <div className="flex items-center gap-1">
-                <input aria-label="批量添加标签" value={bulkTag} onChange={(e) => setBulkTag(e.target.value)} placeholder="标签，逗号分隔" className={`${fieldClass} max-w-36`} />
-                <Button disabled={bulkWorking || !bulkTag.trim()} onClick={() => executeBulk("addTags")}>加标签</Button>
-              </div>
-              <Button disabled={bulkWorking} onClick={exportSelected}>导出所选</Button>
-              <Button variant="danger" disabled={bulkWorking} onClick={() => setPendingBulkAction("delete")}>删除</Button>
-            </div>
-          )}
 
           {posts.length > 0 ? (
             <div className="flex flex-col gap-2">
@@ -571,6 +555,43 @@ export function BlogAdminClient() {
           footerClassName="-mx-4 sm:-mx-5 px-4 sm:px-5"
         />
       </Dialog>
+
+      {!loading && !loadFailed && selectedSlugs.size > 0 && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-30 flex justify-center px-4 print:hidden lg:pl-[calc(15rem+2rem)] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))]">
+          <div className="pointer-events-auto w-full max-w-4xl rounded-xl border border-accent/30 bg-background/95 p-3 shadow-2xl backdrop-blur-sm">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="flex items-center gap-2">
+                <span aria-live="polite" className="mr-auto text-sm font-medium text-foreground">
+                  已选 {selectedSlugs.size} 篇
+                </span>
+                <IconButton label="清除选择" size="adaptive" onClick={() => setSelectedSlugs(new Set())}>
+                  <X className="h-4 w-4" />
+                </IconButton>
+              </div>
+
+              <div className="no-scrollbar flex items-center gap-2 overflow-x-auto pb-1 sm:ml-auto sm:flex-wrap sm:overflow-visible">
+                <Button disabled={bulkWorking} onClick={() => executeBulk("publish")}>发布</Button>
+                <Button disabled={bulkWorking} onClick={() => executeBulk("unpublish")}>下线</Button>
+                <Button disabled={bulkWorking} onClick={() => setPendingBulkAction("archive")}>归档</Button>
+                <Button disabled={bulkWorking} onClick={() => executeBulk("unarchive")}>取消归档</Button>
+                <div className="flex flex-shrink-0 items-center gap-1">
+                  <input
+                    aria-label="批量添加标签"
+                    value={bulkTag}
+                    disabled={bulkWorking}
+                    onChange={(e) => setBulkTag(e.target.value)}
+                    placeholder="标签，逗号分隔"
+                    className={`${fieldClass} max-w-36`}
+                  />
+                  <Button disabled={bulkWorking || !bulkTag.trim()} onClick={() => executeBulk("addTags")}>加标签</Button>
+                </div>
+                <Button disabled={bulkWorking} onClick={exportSelected}>导出所选</Button>
+                <Button variant="danger" disabled={bulkWorking} onClick={() => setPendingBulkAction("delete")}>删除</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={pendingClose}
