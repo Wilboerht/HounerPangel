@@ -6,5 +6,5 @@ interface EditBlogPostPageProps {
 
 export default async function EditBlogPostPage({ params }: EditBlogPostPageProps) {
   const { slug } = await params;
-  return <BlogEditClient slug={slug} />;
+  return <BlogEditClient key={slug} slug={slug} />;
 }

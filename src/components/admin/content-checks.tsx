@@ -15,7 +15,9 @@ export function ContentChecks({ values }: { values: PostFormValues }) {
     const [links, setLinks] = useState<LinkResult[] | null>(null);
     const [checkedContent, setCheckedContent] = useState("");
     const [totalLinks, setTotalLinks] = useState(0);
-    const missingAlt = (values.content.match(/!\[\s*\]\(/g) ?? []).length;
+    const missingAlt = Array.from(values.content.matchAll(/!\[\s*\]\((\S+?)(?:\s+[^)]*)?\)/g))
+        .filter((match) => !/\.(mp4|webm|mov|avi|mkv)(?:$|[?#])/i.test(match[1]))
+        .length;
     const warnings = [
         missingAlt > 0 ? `${missingAlt} 张图片缺少替代文本` : null,
         !values.excerpt ? "未填写文章摘要，将自动从正文提取" : null,

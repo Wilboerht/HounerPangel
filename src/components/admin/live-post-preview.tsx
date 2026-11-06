@@ -30,8 +30,8 @@ export function LivePostPreview({ values, updatedAt, onClose }: { values: PostFo
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="flex rounded-lg border border-border/50 p-0.5">
-                            <button onClick={() => setDevice("desktop")} aria-label="桌面预览" className={`flex h-9 w-9 items-center justify-center rounded-md ${device === "desktop" ? "bg-foreground/10" : "text-muted"}`}><Monitor className="h-4 w-4" /></button>
-                            <button onClick={() => setDevice("mobile")} aria-label="移动预览" className={`flex h-9 w-9 items-center justify-center rounded-md ${device === "mobile" ? "bg-foreground/10" : "text-muted"}`}><Smartphone className="h-4 w-4" /></button>
+                            <button type="button" onClick={() => setDevice("desktop")} aria-label="桌面预览" aria-pressed={device === "desktop"} className={`flex h-9 w-9 items-center justify-center rounded-md ${device === "desktop" ? "bg-foreground/10" : "text-muted"}`}><Monitor className="h-4 w-4" /></button>
+                            <button type="button" onClick={() => setDevice("mobile")} aria-label="移动预览" aria-pressed={device === "mobile"} className={`flex h-9 w-9 items-center justify-center rounded-md ${device === "mobile" ? "bg-foreground/10" : "text-muted"}`}><Smartphone className="h-4 w-4" /></button>
                         </div>
                         <IconButton label="关闭预览" onClick={onClose}><X className="h-4 w-4" /></IconButton>
                     </div>

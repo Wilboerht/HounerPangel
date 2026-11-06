@@ -198,6 +198,7 @@ export function PostForm({
     <form
       onSubmit={handleSubmit}
       onKeyDown={(e) => {
+        if (e.nativeEvent.isComposing || e.keyCode === 229) return;
         // Ctrl/Cmd+S 快捷保存
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
           e.preventDefault();
@@ -255,6 +256,7 @@ export function PostForm({
               placeholder="hello-world"
               pattern="^[a-z0-9\-]+$"
               aria-invalid={!!slugError || (!!form.slug && !slugValid)}
+              aria-describedby={slugError ? `${idPrefix}-slug-error` : undefined}
               className={`px-4 py-2 rounded-lg bg-foreground/5 border font-mono text-sm text-foreground placeholder:text-muted/50 focus:outline-none transition-colors ${
                 slugError || (form.slug && !slugValid)
                   ? "border-red-300 focus:border-red-400"
@@ -262,7 +264,7 @@ export function PostForm({
               }`}
             />
             {slugError && (
-              <p className="text-xs text-red-500">{slugError}</p>
+              <p id={`${idPrefix}-slug-error`} className="text-xs text-red-500">{slugError}</p>
             )}
           </>
         ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, History } from "lucide-react";
@@ -18,6 +18,7 @@ import { LivePostPreview } from "@/components/admin/live-post-preview";
 export function BlogEditClient({ slug }: { slug: string }) {
   const router = useRouter();
   const toast = useToast();
+  const loadAbortRef = useRef<AbortController | null>(null);
 
   const [loading, setLoading] = useState(true);
   // 网络/服务错误时留在原地给重试入口（只有文章真正不存在才跳回列表）
@@ -54,6 +55,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
       };
       setInitial(restored);
       setLiveValues(restored);
+      setCurrentPublished(restored.published);
       setInitialTagInput(d.tagInput ?? "");
       setFormKey((k) => k + 1);
       setFormDirty(true);
@@ -63,8 +65,12 @@ export function BlogEditClient({ slug }: { slug: string }) {
   const authExpired = useAuthExpired();
 
   const loadPost = useCallback(() => {
-    fetch(`/api/admin/blog/${slug}`)
+    loadAbortRef.current?.abort();
+    const controller = new AbortController();
+    loadAbortRef.current = controller;
+    fetch(`/api/admin/blog/${slug}`, { signal: controller.signal })
       .then(async (res) => {
+        if (controller.signal.aborted) return null;
         if (res.status === 401) {
           setLoading(false);
           authExpired();
@@ -79,7 +85,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
         return res.json();
       })
       .then((data) => {
-        if (!data) return;
+        if (!data || controller.signal.aborted) return;
         const loaded: PostFormValues = {
           slug,
           title: data.title,
@@ -121,19 +127,22 @@ export function BlogEditClient({ slug }: { slug: string }) {
         }
       })
       .catch(() => {
+        if (controller.signal.aborted) return;
         // 网络/服务错误：留在原地并给出重试入口，而不是把用户踢回列表
         setLoading(false);
         setLoadFailed(true);
+      })
+      .finally(() => {
+        if (loadAbortRef.current === controller) loadAbortRef.current = null;
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, router]);
 
   useEffect(() => {
     loadPost();
+    return () => loadAbortRef.current?.abort();
   }, [loadPost]);
 
-  // 重试按钮用：重置加载状态后重新拉取（重置放在事件处理器里，而非 loadPost 内，
-  // 避免挂载 effect 里同步 setState 触发级联渲染）
   const retryLoad = () => {
     setLoading(true);
     setLoadFailed(false);
@@ -247,6 +256,7 @@ export function BlogEditClient({ slug }: { slug: string }) {
             <Link
               href={`/admin/blog/history/${slug}`}
               onClick={(event) => {
+                if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
                 event.preventDefault();
                 requestNavigation(`/admin/blog/history/${slug}`);
               }}

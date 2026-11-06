@@ -35,6 +35,7 @@ export function useTagManager(
   }, []);
 
   const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return false;
     if (e.key === "Enter") {
       e.preventDefault();
       return addTag(input);

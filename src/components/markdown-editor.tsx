@@ -673,6 +673,7 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
             }
           }}
           onKeyDown={(e) => {
+            if (e.nativeEvent.isComposing || e.keyCode === 229) return;
             if (e.key === "Escape") {
               tabReleaseRef.current = true;
               e.preventDefault();
