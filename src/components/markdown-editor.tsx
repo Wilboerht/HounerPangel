@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import {
   Eye, Edit3, Bold, Italic, Heading1, Heading2, Heading3,
   Link, Code, Code2, List, ListOrdered, ListChecks, Quote, Table, Minus, Strikethrough,
-  Image as ImageIcon, Video, Paperclip, X, Library,
+  Image as ImageIcon, Video, Paperclip, X, Library, Workflow,
 } from "lucide-react";
 import { useToast } from "@/components/toast";
 import { MediaPicker } from "@/components/admin/media-picker";
@@ -406,21 +406,22 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     });
   };
 
-  const insertCodeBlock = () => {
+  const insertCodeBlock = (language = "") => {
     const ta = textareaRef.current;
     if (!ta) return;
     const start = ta.selectionStart;
     const end = ta.selectionEnd;
     const current = ta.value;
-    const selected = current.slice(start, end) || "code";
+    const placeholder = language === "mermaid" ? "flowchart TD\n    A[开始] --> B[结束]" : "code";
+    const selected = current.slice(start, end) || placeholder;
     const before = current.slice(0, start);
     const prefix = before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : before.length === 0 ? "" : "\n\n";
-    const text = `\`\`\`\n${selected}\n\`\`\`\n`;
+    const text = `\`\`\`${language}\n${selected}\n\`\`\`\n`;
     const newValue = before + prefix + text + current.slice(end);
     updateValue(newValue);
     requestAnimationFrame(() => {
       ta.focus();
-      const pos = start + prefix.length + 4;
+      const pos = start + prefix.length + 4 + language.length;
       ta.setSelectionRange(pos, pos + selected.length);
     });
   };
@@ -445,7 +446,8 @@ export function MarkdownEditor({ value, onChange, rows = 12, required = false, i
     { icon: Heading3, label: "三级标题", action: () => insertBlock("### ", "标题") },
     { icon: Link, label: "链接 (Ctrl+K)", action: insertLink },
     { icon: Code, label: "行内代码 (Ctrl+E)", action: () => insertText("`", "`", "code") },
-    { icon: Code2, label: "代码块", action: insertCodeBlock },
+    { icon: Code2, label: "代码块", action: () => insertCodeBlock() },
+    { icon: Workflow, label: "插入 Mermaid 图表", action: () => insertCodeBlock("mermaid") },
     { icon: List, label: "无序列表", action: () => insertBlock("- ", "列表项") },
     { icon: ListOrdered, label: "有序列表", action: () => insertBlock("1. ", "列表项") },
     { icon: ListChecks, label: "任务列表", action: () => insertBlock("- [ ] ", "待办事项") },

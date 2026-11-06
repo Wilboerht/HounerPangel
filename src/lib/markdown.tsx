@@ -23,6 +23,7 @@ import java from "highlight.js/lib/languages/java";
 import diff from "highlight.js/lib/languages/diff";
 import markdownLang from "highlight.js/lib/languages/markdown";
 import plaintext from "highlight.js/lib/languages/plaintext";
+import { MermaidDiagram } from "@/components/mermaid-diagram";
 
 hljs.registerLanguage("javascript", javascript);
 hljs.registerLanguage("typescript", typescript);
@@ -279,6 +280,9 @@ function markdownComponents(forRss: boolean): Components {
             );
         },
         code({ children, className }) {
+            if (!forRss && /language-mermaid/i.test(className ?? "")) {
+                return <MermaidDiagram chart={reactText(children).replace(/\n$/, "")} />;
+            }
             const highlighted = highlightedCode(children, className);
             if (highlighted) {
                 return <code className={`${className ?? ""} hljs text-sm font-mono leading-relaxed`} dangerouslySetInnerHTML={{ __html: highlighted }} />;
@@ -286,6 +290,7 @@ function markdownComponents(forRss: boolean): Components {
             return <code className={`${className ?? ""} rounded-md bg-foreground/10 px-1.5 py-0.5 text-foreground text-sm font-mono break-all`}>{children}</code>;
         },
         pre({ children }) {
+            if (isValidElement(children) && children.type === MermaidDiagram) return children;
             return <pre className="rounded-xl bg-foreground/5 p-3 sm:p-4 overflow-x-auto">{children}</pre>;
         },
         p({ children, node, className }) {
