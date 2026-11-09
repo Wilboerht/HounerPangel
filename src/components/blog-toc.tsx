@@ -131,13 +131,17 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
                             data-depth={item.depth}
                             data-active={active ? "true" : undefined}
                             aria-current={active ? "location" : undefined}
+                            title={item.text}
                             onClick={() => handleTocClick(item.id)}
                         >
-                            {item.html ? (
-                                <span dangerouslySetInnerHTML={{ __html: item.html }} />
-                            ) : (
-                                item.text
-                            )}
+                            <span className="toc-marker" aria-hidden="true" />
+                            <span className="toc-label">
+                                {item.html ? (
+                                    <span dangerouslySetInnerHTML={{ __html: item.html }} />
+                                ) : (
+                                    item.text
+                                )}
+                            </span>
                         </a>
                     </li>
                 );
@@ -171,9 +175,9 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
     }
 
     return (
-        <aside className="hidden xl:block xl:col-start-3 xl:w-64 xl:justify-self-start xl:ml-5 2xl:ml-6">
-            <nav aria-label="文章目录" className="blog-toc-sticky overflow-y-auto pr-2">
-                <p className="mb-3 text-xs font-medium tracking-[0.08em] text-muted">目录</p>
+        <aside className="hidden xl:block xl:col-start-3 xl:pl-10 2xl:pl-14">
+            <nav aria-label="文章目录" className="toc-desktop blog-toc-sticky overflow-y-auto pr-2">
+                <p className="toc-title mb-3 text-xs font-medium tracking-[0.08em] text-muted">目录</p>
                 {list}
             </nav>
         </aside>
