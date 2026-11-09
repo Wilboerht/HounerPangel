@@ -287,7 +287,7 @@ function markdownComponents(forRss: boolean): Components {
             if (highlighted) {
                 return <code className={`${className ?? ""} hljs text-sm font-mono leading-relaxed`} dangerouslySetInnerHTML={{ __html: highlighted }} />;
             }
-            return <code className={`${className ?? ""} rounded-md bg-foreground/10 px-1.5 py-0.5 text-foreground text-sm font-mono break-all`}>{children}</code>;
+            return <code className={`${className ?? ""} rounded-md bg-foreground/10 px-1.5 py-0.5 text-foreground text-sm font-mono break-words`}>{children}</code>;
         },
         pre({ children }) {
             if (isValidElement(children) && children.type === MermaidDiagram) return children;

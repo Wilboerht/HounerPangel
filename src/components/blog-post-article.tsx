@@ -34,7 +34,7 @@ export function BlogPostArticle({ post }: { post: BlogPost }) {
                     )}
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-[-0.01em] text-foreground">
+                <h1 className="text-3xl sm:text-4xl font-bold leading-tight tracking-[-0.01em] text-foreground">
                     {post.title}
                 </h1>
             </header>

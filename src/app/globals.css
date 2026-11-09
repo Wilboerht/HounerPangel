@@ -185,7 +185,7 @@ input[type="radio"] {
 }
 
 .article-body h1 {
-  font-size: 1.5rem;
+  font-size: 1.625rem;
 }
 
 .article-body h2 {
@@ -240,6 +240,18 @@ input[type="radio"] {
   margin-top: 0.5rem;
 }
 
+.article-body li > p + p,
+.article-body li > ul,
+.article-body li > ol {
+  margin-top: 0.5rem;
+}
+
+.article-body li > blockquote,
+.article-body li > pre,
+.article-body li > figure {
+  margin-top: 0.75rem;
+}
+
 .article-body blockquote {
   border-left: 2px solid var(--border);
   padding-left: 1.25rem;
@@ -258,7 +270,7 @@ input[type="radio"] {
   line-height: 1.4;
 }
 
-.article-body h5 { font-size: 1rem; }
+.article-body h5 { font-size: 0.9375rem; }
 .article-body h6 { font-size: 0.875rem; }
 .article-body > * + h4,
 .article-body > * + h5,
@@ -285,7 +297,7 @@ input[type="radio"] {
   margin-right: 0.5rem;
   color: var(--alert-color);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.8;
   vertical-align: baseline;
 }
@@ -299,11 +311,11 @@ input[type="radio"] {
 
 .article-body .markdown-alert-title + p { display: inline; }
 .article-body .markdown-alert > p + p { margin-top: 0.5rem; }
-.article-body .markdown-alert-note { --alert-color: #3b82f6; }
-.article-body .markdown-alert-tip { --alert-color: #16a34a; }
-.article-body .markdown-alert-important { --alert-color: #9333ea; }
-.article-body .markdown-alert-warning { --alert-color: #d97706; }
-.article-body .markdown-alert-caution { --alert-color: #dc2626; }
+.article-body .markdown-alert-note { --alert-color: #1d4ed8; }
+.article-body .markdown-alert-tip { --alert-color: #15803d; }
+.article-body .markdown-alert-important { --alert-color: #7e22ce; }
+.article-body .markdown-alert-warning { --alert-color: #92400e; }
+.article-body .markdown-alert-caution { --alert-color: #b91c1c; }
 
 .article-body .task-list-item { list-style: none; }
 .article-body .task-list-item > input {
@@ -322,6 +334,7 @@ input[type="radio"] {
 
 .article-body th { color: var(--foreground); font-weight: 600; }
 .article-body pre code { padding: 0; background: transparent; }
+.article-body pre code.hljs { padding: 0; background: transparent; overflow: visible; }
 .article-body del { color: var(--muted); }
 .article-body .footnotes { font-size: 0.875rem; }
 .article-body .markdown-link-detail { display: none; }
