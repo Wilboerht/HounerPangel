@@ -21,6 +21,7 @@ export interface TocHeading {
     id: string;
     text: string;
     depth: 2 | 3;
+    html?: string;
 }
 
 export type BlogRevisionAction =

@@ -1,6 +1,7 @@
 import BackButton from "@/components/BackButton";
 import { BlogToc } from "@/components/blog-toc";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug, getAllBlogPostSummaries } from "@/lib/blog-db";
 import { getTableOfContents } from "@/lib/blog-toc";
@@ -115,29 +116,32 @@ export default async function BlogPostPage({ params }: Props) {
     };
 
     return (
-        <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
-            />
-            <div className={`mx-auto grid w-full flex-1 gap-10 ${hasToc ? "max-w-[61rem] lg:grid-cols-[minmax(0,42rem)_16rem] lg:gap-12" : "max-w-2xl"}`}>
-                <div className={`mx-auto flex w-full max-w-2xl flex-col gap-10 ${hasToc ? "lg:mx-0 lg:max-w-none" : ""}`}>
-                    {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
-                    <nav className="-mt-3">
-                        <BackButton label="返回博客" fallbackHref="/blog" />
-                    </nav>
-
-                    <BlogPostArticle post={post} toc={visibleToc} />
-
-                    <footer className="mt-auto border-t border-border pt-6 text-sm text-muted">
-                        <nav aria-label="文章导航">
-                            <BackButton label="返回博客" fallbackHref="/blog" />
-                        </nav>
-                        <p className="mt-4">&copy; {new Date().getFullYear()} wilboerht</p>
-                    </footer>
+        <main className="min-h-dvh flex flex-col">
+            <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur">
+                <div className="mx-auto flex h-[calc(3.5rem+env(safe-area-inset-top,0px))] w-full max-w-[calc(80rem+3rem)] items-center justify-between gap-4 px-content pt-[env(safe-area-inset-top,0px)]">
+                    <BackButton label="返回博客" fallbackHref="/blog" />
+                    <Link href="/" className="text-sm text-muted transition-colors hover:text-foreground">
+                        Hank Wong
+                    </Link>
                 </div>
+            </header>
 
-                <BlogToc variant="desktop" items={visibleToc} />
+            <div className="flex flex-1 flex-col px-content pb-content pt-10">
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+                />
+                <div className={`mx-auto grid w-full flex-1 gap-10 xl:gap-0 ${hasToc ? "max-w-[80rem] xl:grid-cols-[minmax(0,1fr)_minmax(0,42rem)_minmax(0,1fr)]" : "max-w-2xl"}`}>
+                    <div className={`mx-auto flex w-full max-w-2xl flex-col gap-10 ${hasToc ? "xl:col-start-2 xl:mx-0 xl:max-w-none" : ""}`}>
+                        <BlogPostArticle post={post} toc={visibleToc} tocVariant="mobile" />
+
+                        <footer className="mt-auto border-t border-border pt-6 text-sm text-muted">
+                            <p>&copy; {new Date().getFullYear()} wilboerht</p>
+                        </footer>
+                    </div>
+
+                    <BlogToc variant="desktop" items={visibleToc} />
+                </div>
             </div>
         </main>
     );

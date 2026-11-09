@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.104.1",
     "@vercel/analytics": "^1.6.1",
     "framer-motion": "^12.35.2",
+    "hast-util-to-html": "^9.0.6",
     "hast-util-to-string": "^3.0.1",
     "highlight.js": "^11.11.1",
     "katex": "^0.19.1",

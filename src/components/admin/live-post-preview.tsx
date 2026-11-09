@@ -36,7 +36,7 @@ export function LivePostPreview({ values, updatedAt, onClose }: { values: PostFo
                         <IconButton size="adaptive" label="关闭预览" onClick={onClose}><X className="h-4 w-4" /></IconButton>
                     </div>
                 </div>
-                <div className="min-h-0 flex-1 overflow-y-auto px-[calc(1rem+env(safe-area-inset-left,0px))] py-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))]">
+                <div data-blog-scroll className="min-h-0 flex-1 overflow-y-auto px-[calc(1rem+env(safe-area-inset-left,0px))] py-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))]">
                     <div className={`mx-auto rounded-xl border border-border/50 bg-background px-5 py-8 transition-[max-width] sm:px-8 ${device === "mobile" ? "max-w-sm" : "max-w-2xl"}`}>
                         <BlogPostArticle post={post} />
                     </div>

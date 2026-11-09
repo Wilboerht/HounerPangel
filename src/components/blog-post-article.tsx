@@ -4,7 +4,15 @@ import { renderMarkdown } from "@/lib/markdown";
 import type { BlogPost, TocHeading } from "@/lib/types/blog";
 
 // 文章正文渲染（头部 + Markdown 正文），公开详情页与管理端草稿预览页共用
-export function BlogPostArticle({ post, toc = [] }: { post: BlogPost; toc?: TocHeading[] }) {
+export function BlogPostArticle({
+    post,
+    toc = null,
+    tocVariant = "inline",
+}: {
+    post: BlogPost;
+    toc?: TocHeading[] | null;
+    tocVariant?: "mobile" | "inline";
+}) {
     return (
         <section className="space-y-10">
             <header className="space-y-3">
@@ -40,7 +48,7 @@ export function BlogPostArticle({ post, toc = [] }: { post: BlogPost; toc?: TocH
                 </h1>
             </header>
 
-            <BlogToc variant="mobile" items={toc} />
+            <BlogToc variant={tocVariant} items={toc} source={post.content} />
 
             <article className="article-body">
                 {renderMarkdown(post.content)}

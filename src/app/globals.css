@@ -367,7 +367,7 @@ input[type="radio"] {
 }
 
 .article-body :is(h1, h2, h3, h4, h5, h6)[id] {
-  scroll-margin-top: 1.5rem;
+  scroll-margin-top: calc(3.5rem + env(safe-area-inset-top, 0px) + 1.5rem);
 }
 
 .article-body .heading-anchor {
@@ -395,6 +395,13 @@ input[type="radio"] {
   .article-body .heading-anchor {
     opacity: 0.6;
   }
+}
+
+.blog-toc-sticky {
+  position: sticky;
+  top: calc(3.5rem + env(safe-area-inset-top, 0px) + 1.5rem);
+  max-height: calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px) - 3rem);
+  overflow-y: auto;
 }
 
 .toc-list {
