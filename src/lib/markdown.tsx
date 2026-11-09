@@ -2,9 +2,11 @@ import { Children, isValidElement, type ReactNode } from "react";
 import hljs from "highlight.js/lib/core";
 import Image from "next/image";
 import ReactMarkdown, { type Components } from "react-markdown";
+import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
 import { remarkAlert } from "remark-github-blockquote-alert";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
@@ -81,6 +83,8 @@ export function plainTextExcerpt(content: string, max = 160): string {
         .replace(/^\s*>\s*\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)(?:\/[^\]]+)?\]\s*$/gim, "")
         .replace(/^\s*\[\^[^\]]+\]:.*$/gm, "")
         .replace(/\[\^[^\]]+\]/g, "")
+        .replace(/\$\$[\s\S]*?\$\$/g, " ")
+        .replace(/\$[^$\n]+\$/g, " ")
         .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
         .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
         .replace(/<\/?[a-z][^>]*>/gi, " ")
@@ -169,7 +173,7 @@ function normalizeMediaDimensions(content: string): string {
 
 const sanitizeSchema = {
     ...defaultSchema,
-    tagNames: [...(defaultSchema.tagNames ?? []), "iframe", "svg", "path"],
+    tagNames: [...(defaultSchema.tagNames ?? []), "iframe", "svg", "path", "mark"],
     attributes: {
         ...defaultSchema.attributes,
         "*": [...(defaultSchema.attributes?.["*"] ?? []), "className"],
@@ -219,6 +223,9 @@ function containsImage(node: MarkdownAstNode): boolean {
 
 function markdownComponents(forRss: boolean): Components {
     return {
+        h1({ children }) {
+            return <h2>{children}</h2>;
+        },
         a({ href = "", children, title }) {
             if (!isSafeLinkUrl(href)) return <span>{children}</span>;
             const text = reactText(children);
@@ -310,9 +317,9 @@ function markdownComponents(forRss: boolean): Components {
 export function renderMarkdown(content: string, options: { forRss?: boolean } = {}): React.ReactElement {
     return (
         <ReactMarkdown
-            remarkPlugins={[remarkGfm, [remarkAlert, { legacyTitle: true }]]}
+            remarkPlugins={[remarkGfm, remarkMath, [remarkAlert, { legacyTitle: true }]]}
             remarkRehypeOptions={{ allowDangerousHtml: true }}
-            rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
+            rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], [rehypeKatex, { throwOnError: false }]]}
             components={markdownComponents(options.forRss ?? false)}
         >
             {normalizeMediaDimensions(content)}

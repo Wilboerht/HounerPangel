@@ -91,7 +91,7 @@ export function MermaidDiagram({ chart }: { chart: string }) {
         </button>
       ) : current?.error ? (
         <div role="alert">
-          <p className="text-sm text-red-500">Mermaid 图表渲染失败，请检查语法。</p>
+          <p className="text-sm text-red-700">Mermaid 图表渲染失败，请检查语法。</p>
           <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-xs text-muted"><code>{chart}</code></pre>
         </div>
       ) : (

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Noto_Serif, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import "highlight.js/styles/github.css";
+import "katex/dist/katex.min.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SITE_URL } from "@/lib/site";
 import { PageViewTracker } from "@/components/page-view-tracker";
