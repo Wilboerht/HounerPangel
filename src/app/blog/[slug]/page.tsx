@@ -1,7 +1,6 @@
-import BackButton from "@/components/BackButton";
 import { BlogToc } from "@/components/blog-toc";
+import { ContentTopbar } from "@/components/content-topbar";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug, getAllBlogPostSummaries } from "@/lib/blog-db";
 import { getTableOfContents } from "@/lib/blog-toc";
@@ -117,14 +116,7 @@ export default async function BlogPostPage({ params }: Props) {
 
     return (
         <main className="min-h-dvh flex flex-col">
-            <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur">
-                <div className="mx-auto flex h-[calc(3.5rem+env(safe-area-inset-top,0px))] w-full max-w-[calc(80rem+3rem)] items-center justify-between gap-4 px-content pt-[env(safe-area-inset-top,0px)]">
-                    <BackButton label="返回博客" fallbackHref="/blog" />
-                    <Link href="/" className="text-sm text-muted transition-colors hover:text-foreground">
-                        Hank Wong
-                    </Link>
-                </div>
-            </header>
+            <ContentTopbar backHref="/blog" backLabel="返回博客" />
 
             <div className="flex flex-1 flex-col px-content pb-content pt-10">
                 <script
