@@ -1,9 +1,10 @@
 import BackButton from "@/components/BackButton";
+import { BlogToc } from "@/components/blog-toc";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug, getAllBlogPostSummaries } from "@/lib/blog-db";
 import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
-import { firstImageUrl, plainTextExcerpt } from "@/lib/markdown";
+import { firstImageUrl, getTableOfContents, plainTextExcerpt } from "@/lib/markdown";
 import { BlogPostArticle } from "@/components/blog-post-article";
 
 interface Props {
@@ -87,6 +88,7 @@ export default async function BlogPostPage({ params }: Props) {
     }
 
     const siteUrl = SITE_URL;
+    const toc = getTableOfContents(post.content);
 
     const jsonLd = {
         "@context": "https://schema.org",
@@ -115,20 +117,24 @@ export default async function BlogPostPage({ params }: Props) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
             />
-            <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-10">
-                {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
-                <nav className="-mt-3">
-                    <BackButton label="返回博客" fallbackHref="/blog" />
-                </nav>
-
-                <BlogPostArticle post={post} />
-
-                <footer className="mt-auto border-t border-border pt-6 text-sm text-muted">
-                    <nav aria-label="文章导航">
+            <div className="mx-auto grid w-full max-w-[61rem] flex-1 gap-10 lg:grid-cols-[minmax(0,42rem)_16rem] lg:gap-12">
+                <div className="mx-auto flex w-full max-w-2xl flex-col gap-10 lg:mx-0 lg:max-w-none">
+                    {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
+                    <nav className="-mt-3">
                         <BackButton label="返回博客" fallbackHref="/blog" />
                     </nav>
-                    <p className="mt-4">&copy; {new Date().getFullYear()} wilboerht</p>
-                </footer>
+
+                    <BlogPostArticle post={post} toc={toc} />
+
+                    <footer className="mt-auto border-t border-border pt-6 text-sm text-muted">
+                        <nav aria-label="文章导航">
+                            <BackButton label="返回博客" fallbackHref="/blog" />
+                        </nav>
+                        <p className="mt-4">&copy; {new Date().getFullYear()} wilboerht</p>
+                    </footer>
+                </div>
+
+                <BlogToc variant="desktop" items={toc} />
             </div>
         </main>
     );

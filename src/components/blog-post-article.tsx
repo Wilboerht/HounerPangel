@@ -1,9 +1,10 @@
 import { Calendar } from "lucide-react";
+import { BlogToc } from "@/components/blog-toc";
 import { renderMarkdown } from "@/lib/markdown";
-import type { BlogPost } from "@/lib/types/blog";
+import type { BlogPost, TocHeading } from "@/lib/types/blog";
 
 // 文章正文渲染（头部 + Markdown 正文），公开详情页与管理端草稿预览页共用
-export function BlogPostArticle({ post }: { post: BlogPost }) {
+export function BlogPostArticle({ post, toc = [] }: { post: BlogPost; toc?: TocHeading[] }) {
     return (
         <section className="space-y-10">
             <header className="space-y-3">
@@ -38,6 +39,8 @@ export function BlogPostArticle({ post }: { post: BlogPost }) {
                     {post.title}
                 </h1>
             </header>
+
+            <BlogToc variant="mobile" items={toc} />
 
             <article className="article-body">
                 {renderMarkdown(post.content)}

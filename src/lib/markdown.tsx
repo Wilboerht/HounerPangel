@@ -1,13 +1,21 @@
-import { Children, isValidElement, type ReactNode } from "react";
+import { Children, isValidElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import hljs from "highlight.js/lib/core";
+import { toString as hastToString } from "hast-util-to-string";
 import Image from "next/image";
 import ReactMarkdown, { type Components } from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
 import { remarkAlert } from "remark-github-blockquote-alert";
+import { unified } from "unified";
+import { visit } from "unist-util-visit";
+import type { Root as HastRoot } from "hast";
+import type { TocHeading } from "@/lib/types/blog";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
 import python from "highlight.js/lib/languages/python";
@@ -183,6 +191,36 @@ const sanitizeSchema = {
     },
 };
 
+const tocProcessor = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkMath)
+    .use(remarkAlert, { legacyTitle: true })
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeRaw)
+    .use(rehypeSanitize, sanitizeSchema)
+    .use(rehypeSlug);
+
+export function getTableOfContents(content: string): TocHeading[] {
+    const tree = tocProcessor.runSync(tocProcessor.parse(content)) as HastRoot;
+    const headings: TocHeading[] = [];
+
+    visit(tree, "element", (node) => {
+        const depth = node.tagName === "h1" || node.tagName === "h2" ? 2 : node.tagName === "h3" ? 3 : null;
+        if (depth === null) return;
+
+        const id = node.properties?.id;
+        if (typeof id !== "string") return;
+
+        const text = hastToString(node).trim();
+        if (!text) return;
+
+        headings.push({ id, text, depth });
+    });
+
+    return headings;
+}
+
 function highlightedCode(children: React.ReactNode, className: string | undefined) {
     const code = String(children).replace(/\n$/, "");
     const language = /language-([\w-]+)/.exec(className ?? "")?.[1]?.toLowerCase();
@@ -221,11 +259,33 @@ function containsImage(node: MarkdownAstNode): boolean {
     return node.tagName === "img" || (node.children?.some(containsImage) ?? false);
 }
 
+type HeadingTag = "h2" | "h3" | "h4" | "h5" | "h6";
+
+function headingComponent(Tag: HeadingTag, forRss: boolean) {
+    return function Heading({ id, children }: ComponentPropsWithoutRef<"h2">) {
+        return (
+            <Tag id={id} className="article-heading">
+                {children}
+                {!forRss && id ? (
+                    <a href={`#${id}`} className="heading-anchor" aria-label="链接到此标题">
+                        <span aria-hidden="true">#</span>
+                    </a>
+                ) : null}
+            </Tag>
+        );
+    };
+}
+
 function markdownComponents(forRss: boolean): Components {
+    const heading = (Tag: HeadingTag) => headingComponent(Tag, forRss);
+
     return {
-        h1({ children }) {
-            return <h2>{children}</h2>;
-        },
+        h1: heading("h2"),
+        h2: heading("h2"),
+        h3: heading("h3"),
+        h4: heading("h4"),
+        h5: heading("h5"),
+        h6: heading("h6"),
         a({ href = "", children, title }) {
             if (!isSafeLinkUrl(href)) return <span>{children}</span>;
             const text = reactText(children);
@@ -319,7 +379,7 @@ export function renderMarkdown(content: string, options: { forRss?: boolean } = 
         <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath, [remarkAlert, { legacyTitle: true }]]}
             remarkRehypeOptions={{ allowDangerousHtml: true }}
-            rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], [rehypeKatex, { throwOnError: false }]]}
+            rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], rehypeSlug, [rehypeKatex, { throwOnError: false }]]}
             components={markdownComponents(options.forRss ?? false)}
         >
             {normalizeMediaDimensions(content)}

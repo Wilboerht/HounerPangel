@@ -17,6 +17,12 @@ export interface BlogPost {
 
 export type BlogPostSummary = Omit<BlogPost, "content">;
 
+export interface TocHeading {
+    id: string;
+    text: string;
+    depth: 2 | 3;
+}
+
 export type BlogRevisionAction =
     | "baseline"
     | "created"
