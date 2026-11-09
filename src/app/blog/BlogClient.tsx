@@ -31,7 +31,7 @@ export default function BlogClient({ posts }: Props) {
         <>
             <section className="space-y-10">
                 <div className="flex items-center justify-between gap-4">
-                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                    <h1 className="text-3xl sm:text-4xl font-bold leading-tight tracking-[-0.01em] text-foreground">
                         博客
                     </h1>
                     <a
@@ -59,7 +59,7 @@ export default function BlogClient({ posts }: Props) {
                                             <Link
                                                 key={post.slug}
                                                 href={`/blog/${post.slug}`}
-                                                className="group flex items-baseline gap-3"
+                                                className="group flex items-baseline justify-between gap-3"
                                             >
                                                 <span className="min-w-0 text-base text-foreground break-words group-hover:text-accent transition-colors duration-200">
                                                     {post.title}
@@ -84,7 +84,7 @@ export default function BlogClient({ posts }: Props) {
             </section>
 
             {/* Footer */}
-            <footer className="mt-auto text-sm text-muted">
+            <footer className="mt-auto border-t border-border pt-6 text-sm text-muted">
                 <p>&copy; {new Date().getFullYear()} wilboerht</p>
             </footer>
         </>

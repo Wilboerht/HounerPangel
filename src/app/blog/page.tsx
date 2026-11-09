@@ -1,4 +1,4 @@
-import BackButton from "@/components/BackButton";
+import { ContentTopbar } from "@/components/content-topbar";
 import type { Metadata } from "next";
 import { getAllBlogPostSummaries } from "@/lib/blog-db";
 import BlogClient from "./BlogClient";
@@ -47,14 +47,13 @@ export default async function Blog() {
     }
 
     return (
-        <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
-            <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-10">
-                {/* 触控区 44px 会让箭头在盒内居中，-mt-3 抵消这部分视觉空白 */}
-                <nav className="-mt-3">
-                    <BackButton label="返回主页" fallbackHref="/" />
-                </nav>
+        <main className="min-h-dvh flex flex-col">
+            <ContentTopbar backHref="/" backLabel="返回主页" />
 
-                <BlogClient posts={posts} />
+            <div className="flex flex-1 flex-col px-content pb-content pt-10">
+                <div className="mx-auto flex w-full max-w-[90rem] flex-1 flex-col gap-10">
+                    <BlogClient posts={posts} />
+                </div>
             </div>
         </main>
     );

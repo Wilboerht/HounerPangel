@@ -123,7 +123,7 @@ export default async function BlogPostPage({ params }: Props) {
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
                 />
-                <div className={`mx-auto grid w-full flex-1 gap-10 xl:gap-0 ${hasToc ? "max-w-[80rem] xl:grid-cols-[minmax(0,1fr)_minmax(0,42rem)_minmax(0,1fr)]" : "max-w-2xl"}`}>
+                <div className={`mx-auto grid w-full flex-1 gap-10 xl:gap-0 ${hasToc ? "max-w-[90rem] xl:grid-cols-[minmax(0,1fr)_minmax(0,42rem)_minmax(0,1fr)]" : "max-w-2xl"}`}>
                     <div className={`mx-auto flex w-full max-w-2xl flex-col gap-10 ${hasToc ? "xl:col-start-2 xl:mx-0 xl:max-w-none" : ""}`}>
                         <BlogPostArticle post={post} toc={visibleToc} tocVariant="mobile" />
 
