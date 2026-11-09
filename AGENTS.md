@@ -7,3 +7,13 @@
 - **共享组件**：卡片用 `DashboardCard`，页头用 `PageHeader`，徽标用 `Badge`，图标按钮用 `IconButton`（36px 触控区，`aria-label` 必填）。新样式先扩展这些组件，不要在页面里复制字面量。
 - **safe-area**：必须用 calc 加法写法，如 `pt-[calc(1.5rem+env(safe-area-inset-top,0px))]`。（原 `.pt-safe`/`.pb-safe`/`.pl-safe`/`.pr-safe` unlayered 工具类已删除，不要再引入。）
 - **新增导航板块**：只需在 `admin-shell.tsx` 的 `NAV_SECTIONS` 对应分类的 `items` 里追加一项（新分类则追加一个 section）；新页面自动获得鉴权（layout 统一校验会话，未登录原地渲染登录表单）。
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

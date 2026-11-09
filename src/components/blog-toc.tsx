@@ -131,7 +131,6 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
                             data-depth={item.depth}
                             data-active={active ? "true" : undefined}
                             aria-current={active ? "location" : undefined}
-                            title={item.text}
                             onClick={() => handleTocClick(item.id)}
                         >
                             <span className="toc-marker" aria-hidden="true" />

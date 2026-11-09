@@ -429,7 +429,7 @@ input[type="radio"] {
   display: flex;
   align-items: flex-start;
   gap: 0.625rem;
-  padding: 0.4rem 0;
+  padding: 0.5rem 0;
   color: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.7;
@@ -444,7 +444,7 @@ input[type="radio"] {
   height: 3px;
   margin-top: 0.72em;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--border) 80%, transparent);
+  background: color-mix(in srgb, var(--muted) 25%, transparent);
   transition: background-color 150ms ease;
 }
 
@@ -508,6 +508,13 @@ input[type="radio"] {
   .toc-desktop:focus-within .toc-title {
     opacity: 1;
     transform: none;
+  }
+
+  .toc-desktop:hover .toc-label,
+  .toc-desktop:focus-within .toc-label {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
   }
 }
 
