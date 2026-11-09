@@ -112,8 +112,8 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
 
     if (variant === "inline") {
         return (
-            <div className="blog-toc rounded-xl border border-border/80 bg-foreground/[0.02] px-4 py-3">
-                <p className="text-sm font-semibold text-foreground">目录</p>
+            <div className="blog-toc rounded-xl border border-border/60 bg-foreground/[0.02] px-4 py-3">
+                <p className="text-xs font-medium tracking-[0.08em] text-muted">目录</p>
                 <nav aria-label="文章目录" className="mt-3">
                     {list}
                 </nav>
@@ -123,7 +123,7 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
 
     if (variant === "mobile") {
         return (
-            <details ref={detailsRef} className="blog-toc group rounded-xl border border-border/80 bg-foreground/[0.02] px-4 py-3 xl:hidden">
+            <details ref={detailsRef} className="blog-toc group rounded-xl border border-border/60 bg-foreground/[0.02] px-4 py-3 xl:hidden">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-foreground">
                     <span>目录</span>
                     <ChevronDown className="blog-toc-icon h-4 w-4 text-muted transition-transform" aria-hidden="true" />
@@ -138,7 +138,7 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
     return (
         <aside className="hidden xl:block xl:col-start-3 xl:w-64 xl:justify-self-end">
             <nav aria-label="文章目录" className="blog-toc-sticky overflow-y-auto pr-2">
-                <p className="mb-3 text-xs font-medium uppercase tracking-[0.12em] text-muted">目录</p>
+                <p className="mb-3 text-xs font-medium tracking-[0.08em] text-muted">目录</p>
                 {list}
             </nav>
         </aside>

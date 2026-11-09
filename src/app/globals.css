@@ -418,29 +418,34 @@ input[type="radio"] {
 .toc-link {
   display: block;
   margin-left: -1px;
-  border-left: 2px solid transparent;
-  padding: 0.35rem 0.75rem;
+  border-left: 1px solid transparent;
+  padding: 0.3rem 0.75rem;
   color: var(--muted);
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: 0.8125rem;
+  line-height: 1.6;
   text-decoration: none;
   overflow-wrap: anywhere;
   transition: color 150ms ease, border-color 150ms ease;
 }
 
 .toc-link:hover {
-  color: var(--foreground);
+  color: var(--article-body);
 }
 
 .toc-link[data-depth="3"] {
   padding-left: 1.5rem;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
 }
 
 .toc-link[data-active="true"] {
-  border-left-color: var(--link);
-  color: var(--foreground);
-  font-weight: 600;
+  border-left-color: var(--muted);
+  color: var(--article-body);
+  font-weight: 500;
+}
+
+.toc-link:focus-visible,
+.blog-toc summary:focus-visible {
+  outline-color: var(--foreground);
 }
 
 .blog-toc .toc-link {
