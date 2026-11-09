@@ -1,21 +1,15 @@
 import { Children, isValidElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import hljs from "highlight.js/lib/core";
-import { toString as hastToString } from "hast-util-to-string";
 import Image from "next/image";
 import ReactMarkdown, { type Components } from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import rehypeSanitize from "rehype-sanitize";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
-import remarkParse from "remark-parse";
-import remarkRehype from "remark-rehype";
 import { remarkAlert } from "remark-github-blockquote-alert";
-import { unified } from "unified";
-import { visit } from "unist-util-visit";
-import type { Root as HastRoot } from "hast";
-import type { TocHeading } from "@/lib/types/blog";
+import { sanitizeSchema } from "@/lib/markdown-schema";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
 import python from "highlight.js/lib/languages/python";
@@ -177,48 +171,6 @@ function normalizeMediaDimensions(content: string): string {
     return mapFencedLines(content, (line) => mapInlineCode(line, (text) => text.replace(/!\[([^\]]*)\]\((\S+)\s+=(\d+)x(\d+)\)/g, (_match, alt: string, url: string, width: string, height: string) =>
         `![${alt}](${url} "${width}x${height}")`
     )), (line) => line);
-}
-
-const sanitizeSchema = {
-    ...defaultSchema,
-    tagNames: [...(defaultSchema.tagNames ?? []), "iframe", "svg", "path", "mark"],
-    attributes: {
-        ...defaultSchema.attributes,
-        "*": [...(defaultSchema.attributes?.["*"] ?? []), "className"],
-        iframe: ["src", "title", "allow", "allowFullScreen", "loading", "referrerPolicy", "className"],
-        svg: ["viewBox", "width", "height", "ariaHidden", "className"],
-        path: ["d", "fill", "stroke", "strokeWidth", "strokeLinecap", "strokeLinejoin"],
-    },
-};
-
-const tocProcessor = unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkMath)
-    .use(remarkAlert, { legacyTitle: true })
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeRaw)
-    .use(rehypeSanitize, sanitizeSchema)
-    .use(rehypeSlug);
-
-export function getTableOfContents(content: string): TocHeading[] {
-    const tree = tocProcessor.runSync(tocProcessor.parse(content)) as HastRoot;
-    const headings: TocHeading[] = [];
-
-    visit(tree, "element", (node) => {
-        const depth = node.tagName === "h1" || node.tagName === "h2" ? 2 : node.tagName === "h3" ? 3 : null;
-        if (depth === null) return;
-
-        const id = node.properties?.id;
-        if (typeof id !== "string") return;
-
-        const text = hastToString(node).trim();
-        if (!text) return;
-
-        headings.push({ id, text, depth });
-    });
-
-    return headings;
 }
 
 function highlightedCode(children: React.ReactNode, className: string | undefined) {

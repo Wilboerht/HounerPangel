@@ -378,6 +378,7 @@ input[type="radio"] {
   text-decoration: none;
   vertical-align: 0.08em;
   opacity: 0;
+  user-select: none;
   transition: opacity 150ms ease, color 150ms ease;
 }
 
@@ -412,6 +413,7 @@ input[type="radio"] {
   font-size: 0.875rem;
   line-height: 1.5;
   text-decoration: none;
+  overflow-wrap: anywhere;
   transition: color 150ms ease, border-color 150ms ease;
 }
 
@@ -428,6 +430,12 @@ input[type="radio"] {
   border-left-color: var(--link);
   color: var(--foreground);
   font-weight: 600;
+}
+
+.blog-toc .toc-link {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 .blog-toc summary::-webkit-details-marker {
