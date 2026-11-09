@@ -51,10 +51,16 @@ export default async function Blog() {
             <ContentTopbar backHref="/" backLabel="返回主页" />
 
             <div className="flex flex-1 flex-col px-content pb-content pt-10">
-                <div className="mx-auto flex w-full max-w-[90rem] flex-1 flex-col gap-10">
+                <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10">
                     <BlogClient posts={posts} />
                 </div>
             </div>
+
+            <footer className="border-t border-border/50 bg-background pb-[env(safe-area-inset-bottom,0px)]">
+                <div className="mx-auto flex h-14 w-full max-w-[calc(90rem+3rem)] items-center px-content text-sm text-muted">
+                    <p>&copy; {new Date().getFullYear()} wilboerht</p>
+                </div>
+            </footer>
         </main>
     );
 }
