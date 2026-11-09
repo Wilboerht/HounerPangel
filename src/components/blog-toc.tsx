@@ -134,6 +134,7 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
     const visibleItems = resolvedItems.filter(
         (item) => item.depth === 2 || parentIds.get(item.id) === activeParentId
     );
+    const displayItems = variant === "desktop" ? visibleItems : resolvedItems;
 
     const handleTocClick = (id: string) => {
         setActiveId(id);
@@ -142,7 +143,7 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
 
     const list = (
         <ul className="toc-list">
-            {visibleItems.map((item) => {
+            {displayItems.map((item) => {
                 const active = item.id === activeId;
                 return (
                     <li key={item.id}>
