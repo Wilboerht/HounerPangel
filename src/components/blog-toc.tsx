@@ -114,6 +114,27 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
 
     if (!resolvedItems.length) return null;
 
+    const parentIds = new Map<string, string | null>();
+    let currentParent: string | null = null;
+    for (const item of resolvedItems) {
+        if (item.depth === 2) {
+            currentParent = item.id;
+            parentIds.set(item.id, null);
+        } else {
+            parentIds.set(item.id, currentParent);
+        }
+    }
+
+    const activeItem = resolvedItems.find((item) => item.id === activeId);
+    const activeParentId = activeItem
+        ? activeItem.depth === 2
+            ? activeItem.id
+            : parentIds.get(activeItem.id) ?? null
+        : null;
+    const visibleItems = resolvedItems.filter(
+        (item) => item.depth === 2 || parentIds.get(item.id) === activeParentId
+    );
+
     const handleTocClick = (id: string) => {
         setActiveId(id);
         if (variant === "mobile") detailsRef.current?.removeAttribute("open");
@@ -121,7 +142,7 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
 
     const list = (
         <ul className="toc-list">
-            {resolvedItems.map((item) => {
+            {visibleItems.map((item) => {
                 const active = item.id === activeId;
                 return (
                     <li key={item.id}>
