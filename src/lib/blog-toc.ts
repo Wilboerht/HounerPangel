@@ -17,10 +17,13 @@ import type { Element, ElementContent, Root as HastRoot } from "hast";
 import { sanitizeSchema } from "@/lib/markdown-schema";
 import type { TocHeading } from "@/lib/types/blog";
 
-function isKatexElement(node: Element): boolean {
+function hasClassName(node: Element, name: string): boolean {
     const className = node.properties?.className;
-    if (node.tagName !== "span") return false;
-    return Array.isArray(className) ? className.includes("katex") : className === "katex";
+    return Array.isArray(className) ? className.includes(name) : className === name;
+}
+
+function isKatexElement(node: Element): boolean {
+    return node.tagName === "span" && hasClassName(node, "katex");
 }
 
 function containsKatex(node: Element): boolean {
@@ -53,7 +56,8 @@ export function getTableOfContents(content: string): TocHeading[] {
     const headings: TocHeading[] = [];
 
     visit(tree, "element", (node) => {
-        if (node.tagName === "details") return SKIP;
+        if (node.tagName === "details" || node.tagName === "blockquote") return SKIP;
+        if (node.tagName === "div" && hasClassName(node, "markdown-alert")) return SKIP;
 
         const depth = node.tagName === "h1" || node.tagName === "h2" ? 2 : node.tagName === "h3" ? 3 : null;
         if (depth === null) return;

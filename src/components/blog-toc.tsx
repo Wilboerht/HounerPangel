@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { useMediaQuery } from "@/lib/use-media-query";
 import type { TocHeading } from "@/lib/types/blog";
 
 const EMPTY_HEADINGS: TocHeading[] = [];
@@ -12,11 +13,28 @@ function normalizeText(text: string): string {
     return text.replace(/\s+/g, " ").replace(/\u200b/g, "").trim();
 }
 
+function escapeHtml(text: string): string {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function serializeTocLabel(node: Node): string {
+    if (node.nodeType === Node.TEXT_NODE) return escapeHtml(node.textContent ?? "");
+    if (!(node instanceof HTMLElement)) return "";
+    if (node.classList.contains("katex")) return node.outerHTML;
+    return Array.from(node.childNodes).map(serializeTocLabel).join("");
+}
+
 export function BlogToc({ variant, items, source }: { variant: Variant; items?: TocHeading[] | null; source?: string }) {
     const [autoItems, setAutoItems] = useState<TocHeading[] | null>(null);
     const [activeId, setActiveId] = useState(items?.[0]?.id ?? "");
     const detailsRef = useRef<HTMLDetailsElement>(null);
     const resolvedItems = items ?? autoItems ?? EMPTY_HEADINGS;
+    const isDesktop = useMediaQuery("(min-width: 1280px)");
+    const shouldTrack = variant === "inline" || (variant === "desktop" ? isDesktop : !isDesktop);
 
     useEffect(() => {
         if (items != null) return;
@@ -25,19 +43,17 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
         if (!article) return;
 
         const headings = Array.from(article.querySelectorAll<HTMLElement>("h2[id], h3[id]"))
-            .filter((heading) => !heading.closest("details"));
+            .filter((heading) => !heading.closest("details, blockquote, .markdown-alert"));
 
         const nextItems = headings
             .map((heading) => {
                 const clone = heading.cloneNode(true) as HTMLElement;
                 clone.querySelectorAll(".heading-anchor").forEach((node) => node.remove());
-                clone.querySelectorAll("a").forEach((link) => link.replaceWith(...Array.from(link.childNodes)));
-                clone.querySelectorAll("iframe, video, audio, img").forEach((node) => node.remove());
                 return {
                     id: heading.id,
                     text: normalizeText(clone.textContent ?? ""),
                     depth: heading.tagName === "H3" ? 3 as const : 2 as const,
-                    html: clone.innerHTML,
+                    html: Array.from(clone.childNodes).map(serializeTocLabel).join(""),
                 };
             })
             .filter((item) => item.id && item.text);
@@ -47,11 +63,26 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
     }, [items, source]);
 
     useEffect(() => {
-        if (!resolvedItems.length) return;
+        if (!resolvedItems.length || !shouldTrack) return;
+
+        const article = document.querySelector<HTMLElement>(".article-body");
+        const scrollTarget = article?.closest<HTMLElement>("[data-blog-scroll]") ?? window;
+        const isAtBottom = () => {
+            if (scrollTarget instanceof HTMLElement) {
+                if (scrollTarget.scrollHeight <= scrollTarget.clientHeight + 2) return false;
+                return scrollTarget.scrollTop + scrollTarget.clientHeight >= scrollTarget.scrollHeight - 2;
+            }
+            if (document.documentElement.scrollHeight <= window.innerHeight + 2) return false;
+            return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+        };
 
         let frame = 0;
         const update = () => {
             frame = 0;
+            if (isAtBottom()) {
+                setActiveId(resolvedItems[resolvedItems.length - 1].id);
+                return;
+            }
             let current = resolvedItems[0].id;
             for (const item of resolvedItems) {
                 const heading = document.getElementById(item.id);
@@ -65,22 +96,26 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
             if (!frame) frame = window.requestAnimationFrame(update);
         };
 
-        const article = document.querySelector<HTMLElement>(".article-body");
-        const scrollTarget = article?.closest<HTMLElement>("[data-blog-scroll]") ?? window;
-
         frame = window.requestAnimationFrame(update);
         scrollTarget.addEventListener("scroll", onScroll, { passive: true });
         window.addEventListener("resize", onScroll);
+        const resizeObserver = typeof ResizeObserver !== "undefined" && article
+            ? new ResizeObserver(onScroll)
+            : null;
+        if (resizeObserver && article) resizeObserver.observe(article);
+
         return () => {
             if (frame) window.cancelAnimationFrame(frame);
+            resizeObserver?.disconnect();
             scrollTarget.removeEventListener("scroll", onScroll);
             window.removeEventListener("resize", onScroll);
         };
-    }, [resolvedItems]);
+    }, [resolvedItems, shouldTrack]);
 
     if (!resolvedItems.length) return null;
 
-    const closeMobileToc = () => {
+    const handleTocClick = (id: string) => {
+        setActiveId(id);
         if (variant === "mobile") detailsRef.current?.removeAttribute("open");
     };
 
@@ -96,7 +131,7 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
                             data-depth={item.depth}
                             data-active={active ? "true" : undefined}
                             aria-current={active ? "location" : undefined}
-                            onClick={closeMobileToc}
+                            onClick={() => handleTocClick(item.id)}
                         >
                             {item.html ? (
                                 <span dangerouslySetInnerHTML={{ __html: item.html }} />
@@ -136,7 +171,7 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
     }
 
     return (
-        <aside className="hidden xl:block xl:col-start-3 xl:w-64 xl:justify-self-end">
+        <aside className="hidden xl:block xl:col-start-3 xl:w-64 xl:justify-self-start xl:ml-5 2xl:ml-6">
             <nav aria-label="文章目录" className="blog-toc-sticky overflow-y-auto pr-2">
                 <p className="mb-3 text-xs font-medium tracking-[0.08em] text-muted">目录</p>
                 {list}

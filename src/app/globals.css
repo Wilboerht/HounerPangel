@@ -406,6 +406,17 @@ input[type="radio"] {
   top: calc(3.5rem + env(safe-area-inset-top, 0px) + 1.5rem);
   max-height: calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px) - 3rem);
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.blog-toc-sticky::-webkit-scrollbar {
+  width: 4px;
+}
+
+.blog-toc-sticky::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--border);
 }
 
 .toc-list {
@@ -434,7 +445,7 @@ input[type="radio"] {
 
 .toc-link[data-depth="3"] {
   padding-left: 1.5rem;
-  font-size: 0.75rem;
+  font-size: 0.78125rem;
 }
 
 .toc-link[data-active="true"] {
