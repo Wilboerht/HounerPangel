@@ -367,6 +367,10 @@ input[type="radio"] {
 }
 
 .article-body :is(h1, h2, h3, h4, h5, h6)[id] {
+  scroll-margin-top: 1.5rem;
+}
+
+.has-content-topbar .article-body :is(h1, h2, h3, h4, h5, h6)[id] {
   scroll-margin-top: calc(3.5rem + env(safe-area-inset-top, 0px) + 1.5rem);
 }
 

@@ -115,7 +115,7 @@ export default async function BlogPostPage({ params }: Props) {
     };
 
     return (
-        <main className="min-h-dvh flex flex-col">
+        <main className="has-content-topbar min-h-dvh flex flex-col">
             <ContentTopbar backHref="/blog" backLabel="返回博客" />
 
             <div className="flex flex-1 flex-col px-content pb-content pt-10">

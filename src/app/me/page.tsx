@@ -1,6 +1,6 @@
 import { cache } from "react";
 import type { Metadata } from "next";
-import { ContentTopbar } from "@/components/content-topbar";
+import BackButton from "@/components/BackButton";
 import { SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
 import { renderMarkdown } from "@/lib/markdown";
 import { DEFAULT_ABOUT_PAGE, getSitePage } from "@/lib/site-pages";
@@ -60,24 +60,24 @@ export default async function AboutMe() {
     const page = await getAboutPage();
 
     return (
-        <main className="min-h-dvh flex flex-col">
-            <ContentTopbar backHref="/" backLabel="返回主页" />
+        <main className="min-h-dvh flex flex-col items-center px-content pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-content">
+            <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10">
+                <nav className="-mt-3">
+                    <BackButton label="返回主页" fallbackHref="/" />
+                </nav>
 
-            <div className="flex flex-1 flex-col px-content pb-content pt-10">
-                <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10">
-                    <section className="space-y-8">
-                        <h1 className="text-3xl sm:text-4xl font-bold leading-tight tracking-tight text-foreground">
-                            {page.title || DEFAULT_ABOUT_PAGE.title}
-                        </h1>
-                        <article className="article-body">
-                            {renderMarkdown(page.content)}
-                        </article>
-                    </section>
+                <section className="space-y-10">
+                    <h1 className="text-3xl sm:text-4xl font-bold leading-tight tracking-[-0.01em] text-foreground">
+                        {page.title || DEFAULT_ABOUT_PAGE.title}
+                    </h1>
+                    <article className="article-body">
+                        {renderMarkdown(page.content)}
+                    </article>
+                </section>
 
-                    <footer className="mt-auto text-sm text-muted">
-                        <p>&copy; {new Date().getFullYear()} wilboerht</p>
-                    </footer>
-                </div>
+                <footer className="mt-auto border-t border-border pt-6 text-sm text-muted">
+                    <p>&copy; {new Date().getFullYear()} wilboerht</p>
+                </footer>
             </div>
         </main>
     );
