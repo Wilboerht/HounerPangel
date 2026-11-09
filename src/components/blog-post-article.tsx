@@ -9,7 +9,7 @@ export function BlogPostArticle({ post }: { post: BlogPost }) {
             <header className="space-y-3">
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                     <div className="inline-flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5" />
+                        <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
                         <time dateTime={post.date}>
                             {new Date(post.date).toLocaleDateString("zh-CN", {
                                 year: "numeric",
@@ -25,7 +25,7 @@ export function BlogPostArticle({ post }: { post: BlogPost }) {
                             {post.tags.map((tag) => (
                                 <span
                                     key={tag}
-                                    className="text-sm text-muted/70"
+                                    className="text-sm text-muted"
                                 >
                                     #{tag}
                                 </span>
@@ -34,7 +34,7 @@ export function BlogPostArticle({ post }: { post: BlogPost }) {
                     )}
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-[-0.01em] text-foreground">
                     {post.title}
                 </h1>
             </header>

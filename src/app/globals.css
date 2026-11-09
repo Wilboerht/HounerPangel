@@ -4,6 +4,8 @@
   --background: #fafafa;
   --foreground: #171717;
   --muted: #737373;
+  --article-body: #525252;
+  --link: #2563eb;
   --border: #e5e5e5;
   --accent: #3b82f6;
   --primary: #3b82f6;
@@ -55,8 +57,8 @@
   }
 
   ::selection {
-    background: var(--accent);
-    color: var(--primary-foreground);
+    background: #bfdbfe;
+    color: var(--foreground);
   }
 
   a {
@@ -161,7 +163,7 @@ input[type="radio"] {
 
 /* Article body styles for blog posts */
 .article-body {
-  color: var(--muted);
+  color: var(--article-body);
   line-height: 1.8;
   /* 窄屏下长 URL/无空格英文串不至于撑破容器被 overflow-x: clip 静默裁掉 */
   overflow-wrap: break-word;
@@ -187,7 +189,7 @@ input[type="radio"] {
 }
 
 .article-body h2 {
-  font-size: 1.25rem;
+  font-size: 1.375rem;
 }
 
 .article-body h3 {
@@ -215,7 +217,7 @@ input[type="radio"] {
 
 /* 卡片类链接带 no-underline，跳过正文链接的下划线/强调色规则 */
 .article-body a:not(.no-underline) {
-  color: var(--accent);
+  color: var(--link);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -261,6 +263,10 @@ input[type="radio"] {
 .article-body > * + h4,
 .article-body > * + h5,
 .article-body > * + h6 { margin-top: 1.75rem; }
+
+.article-body :is(h1, h2, h3, h4, h5, h6) + :not(:is(h1, h2, h3, h4, h5, h6, hr)) {
+  margin-top: 0.6rem;
+}
 
 .article-body .markdown-alert {
   --alert-color: var(--accent);

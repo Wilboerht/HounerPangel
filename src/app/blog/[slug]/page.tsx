@@ -123,8 +123,11 @@ export default async function BlogPostPage({ params }: Props) {
 
                 <BlogPostArticle post={post} />
 
-                <footer className="mt-auto text-sm text-muted">
-                    <p>&copy; {new Date().getFullYear()} wilboerht</p>
+                <footer className="mt-auto border-t border-border pt-6 text-sm text-muted">
+                    <nav aria-label="文章导航">
+                        <BackButton label="返回博客" fallbackHref="/blog" />
+                    </nav>
+                    <p className="mt-4">&copy; {new Date().getFullYear()} wilboerht</p>
                 </footer>
             </div>
         </main>
