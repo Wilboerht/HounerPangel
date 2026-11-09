@@ -406,6 +406,7 @@ input[type="radio"] {
   top: calc(3.5rem + env(safe-area-inset-top, 0px) + 1.5rem);
   max-height: calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px) - 3rem);
   overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -494,11 +495,16 @@ input[type="radio"] {
   .toc-desktop .toc-label,
   .toc-desktop .toc-title {
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip;
     white-space: nowrap;
     opacity: 0;
     transform: translateX(-4px);
     transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  .toc-desktop .toc-label {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 1.25rem), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 1.25rem), transparent);
   }
 
   .toc-desktop .toc-link[data-active="true"] .toc-label,
@@ -513,7 +519,8 @@ input[type="radio"] {
   .toc-desktop:hover .toc-label,
   .toc-desktop:focus-within .toc-label {
     overflow: visible;
-    text-overflow: clip;
+    -webkit-mask-image: none;
+    mask-image: none;
     white-space: normal;
   }
 }

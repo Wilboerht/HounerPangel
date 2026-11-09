@@ -32,6 +32,7 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
     const [autoItems, setAutoItems] = useState<TocHeading[] | null>(null);
     const [activeId, setActiveId] = useState(items?.[0]?.id ?? "");
     const detailsRef = useRef<HTMLDetailsElement>(null);
+    const desktopNavRef = useRef<HTMLElement>(null);
     const resolvedItems = items ?? autoItems ?? EMPTY_HEADINGS;
     const isDesktop = useMediaQuery("(min-width: 1280px)");
     const shouldTrack = variant === "inline" || (variant === "desktop" ? isDesktop : !isDesktop);
@@ -111,6 +112,24 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
             window.removeEventListener("resize", onScroll);
         };
     }, [resolvedItems, shouldTrack]);
+
+    useEffect(() => {
+        const nav = desktopNavRef.current;
+        if (!nav) return;
+
+        const link = nav.querySelector<HTMLElement>('.toc-link[data-active="true"]');
+        if (!link) return;
+
+        const navRect = nav.getBoundingClientRect();
+        const linkRect = link.getBoundingClientRect();
+        const margin = 12;
+
+        if (linkRect.top < navRect.top + margin) {
+            nav.scrollTop -= navRect.top + margin - linkRect.top;
+        } else if (linkRect.bottom > navRect.bottom - margin) {
+            nav.scrollTop += linkRect.bottom - (navRect.bottom - margin);
+        }
+    }, [activeId]);
 
     if (!resolvedItems.length) return null;
 
@@ -197,7 +216,7 @@ export function BlogToc({ variant, items, source }: { variant: Variant; items?: 
 
     return (
         <aside className="hidden xl:block xl:col-start-3 xl:pl-10 2xl:pl-14">
-            <nav aria-label="文章目录" className="toc-desktop blog-toc-sticky overflow-y-auto pr-2">
+            <nav ref={desktopNavRef} aria-label="文章目录" className="toc-desktop blog-toc-sticky overflow-y-auto pr-2 pb-3">
                 <p className="toc-title mb-3 text-xs font-medium tracking-[0.08em] text-muted">目录</p>
                 {list}
             </nav>
